@@ -678,7 +678,7 @@ async function getRecs(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='<div class="status"><span class="spin"></span>Searching the catalog…</div>';
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,plot,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,plot,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen,franchise';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
     // Pull a wider net when streaming filtering is active, since some films get dropped client-side.
@@ -834,15 +834,13 @@ async function getRecs(){
     const ratingsWeight = 0.55;
 
     // Popularity slider: 0 (Lesser Known) .. 1 (Crowd Favorites).
-    // Combined fix: stronger range + nonlinear blockbuster penalty + quality-weight nudge.
-    //   - Lesser Known (left):  large penalty on popular films; blockbusters hit extra hard
-    //   - Balanced (center):    small popularity boost (default behavior)
-    //   - Crowd Favorites (right): stronger popularity boost
+    //   - Lesser Known (left):  strong penalty on popular films; blockbusters hit hard
+    //   - Balanced (center):    TRULY neutral — no popularity nudge at all
+    //   - Crowd Favorites (right): strong popularity boost
     const pp=advPos/100;        // 0 .. 1, smoothly
-    // popularity coefficient (linear part): -0.60 at fully obscure → +0.06 at center → +0.30 at full popular.
-    // Range is ~4× the prior version on the obscure side, so the slider has real authority.
-    const popCoef = pp<0.5 ? -0.60+(0.06-(-0.60))*(pp/0.5)
-                           :  0.06+(0.30-0.06)*((pp-0.5)/0.5);
+    // popularity coefficient (linear part): -0.60 at fully obscure → 0 at center → +0.30 at full popular.
+    const popCoef = pp<0.5 ? -0.60+(0-(-0.60))*(pp/0.5)
+                           :  0   +(0.30-0)*((pp-0.5)/0.5);
     // Blockbuster surcharge: how strongly to additionally punish very-famous films when the
     // user is leaning toward obscure. 0 when slider is at/past center, scales up as you go left.
     //   advPos 50 → 0, advPos 0 → 1.0. Films with fame > 70 get hit; films at fame=100 get worst.
@@ -894,6 +892,15 @@ async function getRecs(){
       return filmGenres.includes('documentary') ? -20 : 0;
     };
 
+    // ---- Franchise penalty: only applies when the user is leaning toward Lesser Known.
+    // Films labeled with a franchise (MCU, Star Wars, LOTR, Harry Potter, etc.) get a small
+    // demotion that scales with how far obscure the slider is — same lever as blockbusterWeight.
+    // Max -10 at full obscure, 0 at center and beyond.
+    const franchisePenalty = (m) => {
+      if (!m.franchise) return 0;
+      return -10 * blockbusterWeight;
+    };
+
     let ranked=pool.map(m=>{
       const quality=qualityScore(m);            // 0-100, neutral 65 for unrated
       const fit=fitScore(m);                     // 0-100
@@ -914,17 +921,17 @@ async function getRecs(){
       // The surcharge curve is quadratic past 70 so megahits at fame=100 get hit hardest.
       const linearPop = (fameS-50) * popCoef;
       // Blockbuster surcharge: piecewise-linear curve hitting these targets at full obscure:
-      //   fame 88 →   0  (smooth ramp-on, no cliff at threshold)
-      //   fame 90 → -10
-      //   fame 93 → ~-23
-      //   fame 95 → ~-31
-      //   fame 97 → -40
-      //   fame 100 → -55
-      // Below 88: untouched. Penalty scales with blockbusterWeight (0 at center → 1 at full obscure).
+      //   fame 87 →   0  (smooth ramp-on)
+      //   fame 90 → -13
+      //   fame 93 → ~-29
+      //   fame 95 → ~-39
+      //   fame 97 → -50
+      //   fame 100 → -65
+      // Below 87: untouched. Penalty scales with blockbusterWeight (0 at center → 1 at full obscure).
       let surchargeBase = 0;
-      if(fame >= 97)      surchargeBase = -40 - (fame-97) * 5;          // 97→100 segment: -40..-55
-      else if(fame >= 90) surchargeBase = -10 - (fame-90) * (30/7);     // 90→97 segment: -10..-40
-      else if(fame >= 88) surchargeBase = -(fame-88) * 5;               // 88→90 ramp: 0..-10
+      if(fame >= 97)      surchargeBase = -50 - (fame-97) * 5;            // 97→100 segment: -50..-65
+      else if(fame >= 90) surchargeBase = -13 - (fame-90) * (37/7);       // 90→97 segment: -13..-50
+      else if(fame >= 87) surchargeBase = -(fame-87) * (13/3);            // 87→90 ramp: 0..-13
       const blockbusterHit = surchargeBase * blockbusterWeight;
       const popMod = linearPop + blockbusterHit;
       // Multi-genre match bonus: rewards films that match more of the user's selections.
@@ -932,10 +939,11 @@ async function getRecs(){
       // Animation penalty: dampens animated films when Animation wasn't picked.
       const animPenalty = animationPenalty(m);
       const docPenalty = documentaryPenalty(m);
+      const fPenalty = franchisePenalty(m);
       // Friendly one-line "why" — picks a template based on film attributes
       const why=whyFor(m, quality, fame);
       m._surprise=Math.round(fame);  // kept for the card UI; reflects raw fame, not modifier
-      m.ws=Math.max(0,Math.min(100,Math.round(base + popMod + genreBonus + animPenalty + docPenalty)));
+      m.ws=Math.max(0,Math.min(100,Math.round(base + popMod + genreBonus + animPenalty + docPenalty + fPenalty)));
       m.why=why;
       return m;
     }).sort((a,b)=>(b.ws||0)-(a.ws||0));
