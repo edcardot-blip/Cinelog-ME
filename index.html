@@ -284,7 +284,8 @@
     #rec-mode-field{margin-top:1.4rem}
     /* Poster shrunk ~20% on mobile so cards aren't as tall */
     .poster{width:auto;max-width:200px;height:auto;max-height:272px;object-fit:contain;border-radius:var(--rsm);align-self:center}
-    .rank{font-size:20px;width:auto}
+    /* Rank floats to top-left of card, mirroring the seen button at top-right */
+    .rank{position:absolute;top:14px;left:14px;font-size:20px;width:auto;line-height:1;z-index:2}
     /* Seen button: float to top-right of card on mobile (overrides the inline title-row position) */
     .title-row .seen-btn{position:absolute;top:14px;right:14px;margin-left:0;z-index:2}
     .title-row{padding-right:90px}
