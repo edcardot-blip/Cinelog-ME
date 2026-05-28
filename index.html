@@ -373,13 +373,13 @@
       <div class="field">
         <div class="field-lbl slider-lbl">Do You Care What The Critics Say?</div>
         <input type="range" id="ratings-slider" class="adv-slider" min="0" max="100" step="1" value="50" />
-        <div class="adv-ticks"><span style="font-weight:700">Vibes First</span><span>Balanced</span><span style="font-weight:700">Critics Matter</span></div>
+        <div class="adv-ticks"><span style="font-weight:700">Audience Pick</span><span>Balanced</span><span style="font-weight:700">Critics Choice</span></div>
         <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Ratings have a moderate say.</p>
       </div>
       <div class="field" style="margin-bottom:0">
         <div class="field-lbl slider-lbl">How Adventurous?</div>
         <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" />
-        <div class="adv-ticks"><span style="font-weight:700">More Obscure</span><span>Balanced</span><span style="font-weight:700">Crowd Favorites</span></div>
+        <div class="adv-ticks"><span style="font-weight:700">Lesser Known</span><span>Balanced</span><span style="font-weight:700">Crowd Favorites</span></div>
         <p class="section-note" id="adv-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Slight nudge toward popular films.</p>
       </div>
       <div class="field" id="rec-mode-field" style="margin-bottom:0">
@@ -608,14 +608,14 @@ function passesKid(m){
 }
 
 // --- Adventurousness slider ---
-const ADV_LABELS=['More Obscure','Balanced','Crowd Favorites'];
+const ADV_LABELS=['Lesser Known','Balanced','Crowd Favorites'];
 const ADV_DESCS=['Small penalty to crowd-pleasers.','Slight nudge toward popular films.','Strong boost for popular films.'];
 let advLevel=1;
 let advPos=50;          // 0..100 raw slider position (continuous math driver)
 (function(){const s=document.getElementById('adv-slider');if(s){const upd=()=>{advPos=+s.value;advLevel=advPos<33.34?0:advPos<66.67?1:2;const el=document.getElementById('adv-val');if(el)el.textContent=ADV_LABELS[advLevel];const d=document.getElementById('adv-desc');if(d)d.textContent=ADV_DESCS[advLevel];};s.addEventListener('input',upd);upd();}})();
 // --- Ratings influence slider (ranking weight only, never a filter) ---
-const RATINGS_LABELS=['Vibes First','Balanced','Critics Matter'];
-const RATINGS_DESCS=['Ratings barely factor in.','Ratings have a moderate say.','Top-rated films get a strong boost.'];
+const RATINGS_LABELS=['Audience Pick','Balanced','Critics Choice'];
+const RATINGS_DESCS=['Favors audience scores (IMDb).','Weighs critics and audience scores equally.','Favors critic scores (RT + Metacritic).'];
 let ratingsPos=50;            // 0-100 raw slider position
 (function(){const s=document.getElementById('ratings-slider');if(s){const upd=()=>{ratingsPos=+s.value;const lvl=ratingsPos<33.34?0:ratingsPos<66.67?1:2;const el=document.getElementById('ratings-val');if(el)el.textContent=RATINGS_LABELS[lvl];const d=document.getElementById('ratings-desc');if(d)d.textContent=RATINGS_DESCS[lvl];};s.addEventListener('input',upd);upd();}})();
 async function saveSbKey(){const v=document.getElementById('sb-input').value.trim();if(v.length<20){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ That key looks too short.</span>';return;}sbKey=v;document.getElementById('sb-status').innerHTML='<span style="color:var(--text2)"><span class="spin"></span>Testing…</span>';try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=*',{method:'HEAD',headers:sbHeaders('exact')});if(!r.ok)throw new Error('HTTP '+r.status+(r.status===401?' — key rejected':''));const cr=r.headers.get('content-range');totalFilms=cr?parseInt(cr.split('/')[1],10):null;document.getElementById('s-total').textContent=totalFilms??'✓';document.getElementById('sb-status').innerHTML='<span style="color:#4ade80">✓ Connected — '+(totalFilms!=null?totalFilms+' films.':'reachable.')+'</span>';updatePoolCount();updateConnSummary();loadSeen();}catch(e){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ '+e.message+'</span>';}}
@@ -720,14 +720,29 @@ async function getRecs(){
 
     // ---- ratingsScore: normalize ratings to 0-100, average ONLY the ones that exist,
     // apply a small confidence penalty for thinner data so missing ratings aren't punished. ----
+    // ---- Quality score: slider-aware weighted average of available ratings ----
+    // The critics slider (ratingsPos 0..100) controls which sources influence the score:
+    //   Audience Pick (0):    IMDb (audience) only
+    //   Balanced (50):      all three equally weighted (IMDb + RT + Meta)
+    //   Critics Choice (100): RT + Meta (critics) only — IMDb dropped
+    // If a film is missing one of the requested sources, we fall back to what's available
+    // and apply a small confidence penalty so partial-data films don't unfairly outrank fuller ones.
     function qualityScore(m){
-      const vals=[];
-      if(m.imdb_rating!=null)            vals.push(m.imdb_rating*10);     // 0-10 → 0-100
-      if(m.rotten_tomatoes_score!=null)  vals.push(m.rotten_tomatoes_score); // already 0-100
-      if(m.metascore!=null)              vals.push(m.metascore);            // already 0-100
-      if(!vals.length) return 65;        // truly unrated → neutral fallback
-      const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-      const conf=vals.length===3?0:vals.length===2?-2:-5; // tiny / small confidence penalty
+      const rp=ratingsPos/100;
+      // Source weights: IMDb fades from 1.0 → 1/3 → 0 as slider moves left→center→right.
+      // RT and Meta together absorb the rest, splitting it evenly between themselves.
+      const imdbW = rp<0.5
+        ? 1.0 + (1/3 - 1.0) * (rp/0.5)
+        : 1/3 + (0   - 1/3) * ((rp-0.5)/0.5);
+      const critW = (1 - imdbW) / 2;  // applied to BOTH RT and Meta individually
+      let weighted=0, totalW=0, present=0;
+      if(m.imdb_rating!=null)           {weighted += (m.imdb_rating*10) * imdbW; totalW += imdbW; present++;}
+      if(m.rotten_tomatoes_score!=null) {weighted += m.rotten_tomatoes_score * critW; totalW += critW; present++;}
+      if(m.metascore!=null)             {weighted += m.metascore * critW; totalW += critW; present++;}
+      // No usable signals (either no ratings at all, or slider zeroed-out the only one present)
+      if(totalW < 0.0001) return 65;   // neutral fallback
+      const avg = weighted / totalW;
+      const conf = present===3?0:present===2?-2:-5;
       return Math.max(0,Math.min(100,avg+conf));
     }
     // ---- runtime / era fit: 100 if it satisfies the chosen length/era, gentle partial otherwise ----
@@ -813,18 +828,14 @@ async function getRecs(){
     }
 
     // ---- Sliders → continuous knobs ----
-    // Critics slider: 0 (Vibes First) .. 1 (Critics Matter). Drives how much of the score
-    // comes from ratings vs. the base (fit + small popularity nudge).
-    //   Vibes First → ratings ~25% of score (light influence)
-    //   Balanced    → ratings ~55% of score
-    //   Critics M.  → ratings ~80% of score (strongly boosts higher-rated)
-    const rp=ratingsPos/100;
-    const ratingsWeight = rp<0.5 ? 0.25+(0.55-0.25)*(rp/0.5)
-                                 : 0.55+(0.80-0.55)*((rp-0.5)/0.5);
+    // Critics slider: no longer controls ratings-vs-fit weight. Instead it reweights the
+    // three rating sources inside qualityScore: left = audience (IMDb), right = critics (RT+Meta).
+    // We keep ratingsWeight at a fixed value so quality and fit still blend sensibly.
+    const ratingsWeight = 0.55;
 
-    // Popularity slider: 0 (More Obscure) .. 1 (Crowd Favorites).
+    // Popularity slider: 0 (Lesser Known) .. 1 (Crowd Favorites).
     // Combined fix: stronger range + nonlinear blockbuster penalty + quality-weight nudge.
-    //   - More Obscure (left):  large penalty on popular films; blockbusters hit extra hard
+    //   - Lesser Known (left):  large penalty on popular films; blockbusters hit extra hard
     //   - Balanced (center):    small popularity boost (default behavior)
     //   - Crowd Favorites (right): stronger popularity boost
     const pp=advPos/100;        // 0 .. 1, smoothly
@@ -872,6 +883,17 @@ async function getRecs(){
       return filmGenres.includes('animation') ? -20 : 0;
     };
 
+    // ---- Documentary penalty: there's no Documentary filter pill, so docs would otherwise
+    // bleed into genre picks (e.g. Free Solo appearing under Adventure). Apply -20 unless
+    // the user picked a genre that naturally fits documentaries (Sport, Music, Comedy).
+    const DOC_FRIENDLY_GENRES = new Set(['sport','music','comedy']);
+    const docExempt = selectedGenres.some(g => DOC_FRIENDLY_GENRES.has(g.toLowerCase()));
+    const documentaryPenalty = (m) => {
+      if (docExempt) return 0;
+      const filmGenres = (m.genre||'').toLowerCase();
+      return filmGenres.includes('documentary') ? -20 : 0;
+    };
+
     let ranked=pool.map(m=>{
       const quality=qualityScore(m);            // 0-100, neutral 65 for unrated
       const fit=fitScore(m);                     // 0-100
@@ -891,17 +913,29 @@ async function getRecs(){
       // that bites only when (a) the slider is leaning obscure and (b) the film is very famous (fame > 70).
       // The surcharge curve is quadratic past 70 so megahits at fame=100 get hit hardest.
       const linearPop = (fameS-50) * popCoef;
-      const overFame = Math.max(0, fame - 70);                 // 0..30
-      const blockbusterHit = -30 * blockbusterWeight * Math.pow(overFame/30, 2);
+      // Blockbuster surcharge: piecewise-linear curve hitting these targets at full obscure:
+      //   fame 88 →   0  (smooth ramp-on, no cliff at threshold)
+      //   fame 90 → -10
+      //   fame 93 → ~-23
+      //   fame 95 → ~-31
+      //   fame 97 → -40
+      //   fame 100 → -55
+      // Below 88: untouched. Penalty scales with blockbusterWeight (0 at center → 1 at full obscure).
+      let surchargeBase = 0;
+      if(fame >= 97)      surchargeBase = -40 - (fame-97) * 5;          // 97→100 segment: -40..-55
+      else if(fame >= 90) surchargeBase = -10 - (fame-90) * (30/7);     // 90→97 segment: -10..-40
+      else if(fame >= 88) surchargeBase = -(fame-88) * 5;               // 88→90 ramp: 0..-10
+      const blockbusterHit = surchargeBase * blockbusterWeight;
       const popMod = linearPop + blockbusterHit;
       // Multi-genre match bonus: rewards films that match more of the user's selections.
       const genreBonus = multiMatchBonus(m);
       // Animation penalty: dampens animated films when Animation wasn't picked.
       const animPenalty = animationPenalty(m);
+      const docPenalty = documentaryPenalty(m);
       // Friendly one-line "why" — picks a template based on film attributes
       const why=whyFor(m, quality, fame);
       m._surprise=Math.round(fame);  // kept for the card UI; reflects raw fame, not modifier
-      m.ws=Math.max(0,Math.min(100,Math.round(base + popMod + genreBonus + animPenalty)));
+      m.ws=Math.max(0,Math.min(100,Math.round(base + popMod + genreBonus + animPenalty + docPenalty)));
       m.why=why;
       return m;
     }).sort((a,b)=>(b.ws||0)-(a.ws||0));
