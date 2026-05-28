@@ -822,16 +822,23 @@ async function getRecs(){
     const ratingsWeight = rp<0.5 ? 0.25+(0.55-0.25)*(rp/0.5)
                                  : 0.55+(0.80-0.55)*((rp-0.5)/0.5);
 
-    // Popularity slider: 0 (More Obscure) .. 1 (Crowd Favorites). Per spec:
-    //   More Obscure     → slightly penalize very popular films
-    //   Balanced         → small popularity boost
-    //   Crowd Favorites  → stronger popularity boost
-    // Continuous response: uses raw slider position (advPos 0-100), not the 3-bucket quantization,
-    // so dragging a little has a small effect and dragging a lot has a bigger effect.
+    // Popularity slider: 0 (More Obscure) .. 1 (Crowd Favorites).
+    // Combined fix: stronger range + nonlinear blockbuster penalty + quality-weight nudge.
+    //   - More Obscure (left):  large penalty on popular films; blockbusters hit extra hard
+    //   - Balanced (center):    small popularity boost (default behavior)
+    //   - Crowd Favorites (right): stronger popularity boost
     const pp=advPos/100;        // 0 .. 1, smoothly
-    // popularity coefficient: -0.15 .. +0.06 .. +0.18 (at left/center/right)
-    const popCoef = pp<0.5 ? -0.15+(0.06-(-0.15))*(pp/0.5)
-                           :  0.06+(0.18-0.06)*((pp-0.5)/0.5);
+    // popularity coefficient (linear part): -0.60 at fully obscure → +0.06 at center → +0.30 at full popular.
+    // Range is ~4× the prior version on the obscure side, so the slider has real authority.
+    const popCoef = pp<0.5 ? -0.60+(0.06-(-0.60))*(pp/0.5)
+                           :  0.06+(0.30-0.06)*((pp-0.5)/0.5);
+    // Blockbuster surcharge: how strongly to additionally punish very-famous films when the
+    // user is leaning toward obscure. 0 when slider is at/past center, scales up as you go left.
+    //   advPos 50 → 0, advPos 0 → 1.0. Films with fame > 70 get hit; films at fame=100 get worst.
+    const blockbusterWeight = Math.max(0, (50-advPos)/50);  // 0..1, only positive on the obscure side
+    // Quality-weight tweak: at full obscure, quality contributes 85% of its usual weight.
+    // At center and beyond, full weight. Lets obscure-but-good films float up.
+    const qualityFactor = 1 - 0.15 * blockbusterWeight;     // 0.85..1.00
 
     // ---- Contrast stretch: amplify gaps between scores so sliders bite harder.
     // Pivots at 50 (neutral stays neutral). Factor 1.4 → 70→78, 80→92, 30→22, 20→8.
@@ -876,10 +883,17 @@ async function getRecs(){
       m._fame=Math.round(fame);
       // Stretched versions for the slider math (amplified contrast)
       const qS=stretch(quality), fameS=stretch(fame);
-      // Base = ratings (per critics slider) + remaining weight on fit
-      const base = qS*ratingsWeight + fit*(1-ratingsWeight);
-      // Popularity modifier: a small +/- shift around 50 (so a neutral-fame film gets ~0).
-      const popMod = (fameS-50) * popCoef;
+      // Base = ratings (per critics slider) + remaining weight on fit.
+      // qualityFactor slightly reduces quality's influence when the user leans obscure,
+      // preventing blockbusters' high quality from anchoring them in the top no matter what.
+      const base = qS*ratingsWeight*qualityFactor + fit*(1-ratingsWeight);
+      // Popularity modifier: a linear shift around 50, PLUS a nonlinear blockbuster surcharge
+      // that bites only when (a) the slider is leaning obscure and (b) the film is very famous (fame > 70).
+      // The surcharge curve is quadratic past 70 so megahits at fame=100 get hit hardest.
+      const linearPop = (fameS-50) * popCoef;
+      const overFame = Math.max(0, fame - 70);                 // 0..30
+      const blockbusterHit = -30 * blockbusterWeight * Math.pow(overFame/30, 2);
+      const popMod = linearPop + blockbusterHit;
       // Multi-genre match bonus: rewards films that match more of the user's selections.
       const genreBonus = multiMatchBonus(m);
       // Animation penalty: dampens animated films when Animation wasn't picked.
