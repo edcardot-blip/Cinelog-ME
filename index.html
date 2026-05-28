@@ -280,8 +280,14 @@
     .adv-slider{height:44px}
     /* Result cards: stack poster above body so neither gets squeezed */
     .card{flex-direction:column;padding:1rem;gap:14px}
-    .poster{width:100%;height:auto;max-height:340px;object-fit:contain;border-radius:var(--rsm)}
+    /* Mobile-only breathing room between the slider note above and Recommendation Mode */
+    #rec-mode-field{margin-top:1.4rem}
+    /* Poster shrunk ~20% on mobile so cards aren't as tall */
+    .poster{width:auto;max-width:200px;height:auto;max-height:272px;object-fit:contain;border-radius:var(--rsm);align-self:center}
     .rank{font-size:20px;width:auto}
+    /* Seen button: float to top-right of card on mobile (overrides the inline title-row position) */
+    .title-row .seen-btn{position:absolute;top:14px;right:14px;margin-left:0;z-index:2}
+    .title-row{padding-right:90px}
     /* Stats row: smaller gap and padding so it doesn't crowd narrow screens */
     .stat{padding:.85rem .7rem}
     .stat-arrow{display:none}
@@ -375,8 +381,8 @@
         <div class="adv-ticks"><span style="font-weight:700">More Obscure</span><span>Balanced</span><span style="font-weight:700">Crowd Favorites</span></div>
         <p class="section-note" id="adv-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Slight nudge toward popular films.</p>
       </div>
-      <div class="field" style="margin-bottom:0">
-        <div class="field-lbl">Recommendation mode</div>
+      <div class="field" id="rec-mode-field" style="margin-bottom:0">
+        <div class="field-lbl">Recommendation Mode</div>
         <div class="cost-seg" id="mode-seg">
           <div class="cost-opt on" id="mode-hybrid" onclick="setMode('hybrid')"><span class="cost-txt">Smart Mix</span></div>
           <div class="cost-opt" id="mode-fresh" onclick="setMode('fresh')"><span class="cost-txt">Fresh Picks</span></div>
