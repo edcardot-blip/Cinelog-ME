@@ -565,7 +565,12 @@ async function markSeen(imdbId, isSeenVal){
   try{
     await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?imdb_id=eq.'+encodeURIComponent(imdbId),{
       method:'PATCH',
-      headers:sbHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
+      headers:{
+        'apikey':sbKey,
+        'Authorization':'Bearer '+sbKey,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
       body:JSON.stringify({seen:isSeenVal})
     });
   }catch(e){/* if write fails, local set may drift; acceptable for personal tool */}
