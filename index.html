@@ -26,11 +26,10 @@
 
   /* ===== Section scaffolding ===== */
   .section{margin-bottom:1.5rem}
-  .section-head{display:grid;grid-template-columns:1fr auto;grid-template-areas:"title title" "note bubbles";column-gap:12px;row-gap:.3rem;align-items:center;margin-bottom:1rem;padding:0 2px}
-  .section-head .section-note{grid-area:note;margin:0;padding-left:0;align-self:center}
+  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:1rem;padding:0 2px}
   .section-num{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--bg);background:var(--accent);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
   .section-num.ai{background:var(--teal)}
-  .section-title{grid-area:title;justify-self:start;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .section-title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
   .section-tag{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:var(--rpill);margin-left:auto}
   .tag-db{background:var(--teal-dim);color:var(--teal)}
   .tag-ai{background:var(--accent-dim);color:var(--accent2)}
@@ -285,7 +284,7 @@
   .adv-help{margin:.8rem 0 0;font-size:12.5px;font-style:italic;color:var(--text2);text-align:center;min-height:1.15em;line-height:1.4;position:relative;z-index:1}
 
   /* ===== Top bar: DB status pill + Preferences ===== */
-  .sec-head-right{grid-area:bubbles;justify-self:end;display:flex;flex-direction:row;align-items:center;gap:8px}
+  .sec-head-right{margin-left:auto;display:flex;flex-direction:row;align-items:center;gap:8px}
   .section-head .auth-pill,.section-head .prefs-btn{margin-left:0;padding:6px 13px;font-size:12px;min-width:108px;justify-content:center;box-sizing:border-box}
   .prefs-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:var(--rpill);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:border-color .15s,background .15s}
   .prefs-btn:hover{border-color:var(--accent);background:var(--bg4)}
@@ -387,9 +386,9 @@
     .hero{margin-bottom:1.6rem}
     .section{margin-bottom:1.1rem}
     .section-note{padding-left:0}
-    /* Header stacks; bubbles drop to a full-width equal-size row */
-    .section-head{grid-template-columns:1fr;grid-template-areas:"title" "note" "bubbles";row-gap:.5rem}
-    .section-head .sec-head-right{justify-self:stretch;width:100%}
+    /* Title on its own line; bubbles wrap to a full-width equal-size row below */
+    .section-head{flex-wrap:wrap}
+    .section-head .sec-head-right{width:100%;margin-left:0}
     .section-head .auth-pill,.section-head .prefs-btn{min-width:0;flex:1;padding:9px 8px}
     /* Pills, chips, service pills, dev toggle: 44px+ tap targets */
     .pill,.svc-pill{min-height:44px;padding-top:11px;padding-bottom:11px;font-size:13.5px}
@@ -469,8 +468,7 @@
   <!-- FAST FILTERS -->
   <div class="section">
     <div class="section-head">
-      <span class="section-title">Fast filters</span>
-      <p class="section-note">Instant filtering on genre, length, era, and where you can stream.</p>
+      <span class="section-title">Fast Filters</span>
       <div class="sec-head-right">
         <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
         <button class="prefs-btn" id="lists-btn" onclick="openLists()" aria-label="Lists">
@@ -580,11 +578,6 @@
       </div>
 
       <div id="set-menu">
-      <div class="set-group">
-        <div class="set-group-lbl">Account</div>
-        <div class="set-list" id="set-account"><!-- filled by updateAccountUI() --></div>
-      </div>
-
       <div class="set-group">
         <div class="set-group-lbl">Recommendations</div>
         <div class="set-list">
@@ -1183,7 +1176,13 @@ async function signOut(){
   toast('Signed out.');
 }
 // Top-bar pill: reflects login state; tap to sign in (out) or open account.
-function onAuthPill(){ if(currentUser){ openSettings(); } else { signInGoogle(); } }
+function onAuthPill(){
+  if(currentUser){
+    const meta=currentUser.user_metadata||{};
+    const who=meta.full_name||meta.name||currentUser.email||'your account';
+    if(confirm('Sign out of '+who+'?')) signOut();
+  } else { signInGoogle(); }
+}
 function updateAuthPill(){
   const el=document.getElementById('auth-pill'); if(!el) return;
   if(currentUser){
