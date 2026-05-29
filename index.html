@@ -162,6 +162,18 @@
   .ni-btn:hover{border-color:#a05a5a;color:#e09a9a}
   .ni-btn.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
   .card-foot{margin-top:12px;display:flex;justify-content:flex-end}
+  /* 2x2 grid of equal-size card toggles: Seen / Favorite / Watchlist / Hide */
+  .card-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .card-act{margin:0;font-size:13px;font-weight:600;padding:9px 10px;border-radius:10px;cursor:pointer;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--sans);transition:all .14s;white-space:nowrap;text-align:center;width:100%}
+  .card-act:hover{border-color:var(--border);color:var(--text)}
+  .act-seen:hover{border-color:var(--teal);color:var(--teal)}
+  .act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
+  .act-fav:hover{border-color:#c2557a;color:#f0a0bd}
+  .act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
+  .act-watch:hover{border-color:#5b8fd6;color:#a8c8f0}
+  .act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
+  .act-hide:hover{border-color:#a05a5a;color:#e09a9a}
+  .act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
   .lt-seen{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
   .lt-seen:hover{background:transparent;border-color:var(--text3);color:var(--text2)}
   .ltable-wrap{margin-top:6px;overflow-x:auto}
@@ -407,9 +419,8 @@
     .poster{width:auto;max-width:200px;height:auto;max-height:272px;object-fit:contain;border-radius:var(--rsm);align-self:center}
     /* Rank floats to top-left of card, mirroring the seen button at top-right */
     .rank{position:absolute;top:14px;left:14px;font-size:20px;width:auto;line-height:1;z-index:2}
-    /* Seen button: float to top-right of card on mobile (overrides the inline title-row position) */
-    .title-row .seen-btn{position:absolute;top:14px;right:14px;margin-left:0;z-index:2}
-    .title-row{padding-right:90px}
+    /* Card toggles: bump tap height on mobile */
+    .card-act{padding:12px 8px}
     /* Stats row: smaller gap and padding so it doesn't crowd narrow screens */
     .stat{padding:.85rem .7rem}
     .stat-arrow{display:none}
@@ -573,8 +584,14 @@
             <span class="set-ico">🚫</span><span class="set-label">Hidden Movies</span>
             <span class="set-meta" id="set-hidden-count">0</span><span class="set-chev">›</span>
           </button>
-          <div class="set-row soon"><span class="set-ico">♥</span><span class="set-label">Favorites</span><span class="set-soon">Coming soon</span></div>
-          <div class="set-row soon"><span class="set-ico">＋</span><span class="set-label">Watchlist</span><span class="set-soon">Coming soon</span></div>
+          <button class="set-row tappable" onclick="openList('favorites')">
+            <span class="set-ico">♥</span><span class="set-label">Favorites</span>
+            <span class="set-meta" id="set-fav-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="openList('watchlist')">
+            <span class="set-ico">🔖</span><span class="set-label">Watchlist</span>
+            <span class="set-meta" id="set-watch-count">0</span><span class="set-chev">›</span>
+          </button>
         </div>
       </div>
 
@@ -892,19 +909,90 @@ async function onNiClick(btn, imdbId){
   }
 }
 
+// ---- Favorites & Watchlist — same per-user storage pattern (extra columns on user_movies). ----
+let favSet = new Set();     // imdb_ids the user favorited
+let watchSet = new Set();   // imdb_ids on the user's watchlist
+
+async function loadFavorites(){
+  if(!currentUser || !sbAuth){ favSet=new Set(); updateFavCount(); return; }
+  try{
+    const { data, error } = await sbAuth.from('user_movies').select('imdb_id').eq('favorite', true);
+    if(error) return;
+    favSet=new Set(data.map(x=>x.imdb_id)); updateFavCount();
+  }catch(e){}
+}
+async function loadWatchlist(){
+  if(!currentUser || !sbAuth){ watchSet=new Set(); updateWatchCount(); return; }
+  try{
+    const { data, error } = await sbAuth.from('user_movies').select('imdb_id').eq('watchlist', true);
+    if(error) return;
+    watchSet=new Set(data.map(x=>x.imdb_id)); updateWatchCount();
+  }catch(e){}
+}
+// Shared upsert for the simple boolean flags (favorite / watchlist).
+async function markFlag(imdbId, col, val, set, updater, label){
+  if(!currentUser || !sbAuth){ toast('Sign in to save your '+label+'.'); return false; }
+  const had = set.has(imdbId);
+  if(val){set.add(imdbId);} else {set.delete(imdbId);}
+  updater();
+  try{
+    const row={ user_id:currentUser.id, imdb_id:imdbId, updated_at:new Date().toISOString() };
+    row[col]=val;
+    const { error } = await sbAuth.from('user_movies').upsert(row, { onConflict:'user_id,imdb_id' });
+    if(error) throw error;
+    return true;
+  }catch(e){
+    if(had){set.add(imdbId);} else {set.delete(imdbId);}
+    updater();
+    toast('Couldn\u2019t save ('+(e.message||e)+').','error');
+    return false;
+  }
+}
+const markFavorite  = (id,val)=>markFlag(id,'favorite', val, favSet,  updateFavCount,  'favorites');
+const markWatchlist = (id,val)=>markFlag(id,'watchlist',val, watchSet, updateWatchCount, 'watchlist');
+function isFavorite(m){ return favSet.has(m.imdb_id); }
+function isWatchlisted(m){ return watchSet.has(m.imdb_id); }
+function updateFavCount(){ const el=document.getElementById('set-fav-count'); if(el) el.textContent=favSet.size; }
+function updateWatchCount(){ const el=document.getElementById('set-watch-count'); if(el) el.textContent=watchSet.size; }
+
+async function onFavClick(btn, imdbId){
+  if(!currentUser){ toast('Sign in to save favorites.'); openSettings(); return; }
+  const now=!favSet.has(imdbId);
+  btn.classList.toggle('marked', now);
+  btn.textContent = now ? '♥ Favorited' : '♡ Favorite';
+  const ok=await markFavorite(imdbId, now);
+  if(!ok){ const a=favSet.has(imdbId); btn.classList.toggle('marked',a); btn.textContent=a?'♥ Favorited':'♡ Favorite'; }
+}
+async function onWatchClick(btn, imdbId){
+  if(!currentUser){ toast('Sign in to use your watchlist.'); openSettings(); return; }
+  const now=!watchSet.has(imdbId);
+  btn.classList.toggle('marked', now);
+  btn.textContent = now ? '✓ Watchlist' : '+ Watchlist';
+  const ok=await markWatchlist(imdbId, now);
+  if(!ok){ const a=watchSet.has(imdbId); btn.classList.toggle('marked',a); btn.textContent=a?'✓ Watchlist':'+ Watchlist'; }
+}
+// Remove an item from the Favorites/Watchlist management views.
+async function removeFromList(imdbId, which){
+  const ok = which==='favorite' ? await markFavorite(imdbId,false) : await markWatchlist(imdbId,false);
+  if(!ok) return;
+  const el=document.getElementById('lrow-'+imdbId);
+  if(el){ el.style.transition='opacity .2s'; el.style.opacity='0'; setTimeout(()=>{ el.remove(); const empty = which==='favorite'?favSet.size===0:watchSet.size===0; if(empty){ which==='favorite'?showFavorites():showWatchlist(); } },200); }
+}
+
 // Management view: list everything marked not-interested, each restorable.
 // Minimal HTML-escape for titles/director names coming from OMDb.
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // Clean card-row list for the Seen / Hidden views (rendered inside the Settings overlay).
 function renderMovieList(films, kind){
-  const isHidden = kind==='hidden';
   const rows = films.map(m=>{
     const dir = (m.director && m.director!=='N/A') ? esc(m.director) : '';
     const meta = [m.year||'', dir, m.runtime_minutes? m.runtime_minutes+' min':''].filter(Boolean).join('  ·  ');
-    const act = isHidden
-      ? '<button class="mrow-act act-restore" onclick="bringBack(\''+m.imdb_id+'\')">↩ Bring back</button>'
-      : '<button class="mrow-act act-unseen" onclick="toggleSeenOff(\''+m.imdb_id+'\')">Mark unseen</button>';
+    let act;
+    if(kind==='hidden')         act='<button class="mrow-act act-restore" onclick="bringBack(\''+m.imdb_id+'\')">↩ Bring back</button>';
+    else if(kind==='favorites') act='<button class="mrow-act act-unseen" onclick="removeFromList(\''+m.imdb_id+'\',\'favorite\')">♥ Remove</button>';
+    else if(kind==='watchlist') act='<button class="mrow-act act-unseen" onclick="removeFromList(\''+m.imdb_id+'\',\'watchlist\')">Remove</button>';
+    else                        act='<button class="mrow-act act-unseen" onclick="toggleSeenOff(\''+m.imdb_id+'\')">Mark unseen</button>';
     return '<div class="mrow" id="lrow-'+m.imdb_id+'">'
       + '<div class="mrow-main"><div class="mrow-title">'+esc(m.title)+'</div>'
       + (meta?'<div class="mrow-meta">'+meta+'</div>':'') + '</div>'
@@ -936,6 +1024,32 @@ async function showSeen(){
     films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
     if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateSeenCount(); return; }
     lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' marked seen. Mark one unseen to let it return to Fresh Picks.</div>'+renderMovieList(films,'seen');
+  }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
+}
+
+async function showFavorites(){
+  const lv=document.getElementById('set-listview'); if(!lv) return;
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your favorites.<span>Your favorites are saved to your account.</span></div>'; return; }
+  if(favSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">♥</div>No favorites yet.<span>Tap “Favorite” on any movie card to save it here.</span></div>'; return; }
+  lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading favorites…</div>';
+  try{
+    const films=await fetchMoviesByIds([...favSet]);
+    films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
+    if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateFavCount(); return; }
+    lv.innerHTML='<div class="mlist-hint">'+films.length+' favorite'+(films.length===1?'':'s')+'.</div>'+renderMovieList(films,'favorites');
+  }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
+}
+
+async function showWatchlist(){
+  const lv=document.getElementById('set-listview'); if(!lv) return;
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your watchlist.<span>Your watchlist is saved to your account.</span></div>'; return; }
+  if(watchSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔖</div>Nothing on your watchlist yet.<span>Tap “Watchlist” on any movie card to save it for later.</span></div>'; return; }
+  lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading watchlist…</div>';
+  try{
+    const films=await fetchMoviesByIds([...watchSet]);
+    films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
+    if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateWatchCount(); return; }
+    lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' to watch.</div>'+renderMovieList(films,'watchlist');
   }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
 }
 
@@ -1026,10 +1140,10 @@ function applyAuthState(session){
   updateAccountUI();
   updateAuthPill();
   if(currentUser){
-    loadSeen(); loadNotInterested();
+    loadSeen(); loadNotInterested(); loadFavorites(); loadWatchlist();
   } else {
-    seenSet=new Set(); seenCount=0; niSet=new Set();
-    updateSeenCount(); updateNiCount();
+    seenSet=new Set(); seenCount=0; niSet=new Set(); favSet=new Set(); watchSet=new Set();
+    updateSeenCount(); updateNiCount(); updateFavCount(); updateWatchCount();
   }
   // If a fresh sign-in changed the displayed results' Seen/Hidden state, refresh counts in Settings.
   if(typeof refreshSettings==='function' && document.getElementById('set-overlay') && document.getElementById('set-overlay').classList.contains('open')) refreshSettings();
@@ -1217,6 +1331,8 @@ function refreshSettings(){
   updateAccountUI();
   const sc=document.getElementById('set-seen-count'); if(sc) sc.textContent=seenSet.size;
   const hc=document.getElementById('set-hidden-count'); if(hc) hc.textContent=niSet.size;
+  const fc=document.getElementById('set-fav-count'); if(fc) fc.textContent=favSet.size;
+  const wc=document.getElementById('set-watch-count'); if(wc) wc.textContent=watchSet.size;
   const dm=document.getElementById('set-db-meta'); if(dm) dm.textContent = sbKey ? (totalFilms!=null? totalFilms+' films' : 'Connected') : 'Offline';
   let count=0; try{ count=Object.keys(JSON.parse(localStorage.getItem('cinelog_exposure')||'{}')).length; }catch(e){}
   const cm=document.getElementById('set-cache-meta'); if(cm) cm.textContent = count? count+' tracked' : 'Empty';
@@ -1227,12 +1343,16 @@ function openList(which){
   const menu=document.getElementById('set-menu'), lv=document.getElementById('set-listview'),
         back=document.getElementById('set-back'), title=document.getElementById('set-title'),
         ov=document.getElementById('set-overlay');
-  if(title) title.textContent = which==='seen' ? 'Seen Movies' : 'Hidden Movies';
+  const titles={seen:'Seen Movies',hidden:'Hidden Movies',favorites:'Favorites',watchlist:'Watchlist'};
+  if(title) title.textContent = titles[which] || 'Movies';
   if(back) back.removeAttribute('hidden');
   if(menu) menu.hidden=true;
   if(lv) lv.hidden=false;
   if(ov) ov.scrollTop=0;
-  if(which==='seen') showSeen(); else showNotInterested();
+  if(which==='seen') showSeen();
+  else if(which==='hidden') showNotInterested();
+  else if(which==='favorites') showFavorites();
+  else if(which==='watchlist') showWatchlist();
 }
 function backToMenu(){
   const menu=document.getElementById('set-menu'), lv=document.getElementById('set-listview'),
@@ -1282,7 +1402,7 @@ function renderCard(m, i, streamingActive){
   const availHtml=badges.length
     ? '<div class="avail">'+badges.map(a=>'<span class="av" style="--svc:'+a.svc.color+'"><span class="dot"></span>'+a.svc.label+'<span class="tier '+(a.free?'free':'paid')+'">'+(a.free?'Free':(a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'$'))+'</span></span>').join('')+'</div>'
     : '';
-  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span><button class="seen-btn'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(m._imdb!=null?'<span class="rp rimdb">IMDb '+m.imdb_rating+'</span>':'')+(m._rt!=null?'<span class="rp rrt">RT '+m.rotten_tomatoes_score+'%</span>':'')+(m._meta!=null?'<span class="rp rmeta">Meta '+m.metascore+'</span>':'')+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-foot"><button class="ni-btn'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
+  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(m._imdb!=null?'<span class="rp rimdb">IMDb '+m.imdb_rating+'</span>':'')+(m._rt!=null?'<span class="rp rrt">RT '+m.rotten_tomatoes_score+'%</span>':'')+(m._meta!=null?'<span class="rp rmeta">Meta '+m.metascore+'</span>':'')+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-acts">'+'<button class="card-act act-seen'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button>'+'<button class="card-act act-fav'+(isFavorite(m)?' marked':'')+'" onclick="onFavClick(this,\''+m.imdb_id+'\')">'+(isFavorite(m)?'♥ Favorited':'♡ Favorite')+'</button>'+'<button class="card-act act-watch'+(isWatchlisted(m)?' marked':'')+'" onclick="onWatchClick(this,\''+m.imdb_id+'\')">'+(isWatchlisted(m)?'✓ Watchlist':'+ Watchlist')+'</button>'+'<button class="card-act act-hide'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
 }
 
 async function getRandom(){
