@@ -291,6 +291,10 @@
   .set-meta{color:var(--text2);font-size:13px;font-variant-numeric:tabular-nums}
   .set-chev{color:var(--text3);font-size:18px;line-height:1;margin-left:2px}
   .set-row.soon{opacity:.5}
+  .acct-label{flex:1;line-height:1.25}
+  .acct-sub{display:block;font-size:11.5px;color:var(--text3);font-weight:400;margin-top:2px}
+  .acct-btn{margin-left:auto;font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:99px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;font-family:var(--sans);white-space:nowrap}
+  .acct-btn:hover{background:var(--bg4);color:var(--text)}
   .set-soon{font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--text3);background:var(--bg4);border:1px solid var(--border2);border-radius:var(--rpill);padding:3px 9px;white-space:nowrap}
   .set-detail{padding:0 15px 13px;font-size:12.5px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border2);background:rgba(0,0,0,.15)}
   .set-detail b{color:var(--text)}
@@ -413,6 +417,7 @@
   /* Service-pill grid: refine the existing breakpoint so the 2-col stack is
      bigger on phones (was 520; we want it for the whole mobile range). */
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="wrap">
@@ -482,7 +487,7 @@
       </div>
       <div class="field adv-card" style="margin-bottom:0">
         <div class="adv-head">
-          <div class="field-lbl slider-lbl">How Adventurous Tonight?</div>
+          <div class="field-lbl slider-lbl">How Adventurous?</div>
           <span class="adv-badge band-2" id="adv-badge">Balanced</span>
         </div>
         <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
@@ -533,6 +538,11 @@
       </div>
 
       <div id="set-menu">
+      <div class="set-group">
+        <div class="set-group-lbl">Account</div>
+        <div class="set-list" id="set-account"><!-- filled by updateAccountUI() --></div>
+      </div>
+
       <div class="set-group">
         <div class="set-group-lbl">Movies</div>
         <div class="set-list">
@@ -604,6 +614,16 @@ const POOL_LIMIT=CANDIDATE_LIMIT;   // ranking math operates over the full candi
 // everyone with no setup. The anon key is SAFE to expose publicly as long as Row
 // Level Security is enabled on your table. Leave '' to keep the manual paste flow.
 const BAKED_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtaG12dnNieG9mb3FyaWVrZnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MzQxODMsImV4cCI6MjA5NTUxMDE4M30.py2dCqGmEzHhwAUk2mIPas_cKBk7LpYfNL4BpCUmKrk';
+// ===== Accounts (Supabase Auth, Google) =====
+// Per-user seen/hidden live in the `user_movies` table, scoped by RLS to auth.uid().
+// The catalog (movies) stays public-read via the anon key; only personal lists need login.
+// sbAuth is the SDK client that carries the logged-in user's JWT to user_movies writes.
+let currentUser = null;   // Supabase user object when signed in, else null
+const sbAuth = (window.supabase && window.supabase.createClient)
+  ? window.supabase.createClient(SUPABASE_URL, BAKED_SB_KEY, {
+      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    })
+  : null;
 const GROUPS={
   genre:{items:['Action','Adventure','Animation','Biography','Comedy','Crime','Drama','Family','Fantasy','History','Horror','Music','Mystery','Romance','Sci-Fi','Sport','Thriller','War','Western','Kid-Friendly'],cls:'on-amber'},
   length:{items:['Under 90 min','90–120 min','120–150 min','Over 150 min'],cls:'on-amber'},
@@ -741,42 +761,37 @@ function setMode(m){
 }
 
 async function loadSeen(){
-  // Pull the imdb_ids of all films currently marked seen=true
+  // Per-user seen list from user_movies (RLS scopes rows to the logged-in account).
+  if(!currentUser || !sbAuth){ seenSet=new Set(); seenCount=0; updateSeenCount(); return; }
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=imdb_id&seen=eq.true',{headers:sbHeaders()});
-    if(!r.ok) return;
-    const rows=await r.json();
-    seenSet=new Set(rows.map(x=>x.imdb_id));
+    const { data, error } = await sbAuth.from('user_movies').select('imdb_id').eq('seen', true);
+    if(error) return;
+    seenSet=new Set(data.map(x=>x.imdb_id));
     seenCount=seenSet.size;
     updateSeenCount();
   }catch(e){/* non-fatal: seen just won't be pre-loaded */}
 }
 
 async function markSeen(imdbId, isSeenVal){
+  if(!currentUser || !sbAuth){ toast('Sign in to track films you\u2019ve seen.'); return false; }
   // Optimistic UI: update local set immediately, then persist.
   const had = seenSet.has(imdbId);
   if(isSeenVal){seenSet.add(imdbId);} else {seenSet.delete(imdbId);}
   seenCount=seenSet.size;
   updateSeenCount();
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?imdb_id=eq.'+encodeURIComponent(imdbId),{
-      method:'PATCH',
-      headers:{
-        'apikey':sbKey,
-        'Authorization':'Bearer '+sbKey,
-        'Content-Type':'application/json',
-        'Prefer':'return=minimal'
-      },
-      body:JSON.stringify({seen:isSeenVal})
-    });
-    if(!r.ok) throw new Error('HTTP '+r.status);   // 401/403 = RLS blocking the write
+    const { error } = await sbAuth.from('user_movies').upsert(
+      { user_id:currentUser.id, imdb_id:imdbId, seen:isSeenVal, updated_at:new Date().toISOString() },
+      { onConflict:'user_id,imdb_id' }
+    );
+    if(error) throw error;
     return true;
   }catch(e){
     // Roll back so the UI matches what's actually in the database.
     if(had){seenSet.add(imdbId);} else {seenSet.delete(imdbId);}
     seenCount=seenSet.size;
     updateSeenCount();
-    toast('Couldn\u2019t save \u201cseen\u201d to Supabase ('+(e.message||e)+'). Add an update policy on the movies table.','error');
+    toast('Couldn\u2019t save \u201cseen\u201d ('+(e.message||e)+').','error');
     return false;
   }
 }
@@ -790,6 +805,7 @@ function updateSeenCount(){
 
 // Called from each result card's Seen button.
 async function onSeenClick(btn, imdbId){
+  if(!currentUser){ toast('Sign in to save your Seen list.'); openSettings(); return; }
   const nowSeen=!seenSet.has(imdbId);
   btn.classList.toggle('marked', nowSeen);
   btn.textContent = nowSeen ? '✓ Seen' : '+ Seen';
@@ -807,31 +823,31 @@ async function onSeenClick(btn, imdbId){
 let niSet = new Set();   // imdb_ids the user isn't interested in
 
 async function loadNotInterested(){
+  if(!currentUser || !sbAuth){ niSet=new Set(); updateNiCount(); return; }
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=imdb_id&not_interested=eq.true',{headers:sbHeaders()});
-    if(!r.ok) return;   // column may not exist yet — non-fatal, feature just stays empty
-    const rows=await r.json();
-    niSet=new Set(rows.map(x=>x.imdb_id));
+    const { data, error } = await sbAuth.from('user_movies').select('imdb_id').eq('not_interested', true);
+    if(error) return;
+    niSet=new Set(data.map(x=>x.imdb_id));
     updateNiCount();
   }catch(e){/* non-fatal */}
 }
 
 async function markNotInterested(imdbId, val){
+  if(!currentUser || !sbAuth){ toast('Sign in to hide films from your picks.'); return false; }
   const had = niSet.has(imdbId);
   if(val){niSet.add(imdbId);} else {niSet.delete(imdbId);}
   updateNiCount();
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?imdb_id=eq.'+encodeURIComponent(imdbId),{
-      method:'PATCH',
-      headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({not_interested:val})
-    });
-    if(!r.ok) throw new Error('HTTP '+r.status);   // 401/403 = RLS blocking the write
+    const { error } = await sbAuth.from('user_movies').upsert(
+      { user_id:currentUser.id, imdb_id:imdbId, not_interested:val, updated_at:new Date().toISOString() },
+      { onConflict:'user_id,imdb_id' }
+    );
+    if(error) throw error;
     return true;
   }catch(e){
     if(had){niSet.add(imdbId);} else {niSet.delete(imdbId);}
     updateNiCount();
-    toast('Couldn\u2019t save \u201cnot interested\u201d to Supabase ('+(e.message||e)+'). Add an update policy on the movies table.','error');
+    toast('Couldn\u2019t save \u201cnot interested\u201d ('+(e.message||e)+').','error');
     return false;
   }
 }
@@ -842,6 +858,7 @@ function updateNiCount(){ const el=document.getElementById('ni-count'); if(el) e
 
 // Card button: toggle, and dim the card in place so it's clearly hidden but undoable.
 async function onNiClick(btn, imdbId){
+  if(!currentUser){ toast('Sign in to hide films from your picks.'); openSettings(); return; }
   const now=!niSet.has(imdbId);
   btn.classList.toggle('marked', now);
   btn.textContent = now ? '✓ Hidden' : '- Hide';
@@ -879,32 +896,42 @@ function renderMovieList(films, kind){
 
 async function showNotInterested(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!sbKey){ lv.innerHTML='<div class="mlist-empty">Still connecting — try again in a moment.</div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your hidden list.<span>Your hidden films are saved to your account.</span></div>'; return; }
   if(niSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🚫</div>No hidden movies yet.<span>Tap “Hide” on any movie card to keep it out of your recommendations.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading hidden movies…</div>';
   try{
-    const cols='imdb_id,title,year,director,runtime_minutes';
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+cols+'&not_interested=eq.true&order=title.asc',{headers:sbHeaders()});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const films=await r.json();
+    const films=await fetchMoviesByIds([...niSet]);
+    films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
     if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateNiCount(); return; }
     lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' kept out of recommendations. Bring one back and it becomes eligible again — as unseen.</div>'+renderMovieList(films,'hidden');
-  }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').<span>Make sure the <code>not_interested</code> column exists in Supabase.</span></div>'; }
+  }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
 }
 
 async function showSeen(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!sbKey){ lv.innerHTML='<div class="mlist-empty">Still connecting — try again in a moment.</div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your list.<span>Your Seen films are saved to your account.</span></div>'; return; }
   if(seenSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">✓</div>No films marked seen yet.<span>Tap “+ Seen” on any movie card to track what you’ve watched.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading films you’ve seen…</div>';
   try{
-    const cols='imdb_id,title,year,director,runtime_minutes';
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+cols+'&seen=eq.true&order=title.asc',{headers:sbHeaders()});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const films=await r.json();
+    const films=await fetchMoviesByIds([...seenSet]);
+    films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
     if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateSeenCount(); return; }
     lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' marked seen. Mark one unseen to let it return to Fresh Picks.</div>'+renderMovieList(films,'seen');
   }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
+}
+
+// Look up full movie rows (for the Seen/Hidden lists) from the public catalog by imdb_id.
+async function fetchMoviesByIds(ids){
+  if(!ids || !ids.length) return [];
+  const cols='imdb_id,title,year,director,runtime_minutes';
+  const out=[];
+  for(let i=0;i<ids.length;i+=100){
+    const chunk=ids.slice(i,i+100);
+    const inList='('+chunk.join(',')+')';
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+cols+'&imdb_id=in.'+encodeURIComponent(inList),{headers:sbHeaders()});
+    if(r.ok){ out.push(...await r.json()); }
+  }
+  return out;
 }
 
 // From the Films-seen list: un-mark a film as seen → it returns to the unseen pool.
@@ -918,22 +945,22 @@ async function toggleSeenOff(imdbId){
 // Restore a film fully to the catalog: clear BOTH not_interested AND seen in one write,
 // so a brought-back film returns as "not seen" and is eligible for Fresh Picks again.
 async function restoreToCatalog(imdbId){
+  if(!currentUser || !sbAuth){ return false; }
   const hadNi = niSet.has(imdbId), hadSeen = seenSet.has(imdbId);
   niSet.delete(imdbId); seenSet.delete(imdbId);
   seenCount=seenSet.size; updateNiCount(); updateSeenCount();
   try{
-    const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?imdb_id=eq.'+encodeURIComponent(imdbId),{
-      method:'PATCH',
-      headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({not_interested:false, seen:false})
-    });
-    if(!r.ok) throw new Error('HTTP '+r.status);
+    const { error } = await sbAuth.from('user_movies').upsert(
+      { user_id:currentUser.id, imdb_id:imdbId, seen:false, not_interested:false, updated_at:new Date().toISOString() },
+      { onConflict:'user_id,imdb_id' }
+    );
+    if(error) throw error;
     return true;
   }catch(e){
     if(hadNi) niSet.add(imdbId);
     if(hadSeen) seenSet.add(imdbId);
     seenCount=seenSet.size; updateNiCount(); updateSeenCount();
-    toast('Couldn\u2019t restore in Supabase ('+(e.message||e)+').','error');
+    toast('Couldn\u2019t restore ('+(e.message||e)+').','error');
     return false;
   }
 }
@@ -960,6 +987,60 @@ function toast(msg, kind){
   t.style.opacity='1';
   clearTimeout(t._h);
   t._h=setTimeout(()=>{ t.style.opacity='0'; }, kind==='error'?6000:2400);
+}
+
+// ============================================================
+// ACCOUNTS — Google sign-in via Supabase Auth
+// ============================================================
+async function initAuth(){
+  if(!sbAuth){ updateAccountUI(); return; }
+  try{
+    const { data:{ session } } = await sbAuth.auth.getSession();
+    applyAuthState(session);
+    sbAuth.auth.onAuthStateChange((_evt, session)=>applyAuthState(session));
+  }catch(e){ updateAccountUI(); }
+}
+// Single source of truth for "who's logged in" — refreshes UI and (re)loads their lists.
+function applyAuthState(session){
+  const prev = currentUser && currentUser.id;
+  currentUser = (session && session.user) ? session.user : null;
+  updateAccountUI();
+  if(currentUser){
+    loadSeen(); loadNotInterested();
+  } else {
+    seenSet=new Set(); seenCount=0; niSet=new Set();
+    updateSeenCount(); updateNiCount();
+  }
+  // If a fresh sign-in changed the displayed results' Seen/Hidden state, refresh counts in Settings.
+  if(typeof refreshSettings==='function' && document.getElementById('set-overlay') && document.getElementById('set-overlay').classList.contains('open')) refreshSettings();
+}
+async function signInGoogle(){
+  if(!sbAuth){ toast('Sign-in isn\u2019t ready — reload the page.','error'); return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sbAuth.auth.signInWithOAuth({ provider:'google', options:{ redirectTo } });
+  if(error) toast('Sign-in failed: '+(error.message||error),'error');
+}
+async function signOut(){
+  if(!sbAuth) return;
+  try{ await sbAuth.auth.signOut(); }catch(e){}
+  toast('Signed out.');
+}
+// Render the Account row in Settings based on login state.
+function updateAccountUI(){
+  const box=document.getElementById('set-account'); if(!box) return;
+  if(currentUser){
+    const email=esc(currentUser.email||'Signed in');
+    const meta=currentUser.user_metadata||{};
+    const name=esc(meta.full_name||meta.name||email);
+    box.innerHTML='<div class="set-row acct-row"><span class="set-ico">👤</span>'
+      +'<span class="set-label acct-label">'+name+'<span class="acct-sub">'+email+'</span></span>'
+      +'<button class="acct-btn" onclick="signOut()">Sign out</button></div>';
+  } else {
+    box.innerHTML='<button class="set-row tappable acct-row" onclick="signInGoogle()">'
+      +'<span class="set-ico">🔑</span><span class="set-label acct-label">Sign in with Google'
+      +'<span class="acct-sub">Save your Seen &amp; Hidden lists to your account</span></span>'
+      +'<span class="set-chev">›</span></button>';
+  }
 }
 
 
@@ -1029,10 +1110,11 @@ function setRatingMode(mode){
   const out=document.getElementById('output');
   if(out && out.querySelector('.card') && viewMode!=='random' && typeof getRecs==='function') getRecs();
 }
-async function saveSbKey(){const v=document.getElementById('sb-input').value.trim();if(v.length<20){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ That key looks too short.</span>';return;}sbKey=v;document.getElementById('sb-status').innerHTML='<span style="color:var(--text2)"><span class="spin"></span>Testing…</span>';try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=*',{method:'HEAD',headers:sbHeaders('exact')});if(!r.ok)throw new Error('HTTP '+r.status+(r.status===401?' — key rejected':''));const cr=r.headers.get('content-range');totalFilms=cr?parseInt(cr.split('/')[1],10):null;document.getElementById('s-total').textContent=totalFilms??'✓';document.getElementById('sb-status').innerHTML='<span style="color:#4ade80">✓ Connected — '+(totalFilms!=null?totalFilms+' films.':'reachable.')+'</span>';updatePoolCount();updateConnSummary();loadSeen();loadNotInterested();}catch(e){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ '+e.message+'</span>';}}
+async function saveSbKey(){const v=document.getElementById('sb-input').value.trim();if(v.length<20){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ That key looks too short.</span>';return;}sbKey=v;document.getElementById('sb-status').innerHTML='<span style="color:var(--text2)"><span class="spin"></span>Testing…</span>';try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=*',{method:'HEAD',headers:sbHeaders('exact')});if(!r.ok)throw new Error('HTTP '+r.status+(r.status===401?' — key rejected':''));const cr=r.headers.get('content-range');totalFilms=cr?parseInt(cr.split('/')[1],10):null;document.getElementById('s-total').textContent=totalFilms??'✓';document.getElementById('sb-status').innerHTML='<span style="color:#4ade80">✓ Connected — '+(totalFilms!=null?totalFilms+' films.':'reachable.')+'</span>';updatePoolCount();updateConnSummary();}catch(e){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ '+e.message+'</span>';}}
 function updateConnSummary(){const el=document.getElementById('conn-summary');if(sbKey){el.innerHTML='<b>✓ Connected</b> · '+(totalFilms!=null?totalFilms+' films ready':'catalog ready');}else{el.textContent='Not connected · add your Supabase anon key above';}}
 // Auto-connect on load if a key is baked in (makes the site work with zero setup).
 (function(){if(BAKED_SB_KEY){const inp=document.getElementById('sb-input');if(inp)inp.value=BAKED_SB_KEY;saveSbKey();}else{document.getElementById('conn-summary').textContent='Not connected — please reload the page.';}})();
+initAuth();   // check for an existing Google session and wire auth-state changes
 function sbHeaders(count){const h={'apikey':sbKey,'Authorization':'Bearer '+sbKey};if(count)h['Prefer']='count='+count;return h;}
 function togglePill(btn,group,item,cls){
   // Kid-Friendly is a special pill that lives in the genre row but filters by mpaa_rating,
@@ -1094,6 +1176,7 @@ function closeSettings(){
   backToMenu();   // reset to the menu screen for next open
 }
 function refreshSettings(){
+  updateAccountUI();
   const sc=document.getElementById('set-seen-count'); if(sc) sc.textContent=seenSet.size;
   const hc=document.getElementById('set-hidden-count'); if(hc) hc.textContent=niSet.size;
   const dm=document.getElementById('set-db-meta'); if(dm) dm.textContent = sbKey ? (totalFilms!=null? totalFilms+' films' : 'Connected') : 'Offline';
