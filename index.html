@@ -384,6 +384,10 @@
     .rt-txt{flex-direction:column;gap:3px}
     .rt-emo{font-size:18px}
     .rt-lbl{line-height:1.18;text-align:center}
+    /* Cost control: stack icon above the label on mobile, matching the rating control */
+    #cost-seg .cost-opt{flex-direction:column;gap:3px;padding:10px 6px}
+    #cost-seg .cost-ico{font-size:18px}
+    #cost-seg .cost-txt{text-align:center;line-height:1.18}
     .go-btn{padding:18px;font-size:17px;min-height:56px}
     /* Sliders: thicker hit area for fingers + signature-control mobile tuning */
     .adv-slider{height:50px}
@@ -496,7 +500,7 @@
         <div class="cost-seg" id="rating-seg">
           <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
           <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
-          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🎬</span><span class="rt-lbl">Critics Choice</span></span></div>
+          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
         </div>
         <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
       </div>
