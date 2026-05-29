@@ -1291,7 +1291,7 @@ async function getRandom(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='<div class="status"><span class="spin"></span>Shuffling the catalog…</div>';
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen,franchise';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     const streamingActive = freeOnly && selServices.size>0;
     // Fetch a generous matching pool — large enough that low-rated indies can also be drawn.
     const RANDOM_FETCH_LIMIT = 1500;
@@ -1337,7 +1337,7 @@ async function getRecs(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='<div class="status"><span class="spin"></span>Searching the catalog…</div>';
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen,franchise';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
     // Pull a wider net when streaming filtering is active, since some films get dropped client-side.
