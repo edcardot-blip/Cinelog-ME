@@ -202,6 +202,11 @@
   .cost-opt.on .cost-ico{opacity:1}
   .cost-txt{font-size:13px;font-weight:600;color:var(--text2);transition:color .15s;line-height:1.25}
   .cost-opt.on .cost-txt{color:#7fe3d8}
+  /* Rating segmented control: emoji + label side-by-side on desktop, stacked on mobile */
+  .rt-txt{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .rt-emo{line-height:1;font-size:15px}
+  /* Keep all three preference toggles visually even: center the cost options (which carry icons) like the others */
+  #cost-seg .cost-opt{justify-content:center;align-items:center;gap:7px}
   .cost-sub{display:block;font-size:11px;font-weight:400;color:var(--text3);margin-top:2px}
 
   /* availability badges on result cards */
@@ -243,6 +248,7 @@
   .adv-card::after{content:'';position:absolute;left:50%;bottom:-40%;width:70%;height:80%;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(232,176,75,.10),transparent 70%);pointer-events:none}
   .adv-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:.9rem;position:relative;z-index:1}
   .adv-head .slider-lbl{margin:0}
+  #rec-mode-field{margin-top:1.3rem}
   .adv-badge{font-size:13px;font-weight:600;letter-spacing:.01em;padding:5px 13px;border-radius:var(--rpill);white-space:nowrap;background:var(--bg4);color:var(--text);border:1px solid var(--border2);transition:background .25s,color .25s,border-color .25s}
   .adv-badge.band-0{background:rgba(15,110,86,.20);color:#5fd1ab;border-color:rgba(29,158,117,.5)}
   .adv-badge.band-1{background:var(--teal-dim);color:#74e2d6;border-color:rgba(59,180,168,.45)}
@@ -269,6 +275,10 @@
   .sec-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto}
   .prefs-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:var(--rpill);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:border-color .15s,background .15s}
   .prefs-btn:hover{border-color:var(--accent);background:var(--bg4)}
+  .auth-pill{display:inline-flex;align-items:center;gap:5px;margin-left:auto;padding:3px 11px;border-radius:var(--rpill);font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:var(--sans);background:var(--bg3);border:1px solid var(--border2);color:var(--text);transition:border-color .15s,background .15s}
+  .auth-pill:hover{border-color:var(--accent);background:var(--bg4)}
+  .auth-pill.in{background:var(--teal-dim);color:var(--teal);border-color:transparent}
+  .auth-pill.in:hover{background:var(--teal-dim);border-color:var(--teal)}
   .prefs-ico{font-size:13px;line-height:1}
 
   /* ===== Settings overlay ===== */
@@ -369,6 +379,11 @@
     .field-lbl .clr{padding:6px 8px;font-size:12px}
     .field-lbl .clr + .clr{margin-left:8px}
     .cost-opt{min-height:56px;padding:12px}
+    /* Rating control: stack emoji above the label so 2-word labels stop crowding */
+    #rating-seg .cost-opt{padding:10px 6px}
+    .rt-txt{flex-direction:column;gap:3px}
+    .rt-emo{font-size:18px}
+    .rt-lbl{line-height:1.18;text-align:center}
     .go-btn{padding:18px;font-size:17px;min-height:56px}
     /* Sliders: thicker hit area for fingers + signature-control mobile tuning */
     .adv-slider{height:50px}
@@ -383,7 +398,7 @@
     /* Result cards: stack poster above body so neither gets squeezed */
     .card{flex-direction:column;padding:1rem;gap:14px}
     /* Mobile-only breathing room between the slider note above and Recommendation Mode */
-    #rec-mode-field{margin-top:1.4rem}
+    #rec-mode-field{margin-top:2rem}
     /* Poster shrunk ~20% on mobile so cards aren't as tall */
     .poster{width:auto;max-width:200px;height:auto;max-height:272px;object-fit:contain;border-radius:var(--rsm);align-self:center}
     /* Rank floats to top-left of card, mirroring the seen button at top-right */
@@ -432,7 +447,7 @@
     <div class="section-head">
       <span class="section-title">Fast filters</span>
       <div class="sec-head-right">
-        <span class="section-tag tag-db">Database</span>
+        <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
         <button class="prefs-btn" id="prefs-btn" onclick="openSettings()" aria-label="Preferences">
           <span class="prefs-ico">⚙</span><span class="prefs-txt">Preferences</span>
         </button>
@@ -456,7 +471,7 @@
         <div class="field-lbl">Preferences</div>
         <div class="cost-seg">
           <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
-          <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English only</span></div>
+          <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
         </div>
         <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
       </div>
@@ -464,11 +479,11 @@
         <div class="cost-seg" id="cost-seg">
           <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
             <span class="cost-ico">🎬</span>
-            <span class="cost-txt">Any way to watch<span class="cost-sub">Stream, rent, or buy</span></span>
+            <span class="cost-txt">Stream, Rent, or Buy</span>
           </div>
           <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
-            <span class="cost-ico">✓</span>
-            <span class="cost-txt">Free to me<span class="cost-sub">Included in my subscriptions</span></span>
+            <span class="cost-ico">📺</span>
+            <span class="cost-txt">My Subscriptions</span>
           </div>
         </div>
         <div class="svc-picker" id="svc-picker">
@@ -479,9 +494,9 @@
       </div>
       <div class="field">
         <div class="cost-seg" id="rating-seg">
-          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt">🍿 Audience Pick</span></div>
-          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt">⚖️ Balanced</span></div>
-          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt">🎬 Critics Choice</span></div>
+          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
+          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
+          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🎬</span><span class="rt-lbl">Critics Choice</span></span></div>
         </div>
         <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
       </div>
@@ -1005,6 +1020,7 @@ function applyAuthState(session){
   const prev = currentUser && currentUser.id;
   currentUser = (session && session.user) ? session.user : null;
   updateAccountUI();
+  updateAuthPill();
   if(currentUser){
     loadSeen(); loadNotInterested();
   } else {
@@ -1024,6 +1040,23 @@ async function signOut(){
   if(!sbAuth) return;
   try{ await sbAuth.auth.signOut(); }catch(e){}
   toast('Signed out.');
+}
+// Top-bar pill: reflects login state; tap to sign in (out) or open account.
+function onAuthPill(){ if(currentUser){ openSettings(); } else { signInGoogle(); } }
+function updateAuthPill(){
+  const el=document.getElementById('auth-pill'); if(!el) return;
+  if(currentUser){
+    const meta=currentUser.user_metadata||{};
+    const full=meta.full_name||meta.name||currentUser.email||'Account';
+    const first=esc(String(full).split(' ')[0]);
+    el.className='auth-pill in';
+    el.innerHTML='<span>👤</span>'+first;
+    el.setAttribute('aria-label','Account: '+esc(full));
+  } else {
+    el.className='auth-pill';
+    el.innerHTML='<span>🔑</span>Sign in';
+    el.setAttribute('aria-label','Sign in with Google');
+  }
 }
 // Render the Account row in Settings based on login state.
 function updateAccountUI(){
@@ -1115,6 +1148,7 @@ function updateConnSummary(){const el=document.getElementById('conn-summary');if
 // Auto-connect on load if a key is baked in (makes the site work with zero setup).
 (function(){if(BAKED_SB_KEY){const inp=document.getElementById('sb-input');if(inp)inp.value=BAKED_SB_KEY;saveSbKey();}else{document.getElementById('conn-summary').textContent='Not connected — please reload the page.';}})();
 initAuth();   // check for an existing Google session and wire auth-state changes
+updateAuthPill();
 function sbHeaders(count){const h={'apikey':sbKey,'Authorization':'Bearer '+sbKey};if(count)h['Prefer']='count='+count;return h;}
 function togglePill(btn,group,item,cls){
   // Kid-Friendly is a special pill that lives in the genre row but filters by mpaa_rating,
@@ -1330,7 +1364,7 @@ async function getRecs(){
       pool=pool.filter(passesStreaming).slice(0,POOL_LIMIT);
       if(!pool.length){
         const svcNames=[...selServices].map(k=>SERVICES.find(s=>s.key===k).label).join(', ');
-        out.innerHTML='<div class="status">No films matching your filters are free to stream on '+svcNames+'.<br><small style="display:block;margin-top:6px;color:var(--text3)">Try adding more services, loosening other filters, or switching to "Any way to watch."</small></div>';
+        out.innerHTML='<div class="status">No films matching your filters are free to stream on '+svcNames+'.<br><small style="display:block;margin-top:6px;color:var(--text3)">Try adding more services, loosening other filters, or switching to "Stream, Rent, or Buy."</small></div>';
         document.getElementById('go-btn').disabled=false;return;
       }
     }else{
