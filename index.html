@@ -26,10 +26,11 @@
 
   /* ===== Section scaffolding ===== */
   .section{margin-bottom:1.5rem}
-  .section-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:1rem;padding:0 2px}
+  .section-head{display:grid;grid-template-columns:1fr auto;grid-template-areas:"title title" "note bubbles";column-gap:12px;row-gap:.3rem;align-items:center;margin-bottom:1rem;padding:0 2px}
+  .section-head .section-note{grid-area:note;margin:0;padding-left:0;align-self:center}
   .section-num{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--bg);background:var(--accent);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
   .section-num.ai{background:var(--teal)}
-  .section-title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .section-title{grid-area:title;justify-self:start;font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
   .section-tag{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:var(--rpill);margin-left:auto}
   .tag-db{background:var(--teal-dim);color:var(--teal)}
   .tag-ai{background:var(--accent-dim);color:var(--accent2)}
@@ -139,10 +140,10 @@
   #output{margin-top:1.5rem}
   .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.4rem;margin-bottom:.9rem;display:flex;gap:17px;transition:border-color .15s,transform .15s;position:relative}
   .card:hover{border-color:var(--border2);transform:translateY(-1px)}
-  .rank{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--text3);width:34px;flex-shrink:0;line-height:1.1}
+  .rank{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--text3);line-height:1.1;position:absolute;top:16px;right:18px;z-index:2}
   .poster{width:120px;height:180px;flex-shrink:0;border-radius:var(--rsm);object-fit:contain}
   .body{flex:1;min-width:0}
-  .title-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:4px}
+  .title-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:4px;padding-right:34px}
   .title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
   .mpaa-badge{font-size:10.5px;font-weight:700;padding:1px 6px;border:1.5px solid var(--text3);color:var(--text);background:var(--bg3);border-radius:3px;letter-spacing:.04em;font-family:var(--sans);vertical-align:1px;display:inline-block}
   .title-row .seen-btn{margin-left:auto;flex-shrink:0}
@@ -284,7 +285,8 @@
   .adv-help{margin:.8rem 0 0;font-size:12.5px;font-style:italic;color:var(--text2);text-align:center;min-height:1.15em;line-height:1.4;position:relative;z-index:1}
 
   /* ===== Top bar: DB status pill + Preferences ===== */
-  .sec-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto}
+  .sec-head-right{grid-area:bubbles;justify-self:end;display:flex;flex-direction:row;align-items:center;gap:8px}
+  .section-head .auth-pill,.section-head .prefs-btn{margin-left:0;padding:6px 13px;font-size:12px;min-width:108px;justify-content:center;box-sizing:border-box}
   .prefs-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:var(--rpill);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:border-color .15s,background .15s}
   .prefs-btn:hover{border-color:var(--accent);background:var(--bg4)}
   .auth-pill{display:inline-flex;align-items:center;gap:5px;margin-left:auto;padding:3px 11px;border-radius:var(--rpill);font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;font-family:var(--sans);background:var(--bg3);border:1px solid var(--border2);color:var(--text);transition:border-color .15s,background .15s}
@@ -385,6 +387,10 @@
     .hero{margin-bottom:1.6rem}
     .section{margin-bottom:1.1rem}
     .section-note{padding-left:0}
+    /* Header stacks; bubbles drop to a full-width equal-size row */
+    .section-head{grid-template-columns:1fr;grid-template-areas:"title" "note" "bubbles";row-gap:.5rem}
+    .section-head .sec-head-right{justify-self:stretch;width:100%}
+    .section-head .auth-pill,.section-head .prefs-btn{min-width:0;flex:1;padding:9px 8px}
     /* Pills, chips, service pills, dev toggle: 44px+ tap targets */
     .pill,.svc-pill{min-height:44px;padding-top:11px;padding-bottom:11px;font-size:13.5px}
     /* "all" / "clear" buttons: give them real tap area on phones */
@@ -411,14 +417,16 @@
     .adv-tick .adv-tlabel{display:none}
     .adv-tick .adv-ic{font-size:19px}
     .adv-help{font-size:13px;margin-top:.7rem}
-    /* Result cards: stack poster above body so neither gets squeezed */
-    .card{flex-direction:column;padding:1rem;gap:14px}
+    /* Result cards (mobile = poster-left layout): small poster, info beside it, toggles full-width below */
+    .card{flex-direction:row;align-items:flex-start;padding:1rem;gap:14px}
     /* Mobile-only breathing room between the slider note above and Recommendation Mode */
     #rec-mode-field{margin-top:2rem}
-    /* Poster shrunk ~20% on mobile so cards aren't as tall */
-    .poster{width:auto;max-width:200px;height:auto;max-height:272px;object-fit:contain;border-radius:var(--rsm);align-self:center}
-    /* Rank floats to top-left of card, mirroring the seen button at top-right */
-    .rank{position:absolute;top:14px;left:14px;font-size:20px;width:auto;line-height:1;z-index:2}
+    .poster{width:104px;height:156px;max-width:104px;max-height:156px;flex-shrink:0;object-fit:contain;border-radius:var(--rsm);align-self:flex-start}
+    /* Rank as a small badge on the poster's top-left corner */
+    .rank{position:absolute;top:14px;left:14px;right:auto;font-size:13px;font-weight:600;width:auto;line-height:1;z-index:2;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:99px}
+    .title-row{padding-right:0}
+    /* Toggles span the full card width below poster+info (offset = poster 104px + gap 14px) */
+    .card-acts{margin-left:-118px;width:calc(100% + 118px);margin-top:14px}
     /* Card toggles: bump tap height on mobile */
     .card-act{padding:12px 8px}
     /* Stats row: smaller gap and padding so it doesn't crowd narrow screens */
@@ -442,6 +450,7 @@
   @media (min-width:1025px){
     .wrap{max-width:760px}  /* keep the elegant centered layout */
     body{padding-top:3.5rem;padding-bottom:5rem}
+    .poster{width:180px;height:270px}  /* larger poster fills the wider card; rank stays as-is */
   }
 
   /* Service-pill grid: refine the existing breakpoint so the 2-col stack is
@@ -461,14 +470,17 @@
   <div class="section">
     <div class="section-head">
       <span class="section-title">Fast filters</span>
+      <p class="section-note">Instant filtering on genre, length, era, and where you can stream.</p>
       <div class="sec-head-right">
         <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
+        <button class="prefs-btn" id="lists-btn" onclick="openLists()" aria-label="Lists">
+          <span class="prefs-ico">🎞️</span><span class="prefs-txt">Lists</span>
+        </button>
         <button class="prefs-btn" id="prefs-btn" onclick="openSettings()" aria-label="Preferences">
           <span class="prefs-ico">⚙</span><span class="prefs-txt">Preferences</span>
         </button>
       </div>
     </div>
-    <p class="section-note">Instant filtering on genre, length, era, and where you can stream.</p>
     <div class="card-surface">
       <div class="field">
         <div class="field-lbl">Genre <button class="clr" onclick="clearGroup('genre')">Clear</button></div>
@@ -574,28 +586,6 @@
       </div>
 
       <div class="set-group">
-        <div class="set-group-lbl">Movies</div>
-        <div class="set-list">
-          <button class="set-row tappable" onclick="openList('seen')">
-            <span class="set-ico">✓</span><span class="set-label">Seen Movies</span>
-            <span class="set-meta" id="set-seen-count">0</span><span class="set-chev">›</span>
-          </button>
-          <button class="set-row tappable" onclick="openList('hidden')">
-            <span class="set-ico">🚫</span><span class="set-label">Hidden Movies</span>
-            <span class="set-meta" id="set-hidden-count">0</span><span class="set-chev">›</span>
-          </button>
-          <button class="set-row tappable" onclick="openList('favorites')">
-            <span class="set-ico">♥</span><span class="set-label">Favorites</span>
-            <span class="set-meta" id="set-fav-count">0</span><span class="set-chev">›</span>
-          </button>
-          <button class="set-row tappable" onclick="openList('watchlist')">
-            <span class="set-ico">🔖</span><span class="set-label">Watchlist</span>
-            <span class="set-meta" id="set-watch-count">0</span><span class="set-chev">›</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="set-group">
         <div class="set-group-lbl">Recommendations</div>
         <div class="set-list">
           <div class="set-row soon"><span class="set-ico">🎯</span><span class="set-label">Default Mode</span><span class="set-soon">Planned</span></div>
@@ -631,6 +621,30 @@
 
       <div class="set-foot">CINELOG · personal movie picker</div>
       </div><!-- /#set-menu -->
+
+      <div id="set-lists" hidden>
+      <div class="set-group">
+        <div class="set-group-lbl">Your lists</div>
+        <div class="set-list">
+          <button class="set-row tappable" onclick="openList('watchlist')">
+            <span class="set-ico">🔖</span><span class="set-label">Watchlist</span>
+            <span class="set-meta" id="set-watch-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="openList('favorites')">
+            <span class="set-ico">♥</span><span class="set-label">Favorites</span>
+            <span class="set-meta" id="set-fav-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="openList('seen')">
+            <span class="set-ico">✓</span><span class="set-label">Seen Movies</span>
+            <span class="set-meta" id="set-seen-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="openList('hidden')">
+            <span class="set-ico">🚫</span><span class="set-label">Hidden Movies</span>
+            <span class="set-meta" id="set-hidden-count">0</span><span class="set-chev">›</span>
+          </button>
+        </div>
+      </div>
+      </div><!-- /#set-lists -->
 
       <div class="set-listview" id="set-listview" hidden></div>
     </div>
@@ -1033,10 +1047,10 @@ async function showFavorites(){
   if(favSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">♥</div>No favorites yet.<span>Tap “Favorite” on any movie card to save it here.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading favorites…</div>';
   try{
-    const films=await fetchMoviesByIds([...favSet]);
+    const films=await fetchMoviesByIds([...favSet], true);
     films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
     if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateFavCount(); return; }
-    lv.innerHTML='<div class="mlist-hint">'+films.length+' favorite'+(films.length===1?'':'s')+'.</div>'+renderMovieList(films,'favorites');
+    lv.innerHTML='<div class="mlist-hint">'+films.length+' favorite'+(films.length===1?'':'s')+'.</div>'+renderSavedCards(films);
   }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
 }
 
@@ -1046,17 +1060,20 @@ async function showWatchlist(){
   if(watchSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔖</div>Nothing on your watchlist yet.<span>Tap “Watchlist” on any movie card to save it for later.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading watchlist…</div>';
   try{
-    const films=await fetchMoviesByIds([...watchSet]);
+    const films=await fetchMoviesByIds([...watchSet], true);
     films.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||'')));
     if(!films.length){ lv.innerHTML='<div class="mlist-empty">Nothing here right now.</div>'; updateWatchCount(); return; }
-    lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' to watch.</div>'+renderMovieList(films,'watchlist');
+    lv.innerHTML='<div class="mlist-hint">'+films.length+' film'+(films.length===1?'':'s')+' to watch.</div>'+renderSavedCards(films);
   }catch(e){ lv.innerHTML='<div class="mlist-empty">Couldn’t load the list ('+(e.message||e)+').</div>'; }
 }
 
-// Look up full movie rows (for the Seen/Hidden lists) from the public catalog by imdb_id.
-async function fetchMoviesByIds(ids){
+// Look up movie rows from the public catalog by imdb_id. full=true pulls the columns
+// renderCard needs (for the card-style Favorites/Watchlist views); otherwise minimal cols.
+async function fetchMoviesByIds(ids, full){
   if(!ids || !ids.length) return [];
-  const cols='imdb_id,title,year,director,runtime_minutes';
+  const cols = full
+    ? 'imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise,streaming'
+    : 'imdb_id,title,year,director,runtime_minutes';
   const out=[];
   for(let i=0;i<ids.length;i+=100){
     const chunk=ids.slice(i,i+100);
@@ -1065,6 +1082,12 @@ async function fetchMoviesByIds(ids){
     if(r.ok){ out.push(...await r.json()); }
   }
   return out;
+}
+
+// Render saved films as full recommendation-style cards (used by Favorites & Watchlist).
+function renderSavedCards(films){
+  films.forEach(m=>{ m._imdb=m.imdb_rating; m._rt=m.rotten_tomatoes_score; m._meta=m.metascore; m.why=''; });
+  return films.map(m=>renderCard(m, null, false)).join('');
 }
 
 // From the Films-seen list: un-mark a film as seen → it returns to the unseen pool.
@@ -1317,8 +1340,10 @@ async function updatePoolCount(){
 function sCls(s){return s>=85?'sg':s>=70?'sb':s>=55?'sa':'sr';}
 document.getElementById('go-btn').addEventListener('click',()=>{ viewMode==='random' ? getRandom() : getRecs(); });
 // ===== Settings overlay =====
-function openSettings(){
-  refreshSettings();
+let overlayMode='settings';   // 'settings' | 'lists' — which top-level screen the overlay shows
+function openSettings(){ overlayMode='settings'; showOverlayMenu(); refreshSettings(); openOverlay(); }
+function openLists(){ overlayMode='lists'; showOverlayMenu(); refreshSettings(); openOverlay(); }
+function openOverlay(){
   const o=document.getElementById('set-overlay');
   if(o){o.classList.add('open'); document.body.style.overflow='hidden';}
 }
@@ -1326,6 +1351,17 @@ function closeSettings(){
   const o=document.getElementById('set-overlay');
   if(o){o.classList.remove('open'); document.body.style.overflow='';}
   backToMenu();   // reset to the menu screen for next open
+}
+// Show the correct top-level menu (Settings or Lists), hiding the list-detail view.
+function showOverlayMenu(){
+  const menu=document.getElementById('set-menu'), lists=document.getElementById('set-lists'),
+        lv=document.getElementById('set-listview'), back=document.getElementById('set-back'),
+        title=document.getElementById('set-title');
+  if(lv){ lv.hidden=true; lv.innerHTML=''; }
+  if(menu) menu.hidden = overlayMode!=='settings';
+  if(lists) lists.hidden = overlayMode!=='lists';
+  if(back) back.setAttribute('hidden','');
+  if(title) title.textContent = overlayMode==='lists' ? 'Lists' : 'Settings';
 }
 function refreshSettings(){
   updateAccountUI();
@@ -1337,16 +1373,16 @@ function refreshSettings(){
   let count=0; try{ count=Object.keys(JSON.parse(localStorage.getItem('cinelog_exposure')||'{}')).length; }catch(e){}
   const cm=document.getElementById('set-cache-meta'); if(cm) cm.textContent = count? count+' tracked' : 'Empty';
 }
-// Open Seen / Hidden as a second screen inside the overlay — appears instantly on top,
-// no scrolling past the filters.
+// Open a single list as a detail screen inside the overlay.
 function openList(which){
-  const menu=document.getElementById('set-menu'), lv=document.getElementById('set-listview'),
-        back=document.getElementById('set-back'), title=document.getElementById('set-title'),
-        ov=document.getElementById('set-overlay');
+  const menu=document.getElementById('set-menu'), lists=document.getElementById('set-lists'),
+        lv=document.getElementById('set-listview'), back=document.getElementById('set-back'),
+        title=document.getElementById('set-title'), ov=document.getElementById('set-overlay');
   const titles={seen:'Seen Movies',hidden:'Hidden Movies',favorites:'Favorites',watchlist:'Watchlist'};
   if(title) title.textContent = titles[which] || 'Movies';
   if(back) back.removeAttribute('hidden');
   if(menu) menu.hidden=true;
+  if(lists) lists.hidden=true;
   if(lv) lv.hidden=false;
   if(ov) ov.scrollTop=0;
   if(which==='seen') showSeen();
@@ -1355,14 +1391,8 @@ function openList(which){
   else if(which==='watchlist') showWatchlist();
 }
 function backToMenu(){
-  const menu=document.getElementById('set-menu'), lv=document.getElementById('set-listview'),
-        back=document.getElementById('set-back'), title=document.getElementById('set-title'),
-        ov=document.getElementById('set-overlay');
-  if(lv){ lv.hidden=true; lv.innerHTML=''; }
-  if(menu) menu.hidden=false;
-  if(back) back.setAttribute('hidden','');
-  if(title) title.textContent='Settings';
-  if(ov) ov.scrollTop=0;
+  showOverlayMenu();
+  const ov=document.getElementById('set-overlay'); if(ov) ov.scrollTop=0;
   refreshSettings();
 }
 function toggleDbDetail(){
