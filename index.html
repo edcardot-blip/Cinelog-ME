@@ -414,7 +414,13 @@
 <script>
 const SUPABASE_URL='https://fmhmvvsbxofoqriekfyj.supabase.co';
 const TABLE='movies';
-const POOL_LIMIT=30;
+// CANDIDATE_LIMIT = how many films we pull from the DB to RANK over.
+// This must be large: the "How Adventurous?" slider can only surface lesser-known
+// films if lesser-known films are actually in the pool. Ordering by rating alone,
+// capped at 30, gave a pool that was ~all blockbusters — so the popularity penalty
+// had nothing obscure to promote. 500 well-rated films include ~110 hidden gems.
+const CANDIDATE_LIMIT=500;
+const POOL_LIMIT=CANDIDATE_LIMIT;   // ranking math operates over the full candidate pool
 // Optional: paste your Supabase anon (public) key here to make the site work for
 // everyone with no setup. The anon key is SAFE to expose publicly as long as Row
 // Level Security is enabled on your table. Leave '' to keep the manual paste flow.
@@ -678,7 +684,7 @@ async function getRecs(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='<div class="status"><span class="spin"></span>Searching the catalog…</div>';
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,plot,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen,franchise';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,seen,franchise';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
     // Pull a wider net when streaming filtering is active, since some films get dropped client-side.
@@ -833,21 +839,21 @@ async function getRecs(){
     // We keep ratingsWeight at a fixed value so quality and fit still blend sensibly.
     const ratingsWeight = 0.55;
 
-    // Popularity slider: 0 (Lesser Known) .. 1 (Crowd Favorites).
-    //   - Lesser Known (left):  strong penalty on popular films; blockbusters hit hard
-    //   - Balanced (center):    TRULY neutral — no popularity nudge at all
-    //   - Crowd Favorites (right): strong popularity boost
-    const pp=advPos/100;        // 0 .. 1, smoothly
-    // popularity coefficient (linear part): -0.60 at fully obscure → 0 at center → +0.30 at full popular.
-    const popCoef = pp<0.5 ? -0.60+(0-(-0.60))*(pp/0.5)
-                           :  0   +(0.30-0)*((pp-0.5)/0.5);
-    // Blockbuster surcharge: how strongly to additionally punish very-famous films when the
-    // user is leaning toward obscure. 0 when slider is at/past center, scales up as you go left.
-    //   advPos 50 → 0, advPos 0 → 1.0. Films with fame > 70 get hit; films at fame=100 get worst.
-    const blockbusterWeight = Math.max(0, (50-advPos)/50);  // 0..1, only positive on the obscure side
-    // Quality-weight tweak: at full obscure, quality contributes 85% of its usual weight.
-    // At center and beyond, full weight. Lets obscure-but-good films float up.
-    const qualityFactor = 1 - 0.15 * blockbusterWeight;     // 0.85..1.00
+    // Popularity slider: 0 (Lesser Known) .. 50 (Balanced) .. 100 (Crowd Favorites).
+    // Two one-sided weights, both 0 at the truly-neutral center:
+    const blockbusterWeight = Math.max(0, (50-advPos)/50);  // 0 → 1 as you slide LEFT  (Lesser Known)
+    const crowdWeight       = Math.max(0, (advPos-50)/50);  // 0 → 1 as you slide RIGHT (Crowd Favorites)
+    // Quality-weight tweak: at full obscure, quality contributes 95% of its usual weight.
+    const qualityFactor = 1 - 0.05 * blockbusterWeight;     // 0.95..1.00
+    // Vote-count thresholds, expressed as fame scores (fame maps 1k votes → 0, 1M votes → 100):
+    //   200,000 votes ≈ fame 76.7  — left-side penalty floor: nothing below this is penalized
+    //    25,000 votes ≈ fame 46.6  — left-side bonus floor:   nothing below this is rewarded
+    //   300,000 votes ≈ fame 82.6  — right-side boost floor; also a left-side anchor (-6)
+    //   400,000 votes ≈ fame 86.74 — left-side anchor (-10)
+    //   500,000 votes ≈ fame 89.97 — left-side anchor (-15); above this the curve steepens
+    //                                linearly to MAX_PENALTY_1M at fame 100 (1M+ votes)
+    const FAME_200K = 76.7, FAME_25K = 46.6, FAME_300K = 82.6, FAME_400K = 86.74, FAME_500K = 89.97;
+    const MAX_PENALTY_1M = -50;  // <- tune this to dial the megahit penalty up or down
 
     // ---- Contrast stretch: amplify gaps between scores so sliders bite harder.
     // Pivots at 50 (neutral stays neutral). Factor 1.4 → 70→78, 80→92, 30→22, 20→8.
@@ -895,7 +901,7 @@ async function getRecs(){
     // ---- Franchise penalty: only applies when the user is leaning toward Lesser Known.
     // Films labeled with a franchise (MCU, Star Wars, LOTR, Harry Potter, etc.) get a small
     // demotion that scales with how far obscure the slider is — same lever as blockbusterWeight.
-    // Max -10 at full obscure, 0 at center and beyond.
+    // Max -10 at full obscure, -5 at halfway left, 0 at center and beyond.
     const franchisePenalty = (m) => {
       if (!m.franchise) return 0;
       return -10 * blockbusterWeight;
@@ -911,29 +917,44 @@ async function getRecs(){
       m._quality=Math.round(quality);
       m._fame=Math.round(fame);
       // Stretched versions for the slider math (amplified contrast)
-      const qS=stretch(quality), fameS=stretch(fame);
+      const qS=stretch(quality);
       // Base = ratings (per critics slider) + remaining weight on fit.
       // qualityFactor slightly reduces quality's influence when the user leans obscure,
       // preventing blockbusters' high quality from anchoring them in the top no matter what.
       const base = qS*ratingsWeight*qualityFactor + fit*(1-ratingsWeight);
-      // Popularity modifier: a linear shift around 50, PLUS a nonlinear blockbuster surcharge
-      // that bites only when (a) the slider is leaning obscure and (b) the film is very famous (fame > 70).
-      // The surcharge curve is quadratic past 70 so megahits at fame=100 get hit hardest.
-      const linearPop = (fameS-50) * popCoef;
-      // Blockbuster surcharge: piecewise-linear curve hitting these targets at full obscure:
-      //   fame 87 →   0  (smooth ramp-on)
-      //   fame 90 → -13
-      //   fame 93 → ~-29
-      //   fame 95 → ~-39
-      //   fame 97 → -50
-      //   fame 100 → -65
-      // Below 87: untouched. Penalty scales with blockbusterWeight (0 at center → 1 at full obscure).
-      let surchargeBase = 0;
-      if(fame >= 97)      surchargeBase = -50 - (fame-97) * 5;            // 97→100 segment: -50..-65
-      else if(fame >= 90) surchargeBase = -13 - (fame-90) * (37/7);       // 90→97 segment: -13..-50
-      else if(fame >= 87) surchargeBase = -(fame-87) * (13/3);            // 87→90 ramp: 0..-13
-      const blockbusterHit = surchargeBase * blockbusterWeight;
-      const popMod = linearPop + blockbusterHit;
+      // ---- Popularity modifier (ranking only; never filters) ----
+      // RIGHT side (Crowd Favorites): piecewise on raw fame, scaled by crowdWeight.
+      //   • ≥ 300k votes (fame ≥ 82.6): quadratic boost, 0 at 300k → +15 at 1M+ (fame 100)
+      //   • < 300k votes: nothing — too obscure to count as a crowd favorite
+      //   Mirror of the left-side penalty curve at half magnitude (+15 vs -30).
+      let rightMod = 0;
+      if(fame >= FAME_300K){
+        const t = (fame - FAME_300K) / (100 - FAME_300K);     // 0 at 300k → 1 at 1M+
+        rightMod = 15 * t * t;
+      }
+      // LEFT side (Lesser Known): piecewise linear on raw fame, scaled by blockbusterWeight.
+      // Anchor values at full-left (tunable; just edit the numbers below):
+      //   200k → 0   |   300k → -6   |   400k → -10   |   500k → -15   |   1M+ → -50
+      //   25k–200k:  +6 at 25k → 0 at 200k     |     < 25k: 0 (too obscure to reward)
+      const PEN_AT_500K = -15;
+      let leftMod = 0;
+      if(fame >= FAME_500K){
+        const t = Math.min(1, (fame - FAME_500K) / (100 - FAME_500K));   // 0 at 500k → 1 at 1M+
+        leftMod = PEN_AT_500K + (MAX_PENALTY_1M - PEN_AT_500K) * t;
+      } else if(fame >= FAME_400K){
+        const t = (fame - FAME_400K) / (FAME_500K - FAME_400K);          // 400k → 500k
+        leftMod = -10 + (-15 - -10) * t;
+      } else if(fame >= FAME_300K){
+        const t = (fame - FAME_300K) / (FAME_400K - FAME_300K);          // 300k → 400k
+        leftMod = -6 + (-10 - -6) * t;
+      } else if(fame >= FAME_200K){
+        const t = (fame - FAME_200K) / (FAME_300K - FAME_200K);          // 200k → 300k
+        leftMod = 0 + (-6 - 0) * t;
+      } else if(fame >= FAME_25K){
+        const t = (FAME_200K - fame) / (FAME_200K - FAME_25K);           // 0 at 200k → 1 at 25k
+        leftMod = 6 * t;
+      }
+      const popMod = rightMod * crowdWeight + leftMod * blockbusterWeight;
       // Multi-genre match bonus: rewards films that match more of the user's selections.
       const genreBonus = multiMatchBonus(m);
       // Animation penalty: dampens animated films when Animation wasn't picked.
