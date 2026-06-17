@@ -1,8 +1,7 @@
 name: Catalog refresh
 
-# Manual trigger only for now (dry-run by default). A daily cron will be added
-# once the dry-run is validated, the schema migration is applied, and the
-# SUPABASE_SERVICE_ROLE_KEY secret is set for live writes.
+# Runs daily (live) to add new theatrical standouts, and can be triggered manually.
+# Manual dispatch defaults to dry-run; the scheduled run always writes.
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +9,8 @@ on:
         description: "Dry run (no writes)"
         type: boolean
         default: true
+  schedule:
+    - cron: "0 9 * * *"   # daily 09:00 UTC
 
 jobs:
   ingest:
@@ -24,5 +25,5 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          DRY_RUN: ${{ inputs.dry_run == false && '0' || '1' }}
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run == true) && '1' || '0' }}
         run: node pipeline/ingest.mjs
