@@ -501,16 +501,21 @@
   /* --- App header: brand hero centered, circular profile icon pinned top-right --- */
   .apphead{position:relative;margin-bottom:1.1rem}
   .apphead .auth-pill{position:absolute;top:2px;right:0;z-index:5;
-    width:27px;height:27px;min-width:0;padding:0;border-radius:50%;
+    width:34px;height:34px;min-width:0;padding:0;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;gap:0;
     font-size:0;letter-spacing:0;overflow:hidden;
-    background:var(--bg3);border:1px solid var(--border2);color:var(--text);
-    box-shadow:0 2px 8px rgba(0,0,0,.3);transition:border-color .15s,background .15s,transform .12s}
-  .apphead .auth-pill > span{font-size:13px;line-height:1}
-  .apphead .auth-pill:hover{border-color:var(--accent);background:var(--bg4);transform:translateY(-1px)}
+    background:var(--bg3);border:1.5px solid var(--accent);color:var(--accent);
+    box-shadow:0 0 0 3px rgba(232,176,75,.08),0 2px 12px rgba(232,176,75,.22);
+    transition:border-color .15s,background .15s,box-shadow .15s,transform .12s}
+  .apphead .auth-pill > span{display:inline-flex;align-items:center;justify-content:center;
+    font-size:12.5px;font-weight:700;line-height:1;letter-spacing:.02em;color:var(--accent)}
+  .apphead .auth-pill > span svg{width:18px;height:18px;display:block}
+  .apphead .auth-pill:hover{background:var(--bg4);transform:translateY(-1px);
+    box-shadow:0 0 0 4px rgba(232,176,75,.12),0 3px 16px rgba(232,176,75,.30)}
   .apphead .auth-pill:active{transform:scale(.95)}
-  .apphead .auth-pill.in{background:var(--teal-dim);border-color:rgba(59,180,168,.5);color:var(--teal)}
-  .apphead .auth-pill.in:hover{border-color:var(--teal)}
+  .apphead .auth-pill.in{background:var(--bg3);border-color:var(--accent);color:var(--accent)}
+  .apphead .auth-pill.in > span{color:var(--accent2)}
+  .apphead .auth-pill.in:hover{border-color:var(--accent2)}
   /* signed-in renders a first name after the icon — keep the circle showing only the avatar glyph */
   .hero-new{text-align:center;margin-bottom:0;padding:0 48px}
   .hero-new h1{font-family:var(--serif);font-size:clamp(27px,6vw,42px);font-weight:600;letter-spacing:-.02em;line-height:1.06;margin-bottom:.45rem}
@@ -534,7 +539,7 @@
 
   /* --- Recommendation mode cards: three EQUAL cards in one row --- */
   .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .mode-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rsm);padding:.7rem .55rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--sans)}
+  .mode-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rsm);padding:.95rem .55rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--sans)}
   .mode-card:hover{border-color:#4a4a52;transform:translateY(-1px)}
   .mode-card:active{transform:scale(.97)}
   .mode-card .mc-ico{font-size:19px;line-height:1;margin-bottom:1px}
@@ -571,14 +576,16 @@
 
   /* --- Quick filters: 3 equal-width buttons that open full-screen sheets --- */
   .qfilters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.85rem}
-  .qf-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  .qf-btn{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:9px;
     background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);
-    padding:.8rem .55rem;cursor:pointer;font-family:var(--sans);color:var(--text);
-    transition:border-color .15s,background .15s,transform .12s;text-align:center;min-height:58px}
+    padding:.8rem .8rem;cursor:pointer;font-family:var(--sans);color:var(--text);
+    transition:border-color .15s,background .15s,transform .12s;text-align:left;min-height:58px}
   .qf-btn:hover{border-color:#4a4a52;transform:translateY(-1px)}
   .qf-btn:active{transform:scale(.98)}
   /* On touch devices, neutralize the lift-on-hover so a first tap never gets "stuck" on :hover */
   @media (hover:none){.qf-btn:hover{transform:none}}
+  .qf-btn .qf-ic{width:18px;height:18px;flex:none;color:var(--accent);display:block}
+  .qf-btn .qf-text{display:flex;flex-direction:column;gap:2px;min-width:0}
   .qf-btn .qf-name{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
   .qf-btn .qf-val{font-size:14px;font-weight:600;color:var(--text2);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Active (some selection) state: gold accent */
@@ -699,7 +706,8 @@
   .stats{gap:8px;margin:.85rem 0 .85rem}
   .stat{display:flex;align-items:center;gap:9px;padding:.6rem .75rem;text-align:left}
   .stat::before{display:none}
-  .stat .stat-ico{font-size:19px;line-height:1;flex:none}
+  .stat .stat-ico{line-height:1;flex:none;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+  .stat .stat-ico svg{width:18px;height:18px;display:block}
   .stat .stat-body{display:flex;flex-direction:column;min-width:0}
   .stat-n{font-size:clamp(19px,5vw,24px);margin-bottom:0}
   .stat-l{font-size:9.5px;letter-spacing:.05em}
@@ -1043,7 +1051,7 @@
        Lists (#lists-btn) & Preferences (#prefs-btn) live only in the bottom nav now,
        but their onclick functions stay defined in the scripts below. -->
   <div class="apphead">
-    <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
+    <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span></button>
     <div class="hero-new">
       <h1>What Should I <span class="em">Watch Tonight?</span></h1>
       <p class="hero-sub">The perfect movie in seconds.</p>
@@ -1059,16 +1067,25 @@
          togglePill / selGroups / selectAllGroup / clearGroup are untouched. -->
     <div class="qfilters">
       <button type="button" class="qf-btn" onclick="openSheet('genre')" aria-haspopup="dialog">
-        <span class="qf-name">Genre</span>
-        <span class="qf-val" id="qf-genre-val">Any</span>
+        <svg class="qf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="3" y1="14.5" x2="21" y2="14.5"/><line x1="7.5" y1="4" x2="7.5" y2="20"/><line x1="16.5" y1="4" x2="16.5" y2="20"/></svg>
+        <span class="qf-text">
+          <span class="qf-name">Genre</span>
+          <span class="qf-val" id="qf-genre-val">Any</span>
+        </span>
       </button>
       <button type="button" class="qf-btn" onclick="openSheet('era')" aria-haspopup="dialog">
-        <span class="qf-name">Era</span>
-        <span class="qf-val" id="qf-era-val">Any</span>
+        <svg class="qf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>
+        <span class="qf-text">
+          <span class="qf-name">Era</span>
+          <span class="qf-val" id="qf-era-val">Any</span>
+        </span>
       </button>
       <button type="button" class="qf-btn" onclick="openSheet('length')" aria-haspopup="dialog">
-        <span class="qf-name">Length</span>
-        <span class="qf-val" id="qf-length-val">Any</span>
+        <svg class="qf-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12.5" r="8"/><path d="M12 8.5v4l2.5 2"/></svg>
+        <span class="qf-text">
+          <span class="qf-name">Length</span>
+          <span class="qf-val" id="qf-length-val">Any</span>
+        </span>
       </button>
     </div>
 
@@ -1130,13 +1147,13 @@
     <div class="field" id="rec-mode-field" style="margin-bottom:.5rem">
       <div class="mode-cards" id="mode-seg">
         <div class="mode-card on" id="mode-hybrid" onclick="setMode('hybrid')">
-          <span class="mc-ico">🎯</span><span class="mc-title">Smart Mix</span><span class="mc-desc">Balanced recommendations</span>
+          <span class="mc-title">Smart Mix</span><span class="mc-desc">Best overall</span>
         </div>
         <div class="mode-card" id="mode-fresh" onclick="setMode('fresh')">
-          <span class="mc-ico">✨</span><span class="mc-title">Fresh Picks</span><span class="mc-desc">Only unseen movies</span>
+          <span class="mc-title">Fresh Picks</span><span class="mc-desc">New movies</span>
         </div>
         <div class="mode-card" id="mode-random" onclick="setMode('random')">
-          <span class="mc-ico">🎲</span><span class="mc-title">Surprise Me</span><span class="mc-desc">Anything goes</span>
+          <span class="mc-title">Surprise Me</span><span class="mc-desc">Random pick</span>
         </div>
         <!-- Rewatch mode removed from the UI. Hidden stub kept so setMode()'s
              getElementById('mode-rewatches') stays non-null and never throws. -->
@@ -1147,9 +1164,9 @@
 
     <!-- STATS (compact: icon + number + short label) -->
     <div class="stats">
-      <div class="stat s1"><span class="stat-ico">🎬</span><span class="stat-body"><span class="stat-n" id="s-total">—</span><span class="stat-l">Movies</span></span></div>
-      <div class="stat s3"><span class="stat-ico">✅</span><span class="stat-body"><span class="stat-n" id="seen-count">0</span><span class="stat-l">Seen</span></span></div>
-      <div class="stat s2"><span class="stat-ico">🎯</span><span class="stat-body"><span class="stat-n" id="s-pool">—</span><span class="stat-l">Match</span></span></div>
+      <div class="stat s1"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="3" y1="14.5" x2="21" y2="14.5"/><line x1="7.5" y1="4" x2="7.5" y2="20"/><line x1="16.5" y1="4" x2="16.5" y2="20"/></svg></span><span class="stat-body"><span class="stat-n" id="s-total">—</span><span class="stat-l">Movies</span></span></div>
+      <div class="stat s3"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5 11-11"/></svg></span><span class="stat-body"><span class="stat-n" id="seen-count">0</span><span class="stat-l">Seen</span></span></div>
+      <div class="stat s2"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg></span><span class="stat-body"><span class="stat-n" id="s-pool">—</span><span class="stat-l">Match</span></span></div>
     </div>
 
     <button class="go-btn" id="go-btn">✦ Find My Movie</button>
@@ -2257,18 +2274,32 @@ function onAuthPill(){
     if(confirm('Sign out of '+who+'?')) signOut();
   } else { signInGoogle(); }
 }
+// Gold person/profile SVG used for the signed-out profile bubble.
+const AUTH_PERSON_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>';
+// Derive 1–2 uppercase initials from a display name or email (e.g. "Ethan Cardot" -> "EC").
+function authInitials(full,email){
+  const name=String(full||'').trim();
+  if(name){
+    const parts=name.split(/\s+/).filter(Boolean);
+    if(parts.length>=2) return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+    if(parts[0]) return parts[0].slice(0,2).toUpperCase();
+  }
+  const e=String(email||'').trim();
+  if(e) return e.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()||'?';
+  return '?';
+}
 function updateAuthPill(){
   const el=document.getElementById('auth-pill'); if(!el) return;
   if(currentUser){
     const meta=currentUser.user_metadata||{};
     const full=meta.full_name||meta.name||currentUser.email||'Account';
-    const first=esc(String(full).split(' ')[0]);
+    const initials=esc(authInitials(meta.full_name||meta.name,currentUser.email));
     el.className='auth-pill in';
-    el.innerHTML='<span>👤</span>'+first;
+    el.innerHTML='<span>'+initials+'</span>';
     el.setAttribute('aria-label','Account: '+esc(full));
   } else {
     el.className='auth-pill';
-    el.innerHTML='<span>🔑</span>Sign in';
+    el.innerHTML='<span>'+AUTH_PERSON_SVG+'</span>';
     el.setAttribute('aria-label','Sign in with Google');
   }
 }
