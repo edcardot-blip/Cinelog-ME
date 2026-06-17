@@ -731,6 +731,75 @@
     color:#1a1305;background:#f5c518;padding:4px 7px;border-radius:5px;
     box-shadow:0 2px 8px rgba(0,0,0,.4);display:inline-flex;align-items:center;gap:3px}
 
+  /* ====================================================================== */
+  /* ===== PHASE 2b — COLLECTION PAGES (Watchlist/Likes/Seen/Hidden) ====== */
+  /* Full-screen poster-grid page. Same visual language as the results       */
+  /* gallery — reuses .rg-grid / .rg-tile for the grid itself; adds a header  */
+  /* with back + title + count, plus a search + sort control bar.            */
+  /* ====================================================================== */
+  .collection-overlay{position:fixed;inset:0;z-index:1200;
+    background:var(--bg);
+    background-image:radial-gradient(ellipse 90% 45% at 50% -8%,rgba(232,176,75,.12),transparent 60%),radial-gradient(circle at 92% 4%,rgba(80,120,200,.05),transparent 42%);
+    display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.3,1),visibility 0s linear .3s;
+    overflow:hidden}
+  .collection-overlay.open{opacity:1;visibility:visible;transform:none;
+    transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.3,1),visibility 0s}
+
+  /* Header: back + centered title/count (reuses rg-head visual language) */
+  .cg-head{flex:none;display:flex;align-items:center;gap:12px;
+    padding:max(.9rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-right)) .9rem max(1rem,env(safe-area-inset-left));
+    border-bottom:1px solid var(--border);
+    background:rgba(10,10,11,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .cg-titles{flex:1;min-width:0;text-align:center;line-height:1.15}
+  .cg-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;color:var(--text);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cg-count{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-top:1px}
+  /* a spacer that balances the back button so the title stays centered */
+  .cg-head-spacer{flex:none;width:58px}
+
+  /* Control bar: search + sort */
+  .cg-controls{flex:none;display:flex;gap:9px;align-items:center;
+    padding:.85rem max(1rem,env(safe-area-inset-right)) .85rem max(1rem,env(safe-area-inset-left));
+    border-bottom:1px solid var(--border)}
+  .cg-search{flex:1;position:relative;min-width:0}
+  .cg-search .cg-search-ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+    font-size:13px;color:var(--text3);pointer-events:none}
+  .cg-search input{width:100%;padding:10px 12px 10px 33px;border:1px solid var(--border2);border-radius:var(--rpill);
+    font-size:13.5px;background:var(--bg3);color:var(--text);outline:none;font-family:var(--sans);
+    transition:border-color .14s}
+  .cg-search input:focus{border-color:var(--accent)}
+  .cg-search input::placeholder{color:var(--text3)}
+  .cg-sort{flex:none;position:relative}
+  .cg-sort select{appearance:none;-webkit-appearance:none;
+    background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rpill);
+    color:var(--text);font-size:12.5px;font-weight:600;font-family:var(--sans);cursor:pointer;
+    padding:10px 30px 10px 14px;outline:none;transition:border-color .14s;max-width:160px}
+  .cg-sort select:focus,.cg-sort select:hover{border-color:var(--accent)}
+  .cg-sort .cg-sort-chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    font-size:11px;color:var(--text2);pointer-events:none}
+
+  /* Scrollable grid body (reuses .rg-grid + .rg-tile from the results gallery) */
+  .cg-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
+
+  /* Loading / empty / signed-out states */
+  .cg-state{text-align:center;color:var(--text2);font-size:14.5px;padding:3.5rem 1.25rem;line-height:1.65;
+    display:flex;flex-direction:column;align-items:center;gap:.5rem}
+  .cg-state .cg-state-ic{font-size:34px;opacity:.85;margin-bottom:.2rem}
+  .cg-state .cg-state-sub{font-size:12.5px;color:var(--text3);max-width:320px;line-height:1.55}
+  .cg-state .cg-state-btn{margin-top:.9rem;font-size:13.5px;font-weight:600;padding:11px 22px;border-radius:var(--rpill);
+    background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;color:#1a1305;cursor:pointer;
+    font-family:var(--sans);box-shadow:0 4px 20px rgba(232,176,75,.18);transition:filter .14s,transform .12s}
+  .cg-state .cg-state-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+  .cg-state .cg-state-load{display:inline-flex;align-items:center;gap:9px;color:var(--text2);font-size:13.5px}
+  @media (max-width:600px){
+    .cg-head-spacer{width:44px}
+    .cg-sort select{font-size:13.5px;padding:12px 30px 12px 14px}
+    .cg-search input{padding-top:12px;padding-bottom:12px}
+  }
+
   /* --- Movie detail modal --- */
   .md-overlay{position:fixed;inset:0;z-index:1300;display:flex;align-items:center;justify-content:center;
     padding:max(1.5rem,env(safe-area-inset-top)) 1rem max(1.5rem,env(safe-area-inset-bottom));
@@ -1026,20 +1095,20 @@
       <div class="set-group">
         <div class="set-group-lbl">Your lists</div>
         <div class="set-list">
-          <button class="set-row tappable" onclick="openList('watchlist')">
+          <button class="set-row tappable" onclick="closeSettings();openCollection('watchlist')">
             <span class="set-ico">🔖</span><span class="set-label">Watchlist</span>
             <span class="set-meta" id="set-watch-count">0</span><span class="set-chev">›</span>
           </button>
-          <button class="set-row tappable" onclick="openList('favorites')">
+          <button class="set-row tappable" onclick="closeSettings();openCollection('favorites')">
             <span class="set-ico">♥</span><span class="set-label">Likes</span>
             <span class="set-meta" id="set-fav-count">0</span><span class="set-chev">›</span>
           </button>
-          <button class="set-row tappable" onclick="openList('seen')">
+          <button class="set-row tappable" onclick="closeSettings();openCollection('seen')">
             <span class="set-ico">✓</span><span class="set-label">Seen Movies</span>
             <span class="set-meta" id="set-seen-count">0</span><span class="set-chev">›</span>
           </button>
-          <button class="set-row tappable" onclick="openList('hidden')">
-            <span class="set-ico">🚫</span><span class="set-label">Hidden Movies</span>
+          <button class="set-row tappable" onclick="closeSettings();openCollection('hidden')">
+            <span class="set-ico">🙈</span><span class="set-label">Hidden Movies</span>
             <span class="set-meta" id="set-hidden-count">0</span><span class="set-chev">›</span>
           </button>
         </div>
@@ -1085,6 +1154,40 @@
     </button>
   </header>
   <div class="rg-body" id="rg-body"></div>
+</div>
+
+<!-- ===== Collection page overlay (Watchlist / Likes / Seen / Hidden) =====
+     One reusable full-screen poster-grid page; openCollection(type) fills it. -->
+<div class="collection-overlay" id="collection-overlay" aria-hidden="true">
+  <header class="cg-head">
+    <button class="rg-back" onclick="closeCollection()" aria-label="Back">
+      <span class="rg-chev">‹</span><span>Back</span>
+    </button>
+    <div class="cg-titles">
+      <div class="cg-title" id="cg-title">Collection</div>
+      <div class="cg-count" id="cg-count">0 films</div>
+    </div>
+    <span class="cg-head-spacer" aria-hidden="true"></span>
+  </header>
+  <div class="cg-controls" id="cg-controls">
+    <div class="cg-search">
+      <span class="cg-search-ic">🔍</span>
+      <input type="text" id="cg-search-input" placeholder="Search this collection…"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+        oninput="renderCollectionGrid()" aria-label="Search this collection">
+    </div>
+    <div class="cg-sort">
+      <select id="cg-sort-select" onchange="renderCollectionGrid()" aria-label="Sort collection">
+        <option value="added">Recently Added</option>
+        <option value="title">Alphabetical</option>
+        <option value="year">Release Year</option>
+        <option value="imdb">IMDb Rating</option>
+        <option value="runtime">Runtime</option>
+      </select>
+      <span class="cg-sort-chev">▾</span>
+    </div>
+  </div>
+  <div class="cg-body" id="cg-body"></div>
 </div>
 
 <!-- ===== Movie detail modal (reusable: openMovieDetail(m)) ===== -->
@@ -1202,10 +1305,9 @@ function navTo(tab){
     if(typeof openSettings==='function') openSettings();
     return;
   }
-  // watchlist | favorites | seen -> open the lists overlay then the detail list
+  // watchlist | favorites | seen -> open the full-screen poster-grid collection page
   setNavActive(tab);
-  if(typeof openLists==='function') openLists();
-  if(typeof openList==='function') openList(tab);
+  if(typeof openCollection==='function') openCollection(tab);
 }
 function setNavActive(tab){
   ['discover','watchlist','favorites','seen','more'].forEach(function(t){
@@ -2208,8 +2310,11 @@ function closeMovieDetail(){
   ov.classList.remove('open');
   ov.setAttribute('aria-hidden','true');
   mdCurrent=null;
-  // restore scroll-lock state (gallery may still be open behind)
-  if(!galleryOpen && !document.getElementById('set-overlay').classList.contains('open')) document.body.style.overflow='';
+  // If a collection page is open behind the modal, reflect any Like/Watchlist/
+  // Seen/Hide changes the user just made (a film may have left this set).
+  if(typeof refreshOpenCollection==='function') refreshOpenCollection();
+  // restore scroll-lock state (gallery or collection may still be open behind)
+  if(!galleryOpen && !collectionOpen && !document.getElementById('set-overlay').classList.contains('open')) document.body.style.overflow='';
 }
 
 // The four action pills, reflecting current state.
@@ -2249,12 +2354,209 @@ async function mdAct(btn, fn, id){
 // Attr escaper for the presentation layer (esc() is already defined above and escapes &<>").
 function escAttr(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-// Esc key closes modal first, then the gallery.
+// Esc key closes modal first, then the gallery, then a collection page.
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
   if(document.getElementById('md-overlay').classList.contains('open')){ closeMovieDetail(); return; }
-  if(galleryOpen){ closeResultsGallery(); }
+  if(galleryOpen){ closeResultsGallery(); return; }
+  if(collectionOpen){ closeCollection(); }
 });
+
+// ======================================================================
+// COLLECTION PAGES  (Watchlist / Likes / Seen / Hidden)  — presentation only
+// One reusable full-screen poster-grid page. The dataset is the only thing
+// that differs between the four collections. Tapping a poster opens the SAME
+// reusable detail modal (openMovieDetail) where the Like/Watchlist/Seen/Hide
+// pills live. Engine sets/predicates are reused verbatim — nothing here mutates
+// scoring, auth, or Supabase. Selection changes made in the modal are reflected
+// by re-rendering the open collection when the modal closes.
+// ======================================================================
+let collectionOpen=false;
+let collectionType=null;       // 'watchlist'|'favorites'|'seen'|'hidden'
+let collectionFilms=[];        // loaded film objects, in original (Recently Added) order
+
+// type -> {set, title, icon, emptyMsg, emptyHint}
+const COLLECTION_DEFS={
+  watchlist:{ getSet:()=>watchSet, title:'Watchlist', icon:'🔖',
+    emptyMsg:'No movies in your Watchlist yet',
+    emptyHint:'Tap “Watchlist” on any movie to save it for later.' },
+  favorites:{ getSet:()=>favSet, title:'Likes', icon:'♥',
+    emptyMsg:'No Likes yet',
+    emptyHint:'Tap “Like” on any movie to save it here.' },
+  seen:{ getSet:()=>seenSet, title:'Seen', icon:'✓',
+    emptyMsg:'No films marked Seen yet',
+    emptyHint:'Tap “Seen” on any movie to track what you’ve watched.' },
+  hidden:{ getSet:()=>niSet, title:'Hidden', icon:'🙈',
+    emptyMsg:'No Hidden movies yet',
+    emptyHint:'Tap “Hide” on any movie to keep it out of your recommendations.' }
+};
+
+// Registry so a poster tile can look up its full movie object by imdb_id
+// (separate from galleryFilms so opening a collection never disturbs the results gallery).
+let collectionFilmsById={};
+
+function collectionNoPoster(title){
+  return '<div class="rg-noposter"><span class="rg-np-ic">🎞</span><span class="rg-np-title">'+esc(title||'Untitled')+'</span></div>';
+}
+function renderCollectionTile(m, rank){
+  collectionFilmsById[m.imdb_id]=m;
+  const art = m.poster_url
+    ? '<img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=collectionNoPoster('+JSON.stringify(JSON.stringify(m.title))+')">'
+    : collectionNoPoster(m.title);
+  const rankBadge = rank!=null ? '<span class="rg-rank">'+rank+'</span>' : '';
+  return '<button class="rg-tile" type="button" onclick="openCollectionDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'
+    + rankBadge + art + '</button>';
+}
+function openCollectionDetail(id){ const m=collectionFilmsById[id]; if(m) openMovieDetail(m); }
+
+// Apply the current search + sort controls and (re)paint the grid.
+function renderCollectionGrid(){
+  const body=document.getElementById('cg-body');
+  if(!body) return;
+  collectionFilmsById={};
+  const def=COLLECTION_DEFS[collectionType]; if(!def) return;
+  const q=(document.getElementById('cg-search-input').value||'').trim().toLowerCase();
+  const sort=document.getElementById('cg-sort-select').value;
+
+  let list=collectionFilms.slice();
+  if(q) list=list.filter(m=>(m.title||'').toLowerCase().includes(q));
+
+  // Sort. "added" keeps the original fetch order (best-effort Recently Added).
+  const num=v=>{const n=parseFloat(v); return isNaN(n)?null:n;};
+  if(sort==='title'){
+    list.sort((a,b)=>(a.title||'').localeCompare(b.title||'',undefined,{sensitivity:'base'}));
+  } else if(sort==='year'){
+    list.sort((a,b)=>(num(b.year)??-Infinity)-(num(a.year)??-Infinity));
+  } else if(sort==='imdb'){
+    list.sort((a,b)=>(num(b.imdb_rating)??-Infinity)-(num(a.imdb_rating)??-Infinity));
+  } else if(sort==='runtime'){
+    list.sort((a,b)=>(num(b.runtime_minutes)??-Infinity)-(num(a.runtime_minutes)??-Infinity));
+  }
+
+  // Count reflects what's actually shown (after search filtering).
+  const cnt=document.getElementById('cg-count');
+  if(cnt){
+    if(q) cnt.textContent=list.length+(list.length===1?' result':' results');
+    else cnt.textContent=collectionFilms.length+(collectionFilms.length===1?' film':' films');
+  }
+
+  if(!list.length){
+    body.innerHTML='<div class="cg-state"><div class="cg-state-ic">🔍</div>No matches'
+      + '<div class="cg-state-sub">No films in this collection match “'+esc(q)+'”.</div></div>';
+    return;
+  }
+  // Tiny grey index only for sorted-by-rank-ish views; keep it clean (no badge on default).
+  const showIndex=(sort!=='added' && sort!=='title');
+  body.innerHTML='<div class="rg-grid">'
+    + list.map((m,i)=>renderCollectionTile(m, showIndex? i+1 : null)).join('')
+    + '</div>';
+  body.querySelectorAll('.rg-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*28,500)+'ms'; });
+}
+
+function showCollectionState(html){
+  const body=document.getElementById('cg-body'); if(body) body.innerHTML=html;
+}
+
+async function openCollection(type){
+  const def=COLLECTION_DEFS[type];
+  if(!def){ console.warn('Unknown collection type',type); return; }
+  collectionType=type;
+  collectionFilms=[];
+
+  // Header
+  document.getElementById('cg-title').textContent=def.title;
+  document.getElementById('cg-count').textContent='';
+  // Reset controls each open
+  const si=document.getElementById('cg-search-input'); if(si) si.value='';
+  const ss=document.getElementById('cg-sort-select'); if(ss) ss.value='added';
+  const controls=document.getElementById('cg-controls');
+
+  // Open the overlay
+  const ov=document.getElementById('collection-overlay');
+  ov.setAttribute('aria-hidden','false');
+  void ov.offsetWidth;
+  setTimeout(()=>ov.classList.add('open'),0);
+  document.body.style.overflow='hidden';
+  collectionOpen=true;
+  document.getElementById('cg-body').scrollTop=0;
+
+  // Signed-out: sets are empty; prompt to sign in instead of an empty grid.
+  if(!currentUser || !sbAuth){
+    if(controls) controls.style.display='none';
+    showCollectionState(
+      '<div class="cg-state"><div class="cg-state-ic">'+def.icon+'</div>'
+      + 'Sign in to see your '+esc(def.title)
+      + '<div class="cg-state-sub">Your collections are saved to your account so they’re here on every device.</div>'
+      + '<button class="cg-state-btn" onclick="closeCollection();if(typeof onAuthPill===\'function\')onAuthPill();else if(typeof signInGoogle===\'function\')signInGoogle();">Sign in</button>'
+      + '</div>');
+    return;
+  }
+
+  const ids=[...def.getSet()];
+  if(!ids.length){
+    if(controls) controls.style.display='none';
+    showCollectionState(
+      '<div class="cg-state"><div class="cg-state-ic">'+def.icon+'</div>'
+      + esc(def.emptyMsg)
+      + '<div class="cg-state-sub">'+esc(def.emptyHint)+'</div></div>');
+    return;
+  }
+
+  // Loading
+  if(controls) controls.style.display='';
+  showCollectionState('<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Loading your '+esc(def.title)+'…</div></div>');
+
+  // Load full film objects. Order returned by fetch ≈ Recently Added (best-effort).
+  try{
+    const films=await fetchMoviesByIds(ids, true);
+    // Guard: user may have navigated away while loading.
+    if(!collectionOpen || collectionType!==type) return;
+    // Normalize rating fields the tile/detail expect.
+    films.forEach(m=>{ m._imdb=m.imdb_rating; m._rt=m.rotten_tomatoes_score; m._meta=m.metascore; });
+    collectionFilms=films;
+    if(!films.length){
+      if(controls) controls.style.display='none';
+      showCollectionState(
+        '<div class="cg-state"><div class="cg-state-ic">'+def.icon+'</div>'
+        + esc(def.emptyMsg)
+        + '<div class="cg-state-sub">'+esc(def.emptyHint)+'</div></div>');
+      return;
+    }
+    renderCollectionGrid();
+  }catch(e){
+    if(!collectionOpen || collectionType!==type) return;
+    showCollectionState('<div class="cg-state"><div class="cg-state-ic">⚠️</div>Couldn’t load this collection.<div class="cg-state-sub">Check your connection and try again.</div></div>');
+  }
+}
+
+function closeCollection(){
+  const ov=document.getElementById('collection-overlay');
+  if(ov){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); }
+  collectionOpen=false;
+  if(typeof setNavActive==='function') setNavActive('discover');
+  if(!document.getElementById('md-overlay').classList.contains('open')) document.body.style.overflow='';
+}
+
+// When the detail modal closes, reflect any Like/Watchlist/Seen/Hide changes
+// in the open collection. A film removed from THIS collection's set drops out;
+// counts + grid refresh from the live sets.
+function refreshOpenCollection(){
+  if(!collectionOpen || !collectionType) return;
+  const def=COLLECTION_DEFS[collectionType]; if(!def) return;
+  const set=def.getSet();
+  // Drop any loaded films no longer in this set (e.g. un-liked from the modal).
+  collectionFilms=collectionFilms.filter(m=>set.has(m.imdb_id));
+  if(!collectionFilms.length){
+    const controls=document.getElementById('cg-controls'); if(controls) controls.style.display='none';
+    document.getElementById('cg-count').textContent='';
+    showCollectionState(
+      '<div class="cg-state"><div class="cg-state-ic">'+def.icon+'</div>'
+      + esc(def.emptyMsg)
+      + '<div class="cg-state-sub">'+esc(def.emptyHint)+'</div></div>');
+    return;
+  }
+  renderCollectionGrid();
+}
 
 async function getRandom(){
   if(!sbKey){alert('Still connecting — please wait a moment and try again.');return;}
