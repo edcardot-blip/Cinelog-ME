@@ -47,15 +47,17 @@ async function resolveTmdbId(imdbId){
   return hit ? hit.id : null;
 }
 
-async function streamingFor(tmdbId){
-  const j = await tmdb('/movie/' + tmdbId + '/watch/providers');
-  const us = j && j.results && j.results[REGION];
-  if(!us) return {};
-  const out = {};
-  for(const [tmdbTier, tier] of TIER_ORDER){
-    for(const p of (us[tmdbTier] || [])) out[String(p.provider_name).toLowerCase()] = tier;
-  }
-  return out;
+async function detailsAndStreaming(tmdbId){
+  // One call returns movie details (poster_path) + watch providers, so we refresh the streaming
+  // map AND migrate posters to TMDB — many original posters are dead Amazon (m.media-amazon) URLs.
+  const j = await tmdb('/movie/' + tmdbId, { append_to_response: 'watch/providers' });
+  if(!j) return { streaming: {}, poster: null };
+  const wp = j['watch/providers'];
+  const us = wp && wp.results && wp.results[REGION];
+  const streaming = {};
+  if(us){ for(const [tmdbTier, tier] of TIER_ORDER){ for(const p of (us[tmdbTier] || [])) streaming[String(p.provider_name).toLowerCase()] = tier; } }
+  const poster = j.poster_path ? ('https://image.tmdb.org/t/p/w500' + j.poster_path) : null;
+  return { streaming, poster };
 }
 
 async function omdb(imdbId){
@@ -121,10 +123,12 @@ async function refreshStreaming(){
       if(tid){ resolved++; await supaPatch(f.imdb_id, { tmdb_id: tid }); }
       else { unresolved++; continue; }
     }
-    const streaming = await streamingFor(tid);
-    const ok = await supaPatch(f.imdb_id, { streaming, streaming_updated_at: now });
+    const { streaming, poster } = await detailsAndStreaming(tid);
+    const patch = { streaming, streaming_updated_at: now };
+    if(poster) patch.poster_url = poster;   // migrate to a reliable TMDB poster
+    const ok = await supaPatch(f.imdb_id, patch);
     if(ok) updated++;
-    if(sampleShown < 5){ console.log('  ~ ' + f.imdb_id + ' -> ' + Object.keys(streaming).length + ' providers'); sampleShown++; }
+    if(sampleShown < 5){ console.log('  ~ ' + f.imdb_id + ' -> ' + Object.keys(streaming).length + ' providers' + (poster ? ', poster ok' : ', no tmdb poster')); sampleShown++; }
   }
   console.log('streaming: updated ' + updated + ', newly-resolved tmdb_id ' + resolved + ', unresolved ' + unresolved + ', TMDB calls ' + tmdbCalls);
 }
