@@ -1481,10 +1481,8 @@
     <span class="cg-head-spacer" aria-hidden="true"></span>
   </header>
   <div class="trend-tabs" id="trend-tabs" role="tablist">
-    <button class="trend-tab on" type="button" role="tab" data-tab="foryou"  onclick="setTrendingTab('foryou')">For You</button>
-    <button class="trend-tab"    type="button" role="tab" data-tab="popular" onclick="setTrendingTab('popular')">Popular</button>
-    <button class="trend-tab"    type="button" role="tab" data-tab="gems"    onclick="setTrendingTab('gems')">Hidden Gems</button>
-    <button class="trend-tab"    type="button" role="tab" data-tab="newer"   onclick="setTrendingTab('newer')">Newer Movies</button>
+    <button class="trend-tab on" type="button" role="tab" data-tab="trending" onclick="setTrendingTab('trending')">Trending</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="newer"    onclick="setTrendingTab('newer')">Newer</button>
   </div>
   <div class="trend-body" id="trend-page-body"></div>
 </div>
@@ -3871,26 +3869,16 @@ const TREND_POOL_SIZE  = 250;   // candidate pool size (top by imdb_rating desc)
 const TREND_ROW_COUNT  = 3;     // posters in the homepage preview (3-up grid)
 let trendPool      = null;      // cached candidate pool (array of movie objects)
 let trendPoolReady = false;     // pool fetched at least once this session
-let trendPageTab   = 'foryou';  // active tab on the full page
+let trendPageTab   = 'trending';  // active tab on the full page
 let trendFilmsById = {};        // imdb_id -> movie (for tap → detail)
 
-/* --- Deterministic per-day pseudo-random in ~[0,15].
-   Seeded from today's date + imdb_id so the row is stable within a day but
-   shifts daily. Tiny FNV-ish string hash; intentionally NOT Math.random. --- */
-function trendDailySeed(){ return new Date().toISOString().slice(0,10); }
-function trendHash(str){
-  let h=2166136261>>>0;
-  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619)>>>0; }
-  return h>>>0;
-}
-function trendDailyJitter(m){
-  const h=trendHash(trendDailySeed()+'|'+(m.imdb_id||m.title||''));
-  return (h%10000)/10000*15;   // 0–15
-}
+/* --- Session-constant random boost: sampled ONCE per page load so the
+   ranked lists rotate on each app load (but stay stable within a session). --- */
+const TREND_SESSION_BOOST = Math.random()*100;   // 0–100, fixed for this page load
 
 /* --- Score components --- */
 function trendNum(v){ const n=parseFloat(v); return isNaN(n)?null:n; }
-// quality: average of present rating scales, normalized to 0–100.
+// quality_score (0–100): average of present rating scales (IMDb*10, RT, Metacritic).
 function trendQuality(m){
   const parts=[];
   const imdb=trendNum(m.imdb_rating);   if(imdb!=null) parts.push(Math.max(0,Math.min(100,imdb*10)));
@@ -3899,11 +3887,18 @@ function trendQuality(m){
   if(!parts.length) return 0;
   return parts.reduce((a,b)=>a+b,0)/parts.length;
 }
-// popularity: log-scaled vote_count → ~0–100.
+// popularity_score (0–100): log-scaled IMDb vote_count → ~0–100 (0 if no votes).
 function trendPopularity(m){
   const v=trendNum(m.vote_count);
   if(v==null||v<=0) return 0;
   return Math.max(0,Math.min(100,(Math.log10(v)-3)/3*100));
+}
+// recency_boost (0–100): newer films score higher (last ~30 years mapped to 0–100).
+function trendRecency(m){
+  const y=trendNum(m.year);
+  if(y==null) return 0;
+  const now=new Date().getFullYear();
+  return Math.max(0,Math.min(100,(y-(now-30))/30*100));
 }
 function trendAvailable(m){
   const a=movieAvailability(m);
@@ -3912,11 +3907,14 @@ function trendAvailable(m){
 function trendFreeAvailable(m){
   return movieAvailability(m).some(x=>x.free);
 }
+/* trending_score = high-quality, broadly appealing films worth watching tonight
+   — NOT live/internet trending. Weighted blend (quality dominates):
+   quality*0.55 + popularity*0.30 + recency*0.10 + session-random*0.05. */
 function trendingScore(m){
-  let s = trendQuality(m) + trendPopularity(m) + trendDailyJitter(m);
-  if(trendAvailable(m)) s += 8;                 // availability boost
-  if(typeof isSeen==='function' && isSeen(m)) s -= 40; // prefer unseen (seen can still surface)
-  return s;
+  return trendQuality(m)*0.55
+       + trendPopularity(m)*0.30
+       + trendRecency(m)*0.10
+       + TREND_SESSION_BOOST*0.05;
 }
 
 /* --- Cheap taste bias from favorited genres (For You). favProfile is built by
@@ -3950,11 +3948,13 @@ async function loadTrendPool(){
   }catch(e){ return null; }
 }
 
-/* --- Build the ranked "For You" list (excludes hidden). --- */
+/* --- Build the ranked "Trending" list. Excludes hidden (niSet); prefers
+   unseen by demoting seen films so unseen fill first when available. --- */
 function trendRanked(pool){
+  const seen=m=>(typeof isSeen==='function' && isSeen(m));
   return pool
     .filter(m=>!(typeof isNotInterested==='function' && isNotInterested(m)))
-    .map(m=>({m, s:trendingScore(m)+trendTasteBonus(m)}))
+    .map(m=>({m, s:trendingScore(m)+trendTasteBonus(m)-(seen(m)?1000:0)}))
     .sort((a,b)=>b.s-a.s)
     .map(x=>x.m);
 }
@@ -3991,7 +3991,11 @@ async function initTrendingRow(){
   row.classList.remove('hidden');
   const pool=await loadTrendPool();
   if(!pool||!pool.length){ row.classList.add('hidden'); return; }
-  const ranked=trendRanked(pool).slice(0,TREND_ROW_COUNT);
+  // Quality gate: rank by trending_score, take top ~30, then shuffle and pick 3.
+  // trendRanked already excludes hidden and demotes seen (so unseen fill first).
+  const top=trendRanked(pool).slice(0,30);
+  for(let i=top.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [top[i],top[j]]=[top[j],top[i]]; }
+  const ranked=top.slice(0,TREND_ROW_COUNT);
   if(!ranked.length){ row.classList.add('hidden'); return; }
   sc.innerHTML=ranked.map(m=>trendCellHTML(m)).join('');
   sc.querySelectorAll('.trend-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*45,540)+'ms'; });
@@ -3999,40 +4003,22 @@ async function initTrendingRow(){
 
 /* --- Full Trending page + tabs --- */
 const TREND_TAB_BLURB={
-  foryou :'Hot picks tuned to your taste tonight.',
-  popular:'The most-watched films in the catalog.',
-  gems   :'Highly rated but under the radar.',
-  newer  :'The best of the last few years.'
+  trending:'High-quality, broadly appealing films worth watching tonight.',
+  newer   :'The best of recent years (2015 and up).'
 };
 function trendTabList(tab, pool){
   const notHidden=m=>!(typeof isNotInterested==='function' && isNotInterested(m));
-  if(tab==='popular'){
-    return pool.filter(notHidden)
-      .slice().sort((a,b)=>(trendNum(b.vote_count)??-1)-(trendNum(a.vote_count)??-1));
-  }
-  if(tab==='gems'){
-    // High quality + modest popularity (obscure-but-good).
-    return pool.filter(notHidden)
-      .filter(m=>{ const q=trendQuality(m); const v=trendNum(m.vote_count)??0; return q>=70 && v>0 && v<60000; })
-      .sort((a,b)=>{
-        const qa=trendQuality(a),qb=trendQuality(b);
-        // reward quality, gently penalize popularity so the truly obscure rise
-        const sa=qa-trendPopularity(a)*0.35, sb=qb-trendPopularity(b)*0.35;
-        return sb-sa;
-      });
-  }
   if(tab==='newer'){
-    const yr=new Date().getFullYear();
+    // Recent only (year >= 2015). Sort by quality + popularity (desc).
     return pool.filter(notHidden)
-      .filter(m=>{ const y=trendNum(m.year); const q=trendNum(m.imdb_rating); return y!=null && y>=yr-5 && (q==null||q>=6.3); })
-      .sort((a,b)=>{
-        const dy=(trendNum(b.year)??0)-(trendNum(a.year)??0);
-        if(dy) return dy;
-        return trendingScore(b)-trendingScore(a);
-      });
+      .filter(m=>{ const y=trendNum(m.year); return y!=null && y>=2015; })
+      .sort((a,b)=>(trendQuality(b)+trendPopularity(b))-(trendQuality(a)+trendPopularity(a)));
   }
-  // foryou (default): the trendingScore ranking with taste bias
-  return trendRanked(pool);
+  // trending (default): highest trending_score. Min IMDb ~7.0 when present
+  // (films without a rating may still pass). Mix of classics + modern —
+  // the 0.30 popularity weight already limits blockbuster dominance.
+  return trendRanked(pool)
+    .filter(m=>{ const q=trendNum(m.imdb_rating); return q==null || q>=7.0; });
 }
 function renderTrendingPage(){
   const body=document.getElementById('trend-page-body');
@@ -4067,8 +4053,8 @@ let trendPageOpen=false;
 async function openTrendingPage(){
   const ov=document.getElementById('trend-overlay');
   if(!ov) return;
-  trendPageTab='foryou';
-  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab==='foryou'));
+  trendPageTab='trending';
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab==='trending'));
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;
   setTimeout(()=>ov.classList.add('open'),0);
