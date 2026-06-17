@@ -1988,13 +1988,33 @@ async function getRecs(){
 
     // Helper to render one card. Index is per-section (1-based numbering inside each).
 
+    // ---- Output diversity (selection-preserving) ----
+    // Reorder an already-selected, rank-sorted unseen list so the same PRIMARY genre doesn't
+    // stack consecutively. Same films, same count — only adjacency changes. #1 (top rank) stays
+    // anchored first; each next slot takes the HIGHEST-ranked remaining film whose primary genre
+    // differs from the previous card (falling back to rank order when none differ). No score is
+    // touched and no film is added or dropped, so the ranking's SELECTION is fully preserved.
+    function diversifyOrder(list){
+      if(list.length < 3) return list;
+      const prim = m => { const g=(m.genre||'').split(',')[0]; return g?g.trim().toLowerCase():''; };
+      const remaining = list.slice();
+      const ordered = [remaining.shift()];               // anchor #1 = top-ranked film
+      while(remaining.length){
+        const prevG = prim(ordered[ordered.length-1]);
+        let idx = remaining.findIndex(m => { const g=prim(m); return g && g!==prevG; });
+        if(idx === -1) idx = 0;                          // all same/genreless left -> keep rank order
+        ordered.push(remaining.splice(idx,1)[0]);
+      }
+      return ordered;
+    }
+
     // Build output based on the active view mode.
     // - hybrid:    up to 10 unseen + 'Worth a rewatch' divider + up to 5 seen
     // - fresh:     up to 15 unseen (no rewatch section)
     // - rewatches: up to 15 seen (no fresh section)
     let outHtml;
     if(viewMode==='fresh'){
-      const fresh = allUnseen.slice(0,15);
+      const fresh = diversifyOrder(allUnseen.slice(0,15));
       if(fresh.length===0){
         outHtml = '<div class="status">No unseen films match your filters. Try loosening filters or switch to Smart Mix / Rewatch Mode.</div>';
       } else {
@@ -2009,7 +2029,7 @@ async function getRecs(){
       }
     } else {
       // hybrid (default)
-      const unseen = allUnseen.slice(0,10);
+      const unseen = diversifyOrder(allUnseen.slice(0,10));
       // Rewatch picks: ALWAYS shuffled (no ranking) so the same films don't keep surfacing.
       // If 6+ seen-matches exist, sample 5; if fewer, shuffle whatever we have.
       let seenList;
