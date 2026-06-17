@@ -1,0 +1,28 @@
+name: Catalog refresh
+
+# Manual trigger only for now (dry-run by default). A daily cron will be added
+# once the dry-run is validated, the schema migration is applied, and the
+# SUPABASE_SERVICE_ROLE_KEY secret is set for live writes.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no writes)"
+        type: boolean
+        default: true
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run ingestion
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run == false && '0' || '1' }}
+        run: node pipeline/ingest.mjs
