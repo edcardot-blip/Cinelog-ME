@@ -374,6 +374,15 @@
   /* Safe-area insets so iPhone notch/home-indicator don't overlap content */
   body{padding-top:max(2rem,env(safe-area-inset-top));padding-bottom:max(2.5rem,env(safe-area-inset-bottom));padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}
 
+  /* ===== Installed PWA (Add to Home Screen) — pull the title up =====
+     Safari (non-standalone) keeps its existing top padding above; these rules
+     only apply when running as an installed standalone app. Belt-and-suspenders:
+     a JS-toggled .standalone class AND the native display-mode media query. */
+  html.standalone body{padding-top:max(.4rem,env(safe-area-inset-top))}
+  @media (display-mode: standalone){
+    html body{padding-top:max(.4rem,env(safe-area-inset-top))}
+  }
+
   /* Fluid type — scale smoothly across breakpoints */
   .section-title{font-size:clamp(17px,4.4vw,20px)}
   .slider-lbl{font-size:clamp(15px,4vw,17px)}
@@ -465,13 +474,13 @@
 
   /* --- App header: brand hero centered, circular profile icon pinned top-right --- */
   .apphead{position:relative;margin-bottom:1.1rem}
-  .apphead .auth-pill{position:absolute;top:0;right:0;z-index:5;
-    width:40px;height:40px;min-width:0;padding:0;border-radius:50%;
+  .apphead .auth-pill{position:absolute;top:2px;right:0;z-index:5;
+    width:27px;height:27px;min-width:0;padding:0;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;gap:0;
     font-size:0;letter-spacing:0;overflow:hidden;
     background:var(--bg3);border:1px solid var(--border2);color:var(--text);
-    box-shadow:0 2px 10px rgba(0,0,0,.3);transition:border-color .15s,background .15s,transform .12s}
-  .apphead .auth-pill > span{font-size:18px;line-height:1}
+    box-shadow:0 2px 8px rgba(0,0,0,.3);transition:border-color .15s,background .15s,transform .12s}
+  .apphead .auth-pill > span{font-size:13px;line-height:1}
   .apphead .auth-pill:hover{border-color:var(--accent);background:var(--bg4);transform:translateY(-1px)}
   .apphead .auth-pill:active{transform:scale(.95)}
   .apphead .auth-pill.in{background:var(--teal-dim);border-color:rgba(59,180,168,.5);color:var(--teal)}
@@ -501,6 +510,7 @@
   .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .mode-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rsm);padding:.7rem .55rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--sans)}
   .mode-card:hover{border-color:#4a4a52;transform:translateY(-1px)}
+  .mode-card:active{transform:scale(.97)}
   .mode-card .mc-ico{font-size:19px;line-height:1;margin-bottom:1px}
   .mode-card .mc-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.01em}
   .mode-card .mc-desc{font-size:10.5px;color:var(--text3);line-height:1.3}
@@ -551,37 +561,55 @@
   /* ===== Full-screen slide-up filter sheets =====
      Faux full-screen anchored to the .wrap (normal flow) so the iframe preview
      never collapses; in the real app this can be position:fixed inset:0. */
+  /* ===== Centered floating picker dialogs (Genre / Era / Length) =====
+     Converted from bottom sheets to Apple-TV/Apple-Music-style centered
+     dialogs: dimmed + blurred backdrop, dialog centered both axes, premium
+     shadow, smooth scale + fade in/out. Keeps the same .sheet markup, ids
+     (#genre-pills etc.) and the X / Done / backdrop-close behavior. */
   .sheet-host{position:absolute;inset:0;z-index:800;display:none}
   .sheet-host.open{display:block}
-  .sheet-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fade .2s ease}
-  .sheet{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:88vh;
+  .sheet-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.66);
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
+  .sheet-host.shown .sheet-backdrop{opacity:1;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .sheet{position:fixed;left:50%;top:50%;width:min(440px,calc(100vw - 2rem));max-height:min(82vh,640px);
     display:flex;flex-direction:column;
-    background:var(--bg2);border:1px solid var(--border2);border-bottom:none;
-    border-radius:22px 22px 0 0;box-shadow:0 -18px 60px rgba(0,0,0,.6);
-    padding:max(.5rem,env(safe-area-inset-top)) 1.15rem max(1rem,env(safe-area-inset-bottom));
-    transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1)}
-  .sheet.show{transform:translateY(0)}
-  .sheet::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:38px;height:4px;border-radius:99px;background:var(--border2)}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1.05rem 0 .65rem}
+    background:var(--bg2);border:1px solid var(--border2);
+    border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;
+    padding:1.1rem 1.15rem max(1rem,env(safe-area-inset-bottom));
+    transform:translate(-50%,-50%) scale(.92);opacity:0;
+    transition:transform .25s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
+  .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 .55rem}
   .sheet-title{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin:0}
-  .sheet-x{width:38px;height:38px;flex:none;border-radius:50%;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:15px;cursor:pointer;line-height:1;transition:color .15s,border-color .15s}
-  .sheet-x:hover{color:var(--text);border-color:var(--border)}
-  .sheet-tools{display:flex;align-items:center;gap:9px;margin-bottom:.9rem}
+  /* Cleaner, lighter native-iOS close button — less visual weight */
+  .sheet-x{width:30px;height:30px;flex:none;border-radius:50%;border:none;
+    background:var(--bg3);color:var(--text3);font-size:14px;cursor:pointer;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:color .15s,background .15s,transform .12s}
+  .sheet-x:hover{color:var(--text);background:var(--bg4)}
+  .sheet-x:active{transform:scale(.92)}
+  .sheet-tools{display:flex;align-items:center;gap:9px;margin-bottom:.7rem;min-height:0}
+  .sheet-tools:empty{display:none}
   .sheet-tools-acts{display:inline-flex;gap:8px;margin-left:auto}
-  .sheet-search{flex:1}
-  .sheet .clr{font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);border-radius:99px;cursor:pointer;padding:7px 14px;font-weight:500;font-family:var(--sans);transition:color .12s,background .12s,border-color .12s;white-space:nowrap}
+  .sheet .clr{font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);border-radius:99px;cursor:pointer;padding:6px 13px;font-weight:500;font-family:var(--sans);transition:color .12s,background .12s,border-color .12s,transform .1s;white-space:nowrap}
   .sheet .clr:hover{color:var(--accent);background:var(--bg2);border-color:var(--border)}
-  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.5rem}
-  .sheet-foot{padding:.85rem 0 .25rem;border-top:1px solid var(--border)}
-  .sheet-done{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:var(--sans);
+  .sheet .clr:active{transform:scale(.95)}
+  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.4rem}
+  .sheet-foot{padding:.75rem 0 .15rem;border-top:1px solid var(--border)}
+  .sheet-done{width:100%;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);
     background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);
     color:#1a1305;cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 20px rgba(232,176,75,.2);transition:filter .14s,transform .12s}
   .sheet-done:hover{filter:brightness(1.05)}
-  .sheet-done:active{transform:translateY(1px) scale(.99)}
+  .sheet-done:active{transform:translateY(1px) scale(.985)}
   body.sheet-open{overflow:hidden}
-  /* Bigger tap targets for pills inside sheets */
-  .sheet .pills{display:flex;flex-wrap:wrap;gap:9px;justify-content:flex-start}
-  .sheet .pills .pill{min-height:46px;padding:12px 18px;font-size:14px}
+  /* Picker pills: consistent spacing, gold selected contrast, subtle press anim */
+  .sheet .pills{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+  .sheet .pills .pill{min-height:46px;padding:12px 18px;font-size:14px;
+    transition:background .18s,border-color .18s,color .18s,transform .1s}
+  .sheet .pills .pill:active{transform:scale(.96)}
+  /* Stronger gold contrast for selected genre pills inside the dialog */
+  .sheet .pills .pill.on-amber{background:#3a2400!important;border-color:var(--accent)!important;color:var(--accent2)!important;box-shadow:0 0 0 1px rgba(232,176,75,.35)}
 
   /* --- Advanced filters: animated max-height/opacity open/close --- */
   .adv-disc-body{display:block;max-height:0;opacity:0;overflow:hidden;
@@ -667,8 +695,7 @@
           <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
         </div>
         <div class="sheet-tools">
-          <input type="text" id="genre-search" class="sheet-search" placeholder="Search genres…" oninput="filterSheetPills('genre',this.value)" autocomplete="off" />
-          <button class="clr" onclick="clearGroup('genre')">Clear</button>
+          <span class="sheet-tools-acts"><button class="clr" onclick="clearGroup('genre')">Clear</button></span>
         </div>
         <div class="sheet-body"><div class="pills" id="genre-pills"></div></div>
         <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
@@ -892,6 +919,17 @@
 </nav>
 
 <script>
+/* ===== Standalone PWA detection (run early) =====
+   When launched from the iOS Home Screen we add .standalone to <html> so the
+   top safe-area padding can shrink and the title sits higher. */
+(function(){
+  try{
+    if(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)){
+      document.documentElement.classList.add('standalone');
+    }
+  }catch(e){}
+})();
+
 /* ===== Phase 1 UI: Advanced-filters disclosure + bottom-nav router =====
    These are presentation-only helpers. They do NOT touch the recommendation
    engine, scoring, Supabase, auth, or list functions — they only toggle
@@ -915,28 +953,29 @@ function openSheet(group){
   var host=document.getElementById('sheet-host'); if(!host) return;
   ['genre','era','length'].forEach(function(g){
     var s=document.getElementById('sheet-'+g);
-    if(s){ var on=(g===group); s.hidden=!on; s.classList.toggle('show',on); }
+    if(s){ s.hidden=(g!==group); s.classList.remove('show'); }
   });
   host.classList.add('open'); host.setAttribute('aria-hidden','false');
   document.body.classList.add('sheet-open');
-  if(group==='genre'){ var sr=document.getElementById('genre-search'); if(sr){ sr.value=''; filterSheetPills('genre',''); } }
+  // Next frame: flip the animation classes so backdrop blur + dialog scale/fade in smoothly.
+  requestAnimationFrame(function(){
+    host.classList.add('shown');
+    var s=document.getElementById('sheet-'+group); if(s) s.classList.add('show');
+  });
 }
 function closeSheet(){
   var host=document.getElementById('sheet-host'); if(!host) return;
-  host.classList.remove('open'); host.setAttribute('aria-hidden','true');
+  host.classList.remove('shown'); host.setAttribute('aria-hidden','true');
   document.body.classList.remove('sheet-open');
   ['genre','era','length'].forEach(function(g){
     var s=document.getElementById('sheet-'+g); if(s) s.classList.remove('show');
   });
+  // Let the scale/fade-out play, then unmount.
+  setTimeout(function(){ host.classList.remove('open'); }, 230);
 }
-/* Optional client-side search over the genre pills (read-only; just hides/shows buttons). */
-function filterSheetPills(group,q){
-  var box=document.getElementById(group+'-pills'); if(!box) return;
-  var needle=(q||'').trim().toLowerCase();
-  box.querySelectorAll('.pill').forEach(function(p){
-    p.style.display = !needle || p.textContent.toLowerCase().indexOf(needle)>-1 ? '' : 'none';
-  });
-}
+/* Genre search bar removed — all genres show immediately. Kept as a harmless
+   no-op for back-compat in case any code still references it. */
+function filterSheetPills(){}
 // Back-compat: some engine code may still call closeQuickFilters()
 function closeQuickFilters(){ closeSheet(); }
 /* Summarise the current selection of one group as a short label.
@@ -1821,7 +1860,12 @@ function clearCache(){
   refreshSettings();
   toast('Local cache cleared.');
 }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSettings(); });
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  var host=document.getElementById('sheet-host');
+  if(host && host.classList.contains('open')){ closeSheet(); return; }
+  closeSettings();
+});
 
 // ---- Surprise Me: pure random picks from films matching the user's filters.
 // The Adventurous slider, rating-mode control, and ALL ranking math are intentionally ignored.
