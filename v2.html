@@ -723,7 +723,7 @@
   /* rank badge — top-left */
   .rg-rank{position:absolute;top:8px;left:8px;z-index:2;
     font-family:var(--serif);font-size:13px;font-weight:600;line-height:1;
-    color:#1a1305;background:linear-gradient(180deg,var(--accent2),var(--accent));
+    color:#d6d6da;background:rgba(28,28,32,.82);
     padding:4px 9px;border-radius:var(--rpill);box-shadow:0 2px 8px rgba(0,0,0,.4)}
   /* imdb badge — top-right */
   .rg-imdb{position:absolute;top:8px;right:8px;z-index:2;
@@ -2083,10 +2083,8 @@ function renderGalleryTile(m, rank){
     ? '<img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=galleryNoPoster('+JSON.stringify(JSON.stringify(m.title))+')">'
     : galleryNoPoster(m.title);
   const rankBadge = rank!=null ? '<span class="rg-rank">#'+rank+'</span>' : '';
-  const imdbBadge = (imdb!=null && imdb!=='' && imdb!=='N/A')
-    ? '<span class="rg-imdb">★ '+imdb+'</span>' : '';
   return '<button class="rg-tile" type="button" onclick="openMovieDetailById(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'
-    + rankBadge + imdbBadge + art + '</button>';
+    + rankBadge + art + '</button>';
 }
 function galleryNoPoster(title){
   return '<div class="rg-noposter"><span class="rg-np-ic">🎞</span><span class="rg-np-title">'+esc(title||'Untitled')+'</span></div>';
