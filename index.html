@@ -653,6 +653,13 @@ const TABLE='movies';
 // had nothing obscure to promote. 500 well-rated films include ~110 hidden gems.
 const CANDIDATE_LIMIT=500;
 const POOL_LIMIT=CANDIDATE_LIMIT;   // ranking math operates over the full candidate pool
+// ===== DEV DIAGNOSTICS (read-only scoring inspector) =====
+// Off by default. Renders a panel AFTER the result cards that mirrors the existing
+// console.table breakdowns so the owner can see WHY films ranked as they did.
+// It only READS already-computed m._* fields — it never changes any scoring math.
+// To enable: set this to true, OR run localStorage.setItem('cinelog_dev','1') in the
+// console, OR open the page with ?dev=1 in the URL. Normal users never see it.
+const DEV_DIAGNOSTICS = false;
 // Optional: paste your Supabase anon (public) key here to make the site work for
 // everyone with no setup. The anon key is SAFE to expose publicly as long as Row
 // Level Security is enabled on your table. Leave '' to keep the manual paste flow.
@@ -691,7 +698,7 @@ const SERVICES=[
   {key:'netflix',  label:'Netflix',    color:'#e50914', toggle:true,  aliases:['netflix','netflix standard with ads']},
   {key:'hbo',      label:'Max',        color:'#9d34da', toggle:true,  aliases:['hbo max','max','hbo max amazon channel']},
   {key:'disney',   label:'Disney+',    color:'#1f6fed', toggle:true,  aliases:['disney plus','disney+']},
-  {key:'prime',    label:'Prime Video',color:'#00a8e1', toggle:true,  aliases:['amazon prime video','amazon prime video with ads']},
+  {key:'prime',    label:'Prime Video',color:'#00a8e1', toggle:true,  aliases:['amazon prime video','amazon prime video with ads','amazon prime video free with ads']},
   {key:'hulu',     label:'Hulu',       color:'#1ce783', toggle:true,  aliases:['hulu']},
   {key:'paramount',label:'Paramount+', color:'#0064ff', toggle:true,  aliases:['paramount plus','paramount+','paramount plus premium','paramount plus essential','paramount+ amazon channel']},
   {key:'apple',    label:'Apple TV+',  color:'#cfcfcf', toggle:true,  aliases:['apple tv+','apple tv plus']},
@@ -699,7 +706,7 @@ const SERVICES=[
   // ---- Rent/buy storefronts (badges only, never toggles) ----
   {key:'appletv_store', label:'Apple TV', color:'#b8b8b8', toggle:false, aliases:['apple tv store','apple tv']},
   {key:'amazon_video',  label:'Amazon',   color:'#00a8e1', toggle:false, aliases:['amazon video']},
-  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home']},
+  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home','fandango at home free']},
   {key:'google',        label:'Google Play', color:'#34a853', toggle:false, aliases:['google play movies']},
   {key:'youtube_store', label:'YouTube', color:'#ff0000', toggle:false, aliases:['youtube']}
 ];
@@ -920,6 +927,24 @@ async function onNiClick(btn, imdbId){
 let favSet = new Set();     // imdb_ids the user favorited
 let watchSet = new Set();   // imdb_ids on the user's watchlist
 
+// ---- Taste profile (scoring support) — a tally of the genres across the user's favorited films.
+// Shape: { genres: {<lcgenre>: count}, n: <#films> } or null when there are no favorites.
+// Consumed ONLY by the additive favoriteBonus in getRecs; null => bonus is exactly 0.
+let favProfile = null;
+async function buildFavProfile(){
+  try{
+    if(!favSet.size){ favProfile = null; return; }
+    // full=true so the rows include `genre` (the lean fetch omits it).
+    const films = await fetchMoviesByIds([...favSet], true);
+    const genres = {};
+    films.forEach(f => {
+      (f.genre||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean)
+        .forEach(g => { genres[g] = (genres[g]||0) + 1; });
+    });
+    favProfile = { genres, n: films.length };
+  }catch(e){ favProfile = null; }   // graceful: a failed fetch just means no bonus
+}
+
 async function loadFavorites(){
   if(!currentUser || !sbAuth){ favSet=new Set(); updateFavCount(); return; }
   try{
@@ -969,6 +994,8 @@ async function onFavClick(btn, imdbId){
   btn.textContent = now ? '♥ Favorited' : '♡ Favorite';
   const ok=await markFavorite(imdbId, now);
   if(!ok){ const a=favSet.has(imdbId); btn.classList.toggle('marked',a); btn.textContent=a?'♥ Favorited':'♡ Favorite'; }
+  // Scoring-support touch: keep the taste profile current after the toggle (fire-and-forget).
+  buildFavProfile();
 }
 async function onWatchClick(btn, imdbId){
   if(!currentUser){ toast('Sign in to use your watchlist.'); openSettings(); return; }
@@ -1156,9 +1183,14 @@ function applyAuthState(session){
   updateAccountUI();
   updateAuthPill();
   if(currentUser){
-    loadSeen(); loadNotInterested(); loadFavorites(); loadWatchlist();
+    loadSeen(); loadNotInterested();
+    // Scoring-support touch into the data-load path: rebuild the taste profile once
+    // favorites have loaded (fire-and-forget; the bonus is a no-op until it's ready).
+    loadFavorites().then(buildFavProfile);
+    loadWatchlist();
   } else {
     seenSet=new Set(); seenCount=0; niSet=new Set(); favSet=new Set(); watchSet=new Set();
+    favProfile=null;   // signed out => no taste profile => favoriteBonus is exactly 0
     updateSeenCount(); updateNiCount(); updateFavCount(); updateWatchCount();
   }
   // If a fresh sign-in changed the displayed results' Seen/Hidden state, refresh counts in Settings.
@@ -1768,6 +1800,20 @@ async function getRecs(){
       return pen;                             // a single strong source (RT or Meta alone) stays hard-hit
     };
 
+    // Favorite bonus (Tier 2): a GENTLE, BOUNDED, purely-additive nudge toward films whose
+    // genres echo the user's favorited films. Never negative (no penalty for non-matches).
+    // INVARIANT: no taste profile (signed out / no favorites) => returns 0 before any math,
+    // so empty-favorites output is byte-for-byte identical to prior behavior.
+    const favoriteBonus = (m) => {
+      if(!favProfile || !favProfile.n) return 0;            // INVARIANT: no favorites -> 0
+      const mg = (m.genre||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+      if(!mg.length) return 0;
+      let hit = 0; mg.forEach(x => { if(favProfile.genres[x]) hit += favProfile.genres[x]; });
+      if(!hit) return 0;
+      const norm = hit / favProfile.n;                       // taste concentration in this film
+      return Math.min(9, norm * 9);                          // bounded [0, 9], gentle, never negative
+    };
+
     // Exposure memory (variety): films shown often get a gentle demotion so the list rotates.
     // Guarded — degrades to a no-op if localStorage is unavailable (e.g. preview sandboxes).
     let exposure = {};
@@ -1797,13 +1843,14 @@ async function getRecs(){
       const confPen    = confidencePenalty(m);
       const expCount   = exposure[m.imdb_id]||0;
       const expPen     = -Math.min(8, expCount*1.5);                    // gentle rotation demotion
+      const favBon     = favoriteBonus(m);                             // additive nudge, 0 when no favorites
 
       // RAW score for ranking — intentionally NOT clamped, so heavily-penalized blockbusters
       // keep a real ordering instead of all colliding at 0.
-      const raw = base + popMod + genreBonus + animPen + docPen + fPen + confPen + expPen;
+      const raw = base + popMod + genreBonus + animPen + docPen + fPen + confPen + expPen + favBon;
 
       m._popMod = popMod; m._fPen = fPen; m._genreBonus = genreBonus;
-      m._confPen = confPen; m._expPen = expPen; m._raw = raw;
+      m._confPen = confPen; m._expPen = expPen; m._favBon = favBon; m._raw = raw;
       m._surprise = Math.round(fame);
       m.why = whyFor(m, quality, fame);
       m.ws = Math.max(0, Math.min(100, Math.round(raw)));   // DISPLAY score only (clamped)
@@ -1854,13 +1901,88 @@ async function getRecs(){
       })));
     }catch(e){}
 
+    // ---- DEV DIAGNOSTICS PANEL (read-only; see DEV_DIAGNOSTICS comment up top) ----
+    // Mirrors the two console.table arrays above as on-page HTML so the owner can see
+    // ranking internals. Reads only existing m._* fields; performs no scoring math, no
+    // re-sort, and no mutation. Rendered separately AFTER the cards below.
+    try{
+      const devOn = (DEV_DIAGNOSTICS===true)
+        || (function(){try{return localStorage.getItem('cinelog_dev')==='1';}catch(e){return false;}})()
+        || (function(){try{return /[?&]dev=1(?:&|$)/.test(location.search);}catch(e){return false;}})();
+      window._cinelogRenderDiag = function(){
+        const old=document.getElementById('diag-panel'); if(old) old.remove();
+        if(!devOn) return;
+        try{
+          const r1 = x => (x==null?'':Math.round(x*10)/10);
+          const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          // Levers active for this run (read-only echo).
+          const rw = (typeof ratingsWeight!=='undefined')?ratingsWeight:0.55;
+          const bw = (typeof blockbusterWeight!=='undefined')?blockbusterWeight:null;
+          const cw = (typeof crowdWeight!=='undefined')?crowdWeight:null;
+          const qf = (typeof qualityFactor!=='undefined')?qualityFactor:null;
+          const header =
+            '<div style="margin-bottom:8px;line-height:1.5">'
+            + '<b>Cinelog dev diagnostics</b> &middot; read-only mirror of console.table data'
+            + '<br>advPos=' + esc(advPos)
+            + ' &middot; ratingsWeight=' + esc(r1(rw))
+            + ' &middot; blockbusterWeight=' + esc(r1(bw))
+            + ' &middot; crowdWeight=' + esc(r1(cw))
+            + ' &middot; qualityFactor=' + esc(r1(qf))
+            + '<br>ratingMode=' + esc(ratingMode)
+            + ' &middot; viewMode=' + esc(viewMode)
+            + ' &middot; pool size=' + esc(pool.length)
+            + ' &middot; ranked=' + esc(ranked.length)
+            + '<br>taste profile: ' + (
+                (favProfile && favProfile.n)
+                  ? ('n=' + esc(favProfile.n) + ' &middot; top genres=' + esc(
+                      Object.entries(favProfile.genres).sort((a,b)=>b[1]-a[1]).slice(0,5)
+                        .map(g=>g[0]+'('+g[1]+')').join(', ')))
+                  : 'none (favorite bonus = 0)')
+            + '</div>';
+          const tbl = (cols, rows) => {
+            let h='<table style="border-collapse:collapse;width:100%;font:11px/1.4 monospace">';
+            h+='<thead><tr>'+cols.map(c=>'<th style="text-align:left;border-bottom:1px solid #555;padding:2px 6px;white-space:nowrap">'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';
+            h+=rows.map(row=>'<tr>'+row.map(cell=>'<td style="border-bottom:1px solid #2a2a2a;padding:2px 6px;white-space:nowrap">'+esc(cell)+'</td>').join('')+'</tr>').join('');
+            h+='</tbody></table>';
+            return h;
+          };
+          // Scoring breakdown (same fields as the first console.table, top 40).
+          const scoreCols=['#','title','imdb_votes','fame','pop_mod','franchise_pen','genre_bonus','conf_pen','exp_pen','fav_bonus','quality','raw','display'];
+          const scoreRows=ranked.slice(0,40).map((m,i)=>[
+            i+1, m.title, m.vote_count, m._fame, r1(m._popMod), r1(m._fPen),
+            r1(m._genreBonus), r1(m._confPen), r1(m._expPen), r1(m._favBon||0), m._quality, r1(m._raw), m.ws
+          ]);
+          // Genre breakdown (same fields as the second console.table, top 40).
+          const genreCols=['#','title','selected','movie_genres','positions','primary','secondary','purity','multi','total'];
+          const genreRows=ranked.slice(0,40).map((m,i)=>[
+            i+1, m.title, m._gSel, m._gMovie, m._gPos, m._gPrimary, m._gSecondary,
+            r1(m._gPurity||0), r1(m._gMulti||0), r1(m._gTotal||0)
+          ]);
+          const panel=document.createElement('div');
+          panel.id='diag-panel';
+          panel.setAttribute('style','margin-top:24px;padding:12px;border:1px dashed #666;border-radius:8px;background:#111;color:#bbb;font:11px/1.4 monospace;overflow-x:auto');
+          panel.innerHTML =
+            header
+            + '<details open style="margin-bottom:10px"><summary style="cursor:pointer;color:#ddd">Scoring breakdown (top 40)</summary><div style="overflow-x:auto;margin-top:6px">'+tbl(scoreCols,scoreRows)+'</div></details>'
+            + '<details style="margin-bottom:0"><summary style="cursor:pointer;color:#ddd">Genre breakdown (top 40)</summary><div style="overflow-x:auto;margin-top:6px">'+tbl(genreCols,genreRows)+'</div></details>';
+          out.parentNode.appendChild(panel);
+        }catch(e){}
+      };
+    }catch(e){ window._cinelogRenderDiag = function(){}; }
+
     // Split into unseen (Fresh Picks) and seen ("Worth a rewatch").
     const allUnseen = ranked.filter(m=>!isSeen(m));
     const allSeen   = ranked.filter(m=> isSeen(m));
 
     // Exposure bump: remember the films we're about to surface so they rotate out over time.
+    // Only bump the UNSEEN films each mode actually renders (hybrid shows up to 10 unseen,
+    // fresh up to 15, rewatches shows none) — otherwise browsing Rewatch Mode would silently
+    // rotate films that were never shown.
     try{
-      allUnseen.slice(0,15).forEach(m => { exposure[m.imdb_id] = (exposure[m.imdb_id]||0)+1; });
+      const surfaced = viewMode==='rewatches' ? []
+                     : viewMode==='fresh'     ? allUnseen.slice(0,15)
+                     :                          allUnseen.slice(0,10);   // hybrid (default)
+      surfaced.forEach(m => { exposure[m.imdb_id] = (exposure[m.imdb_id]||0)+1; });
       localStorage.setItem('cinelog_exposure', JSON.stringify(exposure));
     }catch(e){}
 
@@ -1908,6 +2030,8 @@ async function getRecs(){
       outHtml = topHtml + rewatchHtml;
     }
     out.innerHTML = outHtml;
+    // Append the read-only dev diagnostics panel AFTER the cards (no-op unless enabled).
+    try{ if(window._cinelogRenderDiag) window._cinelogRenderDiag(); }catch(e){}
   }catch(e){
     let hint='';
     if(e.message.includes('Failed to fetch'))hint='Likely a file:// origin block. Serve via http://localhost or use the deployed site.';
