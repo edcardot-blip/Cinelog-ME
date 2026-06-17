@@ -336,6 +336,7 @@
   .set-row.tappable{cursor:pointer;transition:background .13s}
   .set-row.tappable:hover{background:var(--bg4)}
   .set-ico{font-size:16px;width:22px;text-align:center;flex:none;line-height:1}
+  .set-ico svg{width:18px;height:18px;color:var(--accent);vertical-align:-3px}
   .set-label{flex:1;font-weight:500}
   .set-meta{color:var(--text2);font-size:13px;font-variant-numeric:tabular-nums}
   .set-chev{color:var(--text3);font-size:18px;line-height:1;margin-left:2px}
@@ -358,6 +359,7 @@
   .mlist-load{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;padding:1.25rem .15rem}
   .mlist-empty{text-align:center;color:var(--text2);font-size:14.5px;padding:2.75rem 1rem;line-height:1.6}
   .mlist-empty .mlist-empty-ic{font-size:30px;margin-bottom:.7rem}
+  .mlist-empty .mlist-empty-ic svg{width:40px;height:40px;color:var(--accent)}
   .mlist-empty span{display:block;font-size:12.5px;color:var(--text3);margin-top:.5rem;max-width:340px;margin-left:auto;margin-right:auto}
   .mlist{display:flex;flex-direction:column;gap:8px}
   .mrow{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);transition:opacity .2s}
@@ -2096,7 +2098,7 @@ function renderMovieList(films, kind){
 
 async function showNotInterested(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your hidden list.<span>Your hidden films are saved to your account.</span></div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">'+AUTH_PERSON_SVG+'</div>Sign in to see your hidden list.<span>Your hidden films are saved to your account.</span></div>'; return; }
   if(niSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🚫</div>No hidden movies yet.<span>Tap “Hide” on any movie card to keep it out of your recommendations.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading hidden movies…</div>';
   try{
@@ -2109,7 +2111,7 @@ async function showNotInterested(){
 
 async function showSeen(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your list.<span>Your Seen films are saved to your account.</span></div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">'+AUTH_PERSON_SVG+'</div>Sign in to see your list.<span>Your Seen films are saved to your account.</span></div>'; return; }
   if(seenSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">✓</div>No films marked seen yet.<span>Tap “+ Seen” on any movie card to track what you’ve watched.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading films you’ve seen…</div>';
   try{
@@ -2122,7 +2124,7 @@ async function showSeen(){
 
 async function showFavorites(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your Likes.<span>Your Likes are saved to your account.</span></div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">'+AUTH_PERSON_SVG+'</div>Sign in to see your Likes.<span>Your Likes are saved to your account.</span></div>'; return; }
   if(favSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">♥</div>No Likes yet.<span>Tap “Like” on any movie to save it here.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading Likes…</div>';
   try{
@@ -2135,7 +2137,7 @@ async function showFavorites(){
 
 async function showWatchlist(){
   const lv=document.getElementById('set-listview'); if(!lv) return;
-  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔑</div>Sign in to see your watchlist.<span>Your watchlist is saved to your account.</span></div>'; return; }
+  if(!currentUser){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">'+AUTH_PERSON_SVG+'</div>Sign in to see your watchlist.<span>Your watchlist is saved to your account.</span></div>'; return; }
   if(watchSet.size===0){ lv.innerHTML='<div class="mlist-empty"><div class="mlist-empty-ic">🔖</div>Nothing on your watchlist yet.<span>Tap “Watchlist” on any movie card to save it for later.</span></div>'; return; }
   lv.innerHTML='<div class="mlist-load"><span class="spin"></span> Loading watchlist…</div>';
   try{
@@ -2315,7 +2317,7 @@ function updateAccountUI(){
       +'<button class="acct-btn" onclick="signOut()">Sign out</button></div>';
   } else {
     box.innerHTML='<button class="set-row tappable acct-row" onclick="signInGoogle()">'
-      +'<span class="set-ico">🔑</span><span class="set-label acct-label">Sign in with Google'
+      +'<span class="set-ico">'+AUTH_PERSON_SVG+'</span><span class="set-label acct-label">Sign in with Google'
       +'<span class="acct-sub">Save your Seen &amp; Hidden lists to your account</span></span>'
       +'<span class="set-chev">›</span></button>';
   }
