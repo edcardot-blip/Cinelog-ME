@@ -149,8 +149,14 @@
   .score{font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--rpill);transform:translateY(-2px)}
   .sg{background:#052e16;color:#4ade80;border-color:#14532d}.sb{background:#0c1a2e;color:#38bdf8;border-color:#1e3a5f}.sa{background:#2d1f00;color:#fbbf24;border-color:#78350f}.sr{background:#2d0a0a;color:#f87171;border-color:#7f1d1d}
   .meta{font-size:12px;color:var(--text2);margin-bottom:8px}
-  .rpills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-  .rp{font-size:11px;padding:2px 8px;border-radius:var(--rpill);border:1px solid;font-weight:500}
+  .rpills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+  /* Matched-set rating badges: IMDb / RT / Meta share EXACT height, padding,
+     font-size, line-height & alignment. inline-flex + fixed line-height stops
+     the Meta badge (different glyph metrics) from rendering taller/narrower. */
+  .rp{display:inline-flex;align-items:center;justify-content:center;
+    font-size:11px;line-height:1;height:20px;padding:0 9px;
+    border-radius:var(--rpill);border:1px solid;font-weight:600;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
   .rrt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}.rimdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}.rmeta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
   .why{font-size:13px;color:#c8c7c3;line-height:1.6;margin-bottom:10px}
   .tags{display:flex;flex-wrap:wrap;gap:5px}
@@ -202,9 +208,22 @@
   /* watch-cost segmented control */
   .cost-seg{display:flex;gap:4px;margin-top:1.1rem;padding:4px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm)}
 
-  /* Service picker — hidden by default, slides open when "Free to me" is selected */
+  /* Service picker row — hidden by default, slides open when "My Subscriptions" is selected.
+     It now holds a single tappable row that opens the My Subscriptions full-screen modal. */
   .svc-picker{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease .05s}
-  .svc-picker.open{max-height:600px;opacity:1}
+  .svc-picker.open{max-height:200px;opacity:1;margin-top:1.1rem}
+  .subs-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+    background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);
+    padding:13px 15px;cursor:pointer;font-family:var(--sans);color:var(--text);
+    -webkit-tap-highlight-color:transparent;transition:border-color .14s,background .14s}
+  .subs-row:hover{border-color:var(--accent);background:var(--bg4)}
+  .subs-row:active{transform:scale(.99)}
+  .subs-row-ic{font-size:17px;line-height:1;flex:none}
+  .subs-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .subs-row-title{font-size:13.5px;font-weight:600;color:var(--text);line-height:1.2}
+  .subs-row-sub{font-size:12px;color:var(--text3);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .subs-row.has-sel .subs-row-sub{color:var(--accent2)}
+  .subs-row-chev{font-size:20px;color:var(--text3);line-height:1;flex:none}
   .cost-opt{flex:1;display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:background .15s,border-color .15s;user-select:none}
   /* When a cost-opt has no icon (single-line toggles like Language), center its text */
   .cost-opt:not(:has(.cost-ico)){justify-content:center;align-items:center;text-align:center}
@@ -566,17 +585,23 @@
      dialogs: dimmed + blurred backdrop, dialog centered both axes, premium
      shadow, smooth scale + fade in/out. Keeps the same .sheet markup, ids
      (#genre-pills etc.) and the X / Done / backdrop-close behavior. */
-  .sheet-host{position:absolute;inset:0;z-index:800;display:none}
+  /* z-index 1500 = ABOVE the bottom nav (900) and the full-screen pages
+     (1200) so the centered picker dialog is never clipped or tap-blocked by
+     the nav. (Was position:absolute;z-index:800 — below the nav — which let
+     the nav float over the dialog's lower half and swallow taps on the Done
+     button + bottom pills. That was the "pills don't tap" bug.) */
+  .sheet-host{position:fixed;inset:0;z-index:1500;display:none}
   .sheet-host.open{display:block}
   .sheet-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.66);
     -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
     opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
   .sheet-host.shown .sheet-backdrop{opacity:1;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-  .sheet{position:fixed;left:50%;top:50%;width:min(440px,calc(100vw - 2rem));max-height:min(82vh,640px);
+  .sheet{position:fixed;left:50%;top:50%;width:min(440px,calc(100vw - 2rem));
+    max-height:min(82vh,calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem));
     display:flex;flex-direction:column;
     background:var(--bg2);border:1px solid var(--border2);
     border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;
-    padding:1.1rem 1.15rem max(1rem,env(safe-area-inset-bottom));
+    padding:max(1.1rem,env(safe-area-inset-top)) 1.15rem max(1rem,env(safe-area-inset-bottom));
     transform:translate(-50%,-50%) scale(.92);opacity:0;
     transition:transform .25s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
   .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1}
@@ -602,7 +627,7 @@
     color:#1a1305;cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 20px rgba(232,176,75,.2);transition:filter .14s,transform .12s}
   .sheet-done:hover{filter:brightness(1.05)}
   .sheet-done:active{transform:translateY(1px) scale(.985)}
-  body.sheet-open{overflow:hidden}
+  /* (body.sheet-open removed — scroll-lock is now handled by lockScroll()/unlockScroll()) */
   /* Picker pills: consistent spacing, gold selected contrast, subtle press anim */
   .sheet .pills{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
   .sheet .pills .pill{min-height:46px;padding:12px 18px;font-size:14px;
@@ -611,11 +636,53 @@
   /* Stronger gold contrast for selected genre pills inside the dialog */
   .sheet .pills .pill.on-amber{background:#3a2400!important;border-color:var(--accent)!important;color:var(--accent2)!important;box-shadow:0 0 0 1px rgba(232,176,75,.35)}
 
-  /* --- Advanced filters: animated max-height/opacity open/close --- */
-  .adv-disc-body{display:block;max-height:0;opacity:0;overflow:hidden;
-    padding-top:0;padding-bottom:0;border-top:1px solid transparent;
-    transition:max-height .38s ease,opacity .28s ease,padding .38s ease,border-color .38s ease}
-  .adv-disc.open .adv-disc-body{max-height:2200px;opacity:1;padding-top:1.3rem;padding-bottom:1.4rem;border-top-color:var(--border);animation:none}
+  /* ===== FULL-SCREEN MODAL FRAMEWORK (Advanced Filters / My Subscriptions) =====
+     Same visual language as the picker dialogs (dark blurred backdrop, gold
+     Done button, premium shadow) but covers the whole viewport with a pinned
+     header (title + X) and a pinned footer (Done) while ONLY the body scrolls.
+     z-index 1500 base; the .stack variant (My Subscriptions) sits at 1600 so it
+     layers cleanly ABOVE Advanced Filters when opened from inside it. */
+  .modal-host{position:fixed;inset:0;z-index:1500;display:none}
+  .modal-host.stack{z-index:1600}
+  .modal-host.open{display:block}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.62);
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
+  .modal-host.shown .modal-backdrop{opacity:1;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+  /* The panel itself: full-screen flex column, top header / scroll body / bottom footer. */
+  .modal-fs{position:fixed;inset:0;display:flex;flex-direction:column;
+    background:var(--bg);
+    background-image:radial-gradient(ellipse 90% 40% at 50% -8%,rgba(232,176,75,.10),transparent 60%);
+    opacity:0;transform:translateY(10px);
+    transition:opacity .26s ease,transform .3s cubic-bezier(.2,.9,.3,1)}
+  .modal-host.shown .modal-fs{opacity:1;transform:none}
+  .modal-fs-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:max(.95rem,env(safe-area-inset-top)) max(1.1rem,env(safe-area-inset-right)) .9rem max(1.1rem,env(safe-area-inset-left));
+    border-bottom:1px solid var(--border);
+    background:rgba(10,10,11,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .modal-fs-title{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin:0}
+  .modal-fs-x{width:34px;height:34px;flex:none;border-radius:50%;border:1px solid var(--border2);
+    background:var(--bg3);color:var(--text2);font-size:15px;cursor:pointer;line-height:1;
+    display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+    transition:color .15s,background .15s,border-color .15s,transform .12s}
+  .modal-fs-x:hover{color:var(--text);background:var(--bg4);border-color:var(--border)}
+  .modal-fs-x:active{transform:scale(.92)}
+  .modal-fs-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:1.2rem max(1.1rem,env(safe-area-inset-right)) 1.4rem max(1.1rem,env(safe-area-inset-left))}
+  .modal-fs-foot{flex:none;
+    padding:.8rem max(1.1rem,env(safe-area-inset-right)) max(.9rem,env(safe-area-inset-bottom)) max(1.1rem,env(safe-area-inset-left));
+    border-top:1px solid var(--border);background:rgba(10,10,11,.88);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  .modal-fs-done{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:var(--sans);
+    background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);
+    color:#1a1305;cursor:pointer;letter-spacing:.01em;box-shadow:0 4px 20px rgba(232,176,75,.2);
+    transition:filter .14s,transform .12s;min-height:52px}
+  .modal-fs-done:hover{filter:brightness(1.05)}
+  .modal-fs-done:active{transform:translateY(1px) scale(.99)}
+
+  /* My Subscriptions service grid inside its modal: comfortable tap targets */
+  #subs-modal #service-pills{margin-top:.3rem}
+  #subs-modal .svc-pill{min-height:50px}
 
   /* --- Compact stats: icon + number + short label, minimal height --- */
   .stats{gap:8px;margin:.85rem 0 .85rem}
@@ -833,9 +900,15 @@
   .md-meta{font-size:12.5px;color:var(--text2);line-height:1.5;margin-bottom:.85rem;display:flex;flex-wrap:wrap;align-items:center;gap:7px}
   .md-meta .md-dot{color:var(--text3)}
   .md-meta .mpaa-badge{vertical-align:0}
-  .md-ratings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+  .md-ratings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;align-items:center}
   .md-ratings:empty{display:none}
-  .md-rb{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:var(--rpill);border:1px solid;display:inline-flex;align-items:center;gap:5px}
+  /* Matched-set: IMDb / RT / Meta identical height, padding, font, alignment.
+     Fixed line-height + height neutralises the differing leading-glyph metrics
+     (★ vs 🍅 vs Ⓜ) so all three read as one consistent set. */
+  .md-rb{font-size:11.5px;line-height:1;font-weight:600;height:26px;padding:0 11px;
+    border-radius:var(--rpill);border:1px solid;display:inline-flex;align-items:center;gap:5px;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
+  .md-rb .md-rb-ic{font-size:11.5px;line-height:1;display:inline-flex;align-items:center}
   .md-rb.imdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}
   .md-rb.rt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}
   .md-rb.meta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
@@ -1031,63 +1104,15 @@
       </section>
     </div>
 
-    <!-- ADVANCED FILTERS (disclosure) -->
+    <!-- ADVANCED FILTERS — opens a FULL-SCREEN modal (no longer an inline expand).
+         The trigger keeps the same #adv-disc id/visual style; the controls live
+         inside #adv-modal below so the homepage stays compact. -->
     <div class="adv-disc" id="adv-disc">
-      <button class="adv-disc-btn" type="button" onclick="toggleAdvanced()" aria-expanded="false" aria-controls="adv-disc-body">
+      <button class="adv-disc-btn" type="button" onclick="openAdvanced()" aria-haspopup="dialog">
         <span class="adv-disc-ic">⚙</span><span>Advanced Filters</span>
         <span class="adv-disc-meta">Services · Cost · Ratings · Adventure</span>
-        <span class="adv-disc-chev">⌄</span>
+        <span class="adv-disc-chev" style="transform:rotate(-90deg)">⌄</span>
       </button>
-      <div class="adv-disc-body" id="adv-disc-body">
-        <div class="field">
-          <div class="field-lbl">Language</div>
-          <div class="cost-seg">
-            <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
-            <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
-          </div>
-          <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
-        </div>
-        <div class="field">
-          <div class="field-lbl">Where to watch</div>
-          <div class="cost-seg" id="cost-seg">
-            <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
-              <span class="cost-ico">🎬</span>
-              <span class="cost-txt">Stream, Rent, or Buy</span>
-            </div>
-            <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
-              <span class="cost-ico">📺</span>
-              <span class="cost-txt">My Subscriptions</span>
-            </div>
-          </div>
-          <div class="svc-picker" id="svc-picker">
-            <div class="field-lbl" style="margin-top:1.1rem">Which services do you have? <span class="clr-group"><button class="clr" onclick="selectAllServices()">All</button><button class="clr" onclick="clearServices()">Clear</button></span></div>
-            <div class="pills" id="service-pills"></div>
-            <p class="section-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px">Pick a few — some services have small catalogs, so a single pick can leave thin results.</p>
-          </div>
-        </div>
-        <div class="field">
-          <div class="field-lbl">Ratings lean</div>
-          <div class="cost-seg" id="rating-seg">
-            <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
-            <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
-            <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
-          </div>
-          <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
-        </div>
-        <div class="field adv-card" style="margin-bottom:0">
-          <div class="adv-head">
-            <div class="field-lbl slider-lbl">How Adventurous?</div>
-            <span class="adv-badge band-2" id="adv-badge">Balanced</span>
-          </div>
-          <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
-          <div class="adv-ticks" id="adv-ticks">
-            <span class="adv-tick"><span class="adv-ic">💎</span><span class="adv-tlabel">Hidden Gems</span></span>
-            <span class="adv-tick on"><span class="adv-ic">⚖️</span><span class="adv-tlabel">Balanced</span></span>
-            <span class="adv-tick"><span class="adv-ic">⭐</span><span class="adv-tlabel">Crowd Favorites</span></span>
-          </div>
-          <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
-        </div>
-      </div>
     </div>
 
     <!-- RECOMMENDATION MODE as cards -->
@@ -1305,6 +1330,102 @@
   <div class="trend-body" id="trend-page-body"></div>
 </div>
 
+<!-- ===== Advanced Filters — FULL-SCREEN MODAL =====
+     Hosts all advanced controls (Language / Where-to-watch / Ratings lean /
+     Adventurous slider). Same engine ids/handlers; only the wrapper changed
+     from an inline disclosure to a full-screen modal. -->
+<div class="modal-host" id="adv-modal" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeAdvanced()"></div>
+  <section class="modal-fs" role="dialog" aria-modal="true" aria-label="Advanced Filters">
+    <header class="modal-fs-head">
+      <h2 class="modal-fs-title">Advanced Filters</h2>
+      <button type="button" class="modal-fs-x" onclick="closeAdvanced()" aria-label="Close">✕</button>
+    </header>
+    <div class="modal-fs-body">
+      <div class="field">
+        <div class="field-lbl">Language</div>
+        <div class="cost-seg">
+          <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
+          <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
+        </div>
+        <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
+      </div>
+      <div class="field">
+        <div class="field-lbl">Where to watch</div>
+        <div class="cost-seg" id="cost-seg">
+          <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
+            <span class="cost-ico">🎬</span>
+            <span class="cost-txt">Stream, Rent, or Buy</span>
+          </div>
+          <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
+            <span class="cost-ico">📺</span>
+            <span class="cost-txt">My Subscriptions</span>
+          </div>
+        </div>
+        <!-- "My Subscriptions" now opens its own full-screen modal; this row
+             shows a live summary + opens the picker. The actual #service-pills
+             grid lives in #subs-modal below (kept the id + toggleService). -->
+        <div class="svc-picker" id="svc-picker">
+          <button type="button" class="subs-row" id="subs-row" onclick="openSubscriptions()" aria-haspopup="dialog">
+            <span class="subs-row-ic">📺</span>
+            <span class="subs-row-main">
+              <span class="subs-row-title">My Subscriptions</span>
+              <span class="subs-row-sub" id="subs-row-sub">No services selected</span>
+            </span>
+            <span class="subs-row-chev">›</span>
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-lbl">Ratings lean</div>
+        <div class="cost-seg" id="rating-seg">
+          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
+          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
+          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
+        </div>
+        <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
+      </div>
+      <div class="field adv-card" style="margin-bottom:0">
+        <div class="adv-head">
+          <div class="field-lbl slider-lbl">How Adventurous?</div>
+          <span class="adv-badge band-2" id="adv-badge">Balanced</span>
+        </div>
+        <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
+        <div class="adv-ticks" id="adv-ticks">
+          <span class="adv-tick"><span class="adv-ic">💎</span><span class="adv-tlabel">Hidden Gems</span></span>
+          <span class="adv-tick on"><span class="adv-ic">⚖️</span><span class="adv-tlabel">Balanced</span></span>
+          <span class="adv-tick"><span class="adv-ic">⭐</span><span class="adv-tlabel">Crowd Favorites</span></span>
+        </div>
+        <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
+      </div>
+    </div>
+    <footer class="modal-fs-foot">
+      <button type="button" class="modal-fs-done" onclick="closeAdvanced()">Done</button>
+    </footer>
+  </section>
+</div>
+
+<!-- ===== My Subscriptions — FULL-SCREEN MODAL (stacks above Advanced) =====
+     Hosts the streaming-services selector (#service-pills / toggleService). -->
+<div class="modal-host stack" id="subs-modal" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeSubscriptions()"></div>
+  <section class="modal-fs" role="dialog" aria-modal="true" aria-label="My Subscriptions">
+    <header class="modal-fs-head">
+      <h2 class="modal-fs-title">My Subscriptions</h2>
+      <button type="button" class="modal-fs-x" onclick="closeSubscriptions()" aria-label="Close">✕</button>
+    </header>
+    <div class="modal-fs-body">
+      <div class="field-lbl" style="margin-bottom:.7rem">Which services do you have?
+        <span class="clr-group"><button class="clr" onclick="selectAllServices()">All</button><button class="clr" onclick="clearServices()">Clear</button></span></div>
+      <div class="pills" id="service-pills"></div>
+      <p class="section-note" style="padding-left:0;margin:1rem 0 0;font-size:12px">Pick a few — some services have small catalogs, so a single pick can leave thin results.</p>
+    </div>
+    <footer class="modal-fs-foot">
+      <button type="button" class="modal-fs-done" onclick="closeSubscriptions()">Done</button>
+    </footer>
+  </section>
+</div>
+
 <!-- ===== Movie detail modal (reusable: openMovieDetail(m)) ===== -->
 <div class="md-overlay" id="md-overlay" aria-hidden="true" onclick="if(event.target===this)closeMovieDetail()">
   <div class="md-sheet" id="md-sheet" role="dialog" aria-modal="true" aria-label="Movie details"></div>
@@ -1322,16 +1443,103 @@
   }catch(e){}
 })();
 
+/* ======================================================================
+   ===== UNIFIED MODAL SYSTEM ===========================================
+   One scroll-lock manager + open/close helpers shared by every overlay:
+   the Genre / Era / Length pickers, Advanced Filters, My Subscriptions,
+   the Movie Detail modal, plus the existing full-screen pages (results
+   gallery, collections, trending). Centralising the body scroll-lock
+   fixes (a) iOS rubber-banding the page behind an open modal, (b) the
+   homepage losing its scroll position on close, and (c) stacked modals
+   prematurely unlocking the page when only the top one closes.
+   ====================================================================== */
+(function(){
+  var lockCount=0;       // how many overlays currently want the page locked
+  var savedY=0;          // homepage scroll position captured on first lock
+  var locked=false;
+
+  // Lock the page: freeze <body> at its current scroll offset so ONLY the
+  // open modal's own content can scroll. Reference-counted so nested modals
+  // (Advanced -> My Subscriptions) don't fight over the lock.
+  window.lockScroll=function(){
+    lockCount++;
+    if(locked) return;
+    savedY=window.scrollY||window.pageYOffset||0;
+    var b=document.body;
+    b.style.position='fixed';
+    b.style.top=(-savedY)+'px';
+    b.style.left='0';
+    b.style.right='0';
+    b.style.width='100%';
+    b.style.overflow='hidden';
+    locked=true;
+  };
+  // Release one lock. Only when the LAST modal closes do we restore the page
+  // and jump back to the exact homepage scroll position.
+  window.unlockScroll=function(){
+    lockCount=Math.max(0,lockCount-1);
+    if(lockCount>0 || !locked) return;
+    var b=document.body;
+    b.style.position='';
+    b.style.top='';
+    b.style.left='';
+    b.style.right='';
+    b.style.width='';
+    b.style.overflow='';
+    locked=false;
+    window.scrollTo(0,savedY);
+  };
+  // Hard reset (used by closeSettings/back paths that may double-call).
+  window.forceUnlockScroll=function(){ lockCount=0; if(locked){ window.unlockScroll(); } };
+})();
+
+/* Schedule a callback for the next paint, with a setTimeout fallback. rAF alone
+   can be deferred indefinitely when the tab isn't painting (background tab,
+   throttled webview), which would leave a modal stuck at its hidden opacity:0
+   start state and make its contents un-tappable. The fallback guarantees the
+   "shown"/"show" transition classes always get applied. */
+function nextPaint(fn){
+  var done=false;
+  function run(){ if(done) return; done=true; fn(); }
+  requestAnimationFrame(function(){ requestAnimationFrame(run); });
+  setTimeout(run,60);
+}
+
+/* Generic open/close for the floating + full-screen modals that share the
+   .modal-host markup (Advanced Filters, My Subscriptions). Animation classes
+   mirror the existing picker sheets so the visual language stays identical. */
+function openModalHost(id){
+  var host=document.getElementById(id); if(!host) return;
+  host.classList.add('open'); host.setAttribute('aria-hidden','false');
+  lockScroll();
+  nextPaint(function(){ host.classList.add('shown'); });
+}
+function closeModalHost(id){
+  var host=document.getElementById(id); if(!host) return;
+  if(!host.classList.contains('open')) return;
+  host.classList.remove('shown'); host.setAttribute('aria-hidden','true');
+  unlockScroll();
+  setTimeout(function(){ host.classList.remove('open'); }, 240);
+}
+
 /* ===== Phase 1 UI: Advanced-filters disclosure + bottom-nav router =====
    These are presentation-only helpers. They do NOT touch the recommendation
    engine, scoring, Supabase, auth, or list functions — they only toggle
    visibility and delegate to the existing openLists()/openList()/openSettings(). */
-function toggleAdvanced(){
-  var d=document.getElementById('adv-disc');
-  if(!d) return;
-  var open=d.classList.toggle('open');
-  var btn=d.querySelector('.adv-disc-btn');
-  if(btn) btn.setAttribute('aria-expanded', open?'true':'false');
+/* Advanced Filters is now a full-screen modal (was an inline disclosure). */
+function openAdvanced(){ openModalHost('adv-modal'); }
+function closeAdvanced(){ closeModalHost('adv-modal'); }
+/* Back-compat: anything still calling toggleAdvanced() just opens the modal. */
+function toggleAdvanced(){ openAdvanced(); }
+
+/* My Subscriptions full-screen modal (stacks above Advanced Filters). */
+function openSubscriptions(){
+  openModalHost('subs-modal');
+  if(window.updateSubsRow) window.updateSubsRow();
+}
+function closeSubscriptions(){
+  closeModalHost('subs-modal');
+  if(window.updateSubsRow) window.updateSubsRow();
 }
 
 /* ===== Quick-filter dropdowns (presentation only) =====
@@ -1348,17 +1556,21 @@ function openSheet(group){
     if(s){ s.hidden=(g!==group); s.classList.remove('show'); }
   });
   host.classList.add('open'); host.setAttribute('aria-hidden','false');
-  document.body.classList.add('sheet-open');
+  lockScroll();
   // Next frame: flip the animation classes so backdrop blur + dialog scale/fade in smoothly.
-  requestAnimationFrame(function(){
+  // nextPaint() = rAF with a setTimeout fallback so the show classes ALWAYS apply
+  // (rAF can be throttled when the tab isn't painting, which would leave the
+  // dialog at opacity:0 — making its pills un-tappable. That was a real risk.)
+  nextPaint(function(){
     host.classList.add('shown');
     var s=document.getElementById('sheet-'+group); if(s) s.classList.add('show');
   });
 }
 function closeSheet(){
   var host=document.getElementById('sheet-host'); if(!host) return;
+  if(!host.classList.contains('open')) return;
   host.classList.remove('shown'); host.setAttribute('aria-hidden','true');
-  document.body.classList.remove('sheet-open');
+  unlockScroll();
   ['genre','era','length'].forEach(function(g){
     var s=document.getElementById('sheet-'+g); if(s) s.classList.remove('show');
   });
@@ -1528,16 +1740,30 @@ let freeOnly=false;          // "Must be free" switch
   // Only subscription services (toggle:true) become buttons.
   el.innerHTML=SERVICES.filter(s=>s.toggle).map(s=>'<button type="button" class="svc-pill" data-key="'+s.key+'" style="--svc:'+s.color+'" onclick="toggleService(this,\''+s.key+'\')"><span class="dot"></span>'+s.label+'</button>').join('');
 })();
-function toggleService(btn,key){if(selServices.has(key)){selServices.delete(key);btn.classList.remove('on');}else{selServices.add(key);btn.classList.add('on');}updatePoolCount();}
-function clearServices(){selServices.clear();document.querySelectorAll('#service-pills .svc-pill').forEach(b=>b.classList.remove('on'));updatePoolCount();}
-function selectAllServices(){SERVICES.forEach(s=>selServices.add(s.key));document.querySelectorAll('#service-pills .svc-pill').forEach(b=>b.classList.add('on'));updatePoolCount();}
+function toggleService(btn,key){if(selServices.has(key)){selServices.delete(key);btn.classList.remove('on');}else{selServices.add(key);btn.classList.add('on');}updatePoolCount();updateSubsRow();}
+function clearServices(){selServices.clear();document.querySelectorAll('#service-pills .svc-pill').forEach(b=>b.classList.remove('on'));updatePoolCount();updateSubsRow();}
+function selectAllServices(){SERVICES.forEach(s=>selServices.add(s.key));document.querySelectorAll('#service-pills .svc-pill').forEach(b=>b.classList.add('on'));updatePoolCount();updateSubsRow();}
+// Summarise the picked subscriptions on the Advanced-Filters row (read-only).
+function updateSubsRow(){
+  var row=document.getElementById('subs-row'), sub=document.getElementById('subs-row-sub');
+  if(!sub) return;
+  var n=selServices.size;
+  if(n===0){ sub.textContent='Tap to choose your services'; }
+  else if(n===1){
+    var key=[...selServices][0];
+    var svc=SERVICES.find(s=>s.key===key);
+    sub.textContent=(svc?svc.label:'1 service');
+  } else { sub.textContent=n+' services selected'; }
+  if(row) row.classList.toggle('has-sel', n>0);
+}
+window.updateSubsRow=updateSubsRow;
 function setFreeOnly(v){
   freeOnly=v;
   document.getElementById('cost-free').classList.toggle('on',v);
   document.getElementById('cost-any').classList.toggle('on',!v);
   document.getElementById('svc-picker').classList.toggle('open',v);
-  if(!v) clearServices();   // returning to "Any way" wipes service selections so nothing filters silently
-  else updatePoolCount();
+  if(!v){ clearServices(); }   // returning to "Stream/Rent/Buy" wipes service selections so nothing filters silently
+  else { updatePoolCount(); updateSubsRow(); openSubscriptions(); }  // selecting "My Subscriptions" opens the picker modal
 }
 
 // Normalize a movie's streaming field into [{svc, tier, free}], for services we recognize.
@@ -2182,13 +2408,14 @@ document.getElementById('go-btn').addEventListener('click',()=>{ viewMode==='ran
 let overlayMode='settings';   // 'settings' | 'lists' — which top-level screen the overlay shows
 function openSettings(){ overlayMode='settings'; showOverlayMenu(); refreshSettings(); openOverlay(); }
 function openLists(){ overlayMode='lists'; showOverlayMenu(); refreshSettings(); openOverlay(); }
+let settingsOpen=false;
 function openOverlay(){
   const o=document.getElementById('set-overlay');
-  if(o){o.classList.add('open'); document.body.style.overflow='hidden';}
+  if(o && !settingsOpen){o.classList.add('open'); lockScroll(); settingsOpen=true;}
 }
 function closeSettings(){
   const o=document.getElementById('set-overlay');
-  if(o){o.classList.remove('open'); document.body.style.overflow='';}
+  if(o && settingsOpen){o.classList.remove('open'); unlockScroll(); settingsOpen=false;}
   backToMenu();   // reset to the menu screen for next open
 }
 // Show the correct top-level menu (Settings or Lists), hiding the list-detail view.
@@ -2253,9 +2480,14 @@ function clearCache(){
 }
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
+  // Close in z-order (highest first): subscriptions > advanced > picker sheet > settings.
+  var subs=document.getElementById('subs-modal');
+  if(subs && subs.classList.contains('open')){ closeSubscriptions(); return; }
+  var adv=document.getElementById('adv-modal');
+  if(adv && adv.classList.contains('open')){ closeAdvanced(); return; }
   var host=document.getElementById('sheet-host');
   if(host && host.classList.contains('open')){ closeSheet(); return; }
-  closeSettings();
+  if(settingsOpen){ closeSettings(); }
 });
 
 // ---- Surprise Me: pure random picks from films matching the user's filters.
@@ -2341,15 +2573,15 @@ function openResultsGallery(groups, mode){
   body.scrollTop=0;
   void ov.offsetWidth;                 // force reflow so the transition runs from the hidden state
   setTimeout(()=>ov.classList.add('open'),0);
-  document.body.style.overflow='hidden';
+  if(!galleryOpen) lockScroll();
   galleryOpen=true;
 }
 function closeResultsGallery(){
   const ov=document.getElementById('results-overlay');
   ov.classList.remove('open');
   ov.setAttribute('aria-hidden','true');
+  if(galleryOpen) unlockScroll();
   galleryOpen=false;
-  if(!document.getElementById('md-overlay').classList.contains('open')) document.body.style.overflow='';
 }
 
 // ---- Detail modal (reusable) ----
@@ -2384,9 +2616,9 @@ function openMovieDetail(m){
 
   // rating badges (only present ones)
   let ratings='';
-  if(imdb!=null && imdb!=='' && imdb!=='N/A') ratings+='<span class="md-rb imdb">★ IMDb '+esc(''+imdb)+'</span>';
-  if(rt!=null && rt!=='' && rt!=='N/A')       ratings+='<span class="md-rb rt">🍅 RT '+esc(''+rt)+'%</span>';
-  if(meta!=null && meta!=='' && meta!=='N/A') ratings+='<span class="md-rb meta">Ⓜ Meta '+esc(''+meta)+'</span>';
+  if(imdb!=null && imdb!=='' && imdb!=='N/A') ratings+='<span class="md-rb imdb"><span class="md-rb-ic">★</span>IMDb '+esc(''+imdb)+'</span>';
+  if(rt!=null && rt!=='' && rt!=='N/A')       ratings+='<span class="md-rb rt"><span class="md-rb-ic">🍅</span>RT '+esc(''+rt)+'%</span>';
+  if(meta!=null && meta!=='' && meta!=='N/A') ratings+='<span class="md-rb meta"><span class="md-rb-ic">Ⓜ</span>Meta '+esc(''+meta)+'</span>';
 
   // streaming availability
   let avail=movieAvailability(m);
@@ -2415,21 +2647,23 @@ function openMovieDetail(m){
     + '</div>';
 
   const ov=document.getElementById('md-overlay');
+  const wasOpen=ov.classList.contains('open');
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;                 // force reflow so the spring transition runs
   setTimeout(()=>ov.classList.add('open'),0);
-  document.body.style.overflow='hidden';
+  if(!wasOpen) lockScroll();           // stacks above whatever overlay is behind
 }
 function closeMovieDetail(){
   const ov=document.getElementById('md-overlay');
+  const wasOpen=ov.classList.contains('open');
   ov.classList.remove('open');
   ov.setAttribute('aria-hidden','true');
   mdCurrent=null;
   // If a collection page is open behind the modal, reflect any Like/Watchlist/
   // Seen/Hide changes the user just made (a film may have left this set).
   if(typeof refreshOpenCollection==='function') refreshOpenCollection();
-  // restore scroll-lock state (gallery or collection may still be open behind)
-  if(!galleryOpen && !collectionOpen && !document.getElementById('set-overlay').classList.contains('open')) document.body.style.overflow='';
+  // Release this modal's lock; the page stays locked if an overlay is still behind.
+  if(wasOpen) unlockScroll();
 }
 
 // The four action pills, reflecting current state.
@@ -2591,7 +2825,7 @@ async function openCollection(type){
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;
   setTimeout(()=>ov.classList.add('open'),0);
-  document.body.style.overflow='hidden';
+  if(!collectionOpen) lockScroll();
   collectionOpen=true;
   document.getElementById('cg-body').scrollTop=0;
 
@@ -2647,9 +2881,9 @@ async function openCollection(type){
 function closeCollection(){
   const ov=document.getElementById('collection-overlay');
   if(ov){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); }
+  if(collectionOpen) unlockScroll();
   collectionOpen=false;
   if(typeof setNavActive==='function') setNavActive('discover');
-  if(!document.getElementById('md-overlay').classList.contains('open')) document.body.style.overflow='';
 }
 
 // When the detail modal closes, reflect any Like/Watchlist/Seen/Hide changes
@@ -3495,7 +3729,7 @@ async function openTrendingPage(){
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;
   setTimeout(()=>ov.classList.add('open'),0);
-  document.body.style.overflow='hidden';
+  if(!trendPageOpen) lockScroll();
   trendPageOpen=true;
   // Ensure the pool is loaded (handles tapping See all before the row finished).
   document.getElementById('trend-page-body').innerHTML='<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Loading…</div></div>';
@@ -3506,8 +3740,8 @@ async function openTrendingPage(){
 function closeTrendingPage(){
   const ov=document.getElementById('trend-overlay');
   if(ov){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); }
+  if(trendPageOpen) unlockScroll();
   trendPageOpen=false;
-  if(!document.getElementById('md-overlay').classList.contains('open') && !galleryOpen && !collectionOpen) document.body.style.overflow='';
 }
 // Esc closes the trending page (after modal). Extends the existing handler.
 document.addEventListener('keydown',e=>{
