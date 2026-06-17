@@ -419,6 +419,10 @@
     .adv-help{font-size:13px;margin-top:.7rem}
     /* Result cards (mobile = poster-left layout): small poster, info beside it, toggles full-width below */
     .card{flex-direction:row;align-items:flex-start;padding:1rem;gap:14px}
+    /* Make the info column at least poster-height + actions, and anchor the full-width
+       action row to the bottom so it always clears the 156px poster with a consistent gap
+       (short-text cards no longer ride up into the poster). 264 = 156 poster + ~96 actions + gap. */
+    .body{display:flex;flex-direction:column;min-height:264px}
     /* Mobile-only breathing room between the slider note above and Recommendation Mode */
     #rec-mode-field{margin-top:2rem}
     .poster{width:104px;height:156px;max-width:104px;max-height:156px;flex-shrink:0;object-fit:contain;border-radius:var(--rsm);align-self:flex-start}
@@ -426,7 +430,7 @@
     .rank{position:absolute;top:14px;left:14px;right:auto;font-size:13px;font-weight:600;width:auto;line-height:1;z-index:2;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:99px}
     .title-row{padding-right:0}
     /* Toggles span the full card width below poster+info (offset = poster 104px + gap 14px) */
-    .card-acts{margin-left:-118px;width:calc(100% + 118px);margin-top:14px}
+    .card-acts{margin-left:-118px;width:calc(100% + 118px);margin-top:auto;padding-top:14px}
     /* Card toggles: bump tap height on mobile */
     .card-act{padding:13px 8px;min-height:44px}
     /* Stats row: smaller gap and padding so it doesn't crowd narrow screens */
