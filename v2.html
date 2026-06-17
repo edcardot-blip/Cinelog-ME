@@ -608,25 +608,25 @@
      the nav. (Was position:absolute;z-index:800 — below the nav — which let
      the nav float over the dialog's lower half and swallow taps on the Done
      button + bottom pills. That was the "pills don't tap" bug.) */
-  .sheet-host{position:fixed;inset:0;z-index:1500;display:none;align-items:center;justify-content:center;
-    padding:max(1rem,env(safe-area-inset-top)) 1rem max(1rem,env(safe-area-inset-bottom))}
+  .sheet-host{position:fixed;inset:0;z-index:1500;display:none;align-items:center;justify-content:center;box-sizing:border-box;
+    padding:max(12px,env(safe-area-inset-top)) 20px max(12px,env(safe-area-inset-bottom))}
   .sheet-host.open{display:flex}
   .sheet-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.66);
     -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
     opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
   .sheet-host.shown .sheet-backdrop{opacity:1;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-  .sheet{position:relative;width:min(440px,100%);max-height:100%;
-    display:flex;flex-direction:column;
+  .sheet{position:relative;width:min(92vw,440px);max-width:calc(100vw - 40px);margin:0 auto;max-height:100%;
+    display:flex;flex-direction:column;box-sizing:border-box;
     background:var(--bg2);border:1px solid var(--border2);
     border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;
     padding:1.15rem 1.15rem 1rem;
-    transform:scale(.92);opacity:0;
+    transform:scale(.96);opacity:0;
     transition:transform .25s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
   .sheet.show{transform:scale(1);opacity:1}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 .7rem}
-  /* All / Clear / X grouped together top-right */
-  .sheet-head-acts{display:flex;align-items:center;gap:7px;flex:none}
-  .sheet-title{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin:0}
+  /* Header: centered two-line title on top, All/Clear/Done row below-right — nothing overlaps */
+  .sheet-head{display:flex;flex-direction:column;gap:.5rem;padding:0 0 .7rem}
+  .sheet-head-acts{display:flex;align-items:center;gap:7px;align-self:flex-end}
+  .sheet-title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin:0;text-align:center;align-self:center;line-height:1.15}
   /* Cleaner, lighter native-iOS close button — less visual weight */
   .sheet-x{width:30px;height:30px;flex:none;border-radius:50%;border:none;
     background:var(--bg3);color:var(--text3);font-size:14px;cursor:pointer;line-height:1;
@@ -1177,7 +1177,7 @@
 
       <section class="sheet" id="sheet-genre" role="dialog" aria-modal="true" aria-label="Choose Genre">
         <div class="sheet-head">
-          <h3 class="sheet-title">Choose Genre</h3>
+          <h3 class="sheet-title">Choose<br>Genre</h3>
           <div class="sheet-head-acts">
             <button class="clr" onclick="clearGroup('genre')">Clear</button>
             <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
@@ -1188,7 +1188,7 @@
 
       <section class="sheet" id="sheet-era" role="dialog" aria-modal="true" aria-label="Choose Era" hidden>
         <div class="sheet-head">
-          <h3 class="sheet-title">Choose Era</h3>
+          <h3 class="sheet-title">Choose<br>Era</h3>
           <div class="sheet-head-acts">
             <button class="clr" onclick="selectAllGroup('era')">All</button>
             <button class="clr" onclick="clearGroup('era')">Clear</button>
@@ -1200,7 +1200,7 @@
 
       <section class="sheet" id="sheet-length" role="dialog" aria-modal="true" aria-label="Choose Length" hidden>
         <div class="sheet-head">
-          <h3 class="sheet-title">Choose Length</h3>
+          <h3 class="sheet-title">Choose<br>Length</h3>
           <div class="sheet-head-acts">
             <button class="clr" onclick="selectAllGroup('length')">All</button>
             <button class="clr" onclick="clearGroup('length')">Clear</button>
@@ -1775,7 +1775,13 @@ function updateQuickFilterLabels(){
 }
 // expose for the engine script to call after selection changes
 window.updateQuickFilterLabels=updateQuickFilterLabels;
-document.addEventListener('DOMContentLoaded',function(){ try{ updateQuickFilterLabels(); }catch(e){} });
+document.addEventListener('DOMContentLoaded',function(){ try{ updateQuickFilterLabels(); }catch(e){}
+  /* Move the picker host to be a DIRECT CHILD OF <body> so its position:fixed is always
+     viewport-relative. Inside #screen-discover it could resolve against a transformed
+     ancestor (the nav router puts a transform on screens during transitions — any non-none
+     transform makes a containing block), which drifted the centered dialog off-screen. */
+  try{ var sh=document.getElementById('sheet-host'); if(sh && sh.parentNode!==document.body) document.body.appendChild(sh); }catch(e){}
+});
 /* Bottom-nav router. Discover shows the discover screen; the list tabs reuse
    the existing overlay via openLists()+openList(); More opens settings.
    The "active" highlight resets to Discover whenever the overlay closes. */
