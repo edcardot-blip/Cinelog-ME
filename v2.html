@@ -459,112 +459,197 @@
 
   /* Service-pill grid: refine the existing breakpoint so the 2-col stack is
      bigger on phones (was 520; we want it for the whole mobile range). */
+
+  /* ====================================================================== */
+  /* ===== PHASE 1 REDESIGN — Discover screen + bottom nav ================ */
+  /* ====================================================================== */
+
+  /* --- Hero topbar: avatar/auth pill top-right --- */
+  .topbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:1.4rem}
+  .topbar .auth-pill,.topbar .prefs-btn{margin-left:0}
+  .hero-new{text-align:center;margin-bottom:2rem}
+  .hero-new h1{font-family:var(--serif);font-size:clamp(30px,6.2vw,48px);font-weight:600;letter-spacing:-.02em;line-height:1.06;margin-bottom:.9rem}
+  .hero-new h1 .em{font-style:italic;font-weight:500;color:var(--accent)}
+  .hero-new .hero-sub{font-size:clamp(14px,3.6vw,16px);color:var(--text2);max-width:430px;margin:0 auto;line-height:1.6}
+
+  /* --- Primary filter card group --- */
+  .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem 1.45rem;margin-bottom:1rem}
+  .pcard .field:last-child{margin-bottom:0}
+
+  /* --- Advanced filters disclosure --- */
+  .adv-disc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden;transition:border-color .14s}
+  .adv-disc-btn{width:100%;display:flex;align-items:center;gap:11px;padding:1.05rem 1.35rem;background:none;border:none;color:var(--text);font-family:var(--sans);font-size:14.5px;font-weight:600;cursor:pointer;text-align:left}
+  .adv-disc-btn .adv-disc-ic{font-size:16px;line-height:1}
+  .adv-disc-btn .adv-disc-meta{margin-left:auto;font-size:12px;font-weight:500;color:var(--text3)}
+  .adv-disc-btn .adv-disc-chev{font-size:18px;color:var(--text3);transition:transform .22s;line-height:1}
+  .adv-disc.open .adv-disc-chev{transform:rotate(180deg)}
+  .adv-disc-btn:hover{color:var(--accent)}
+  .adv-disc-body{display:none;padding:0 1.45rem 1.4rem;border-top:1px solid var(--border)}
+  .adv-disc.open .adv-disc-body{display:block;animation:fade .25s ease;padding-top:1.3rem}
+
+  /* --- Recommendation mode cards --- */
+  .mode-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  .mode-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1rem .85rem;cursor:pointer;text-align:center;transition:all .15s;user-select:none;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:var(--sans)}
+  .mode-card:hover{border-color:#4a4a52;transform:translateY(-1px)}
+  .mode-card .mc-ico{font-size:22px;line-height:1;margin-bottom:2px}
+  .mode-card .mc-title{font-size:13.5px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+  .mode-card .mc-desc{font-size:11px;color:var(--text3);line-height:1.35}
+  .mode-card.on{background:color-mix(in srgb,var(--accent) 13%,var(--bg2));border-color:var(--accent)}
+  .mode-card.on .mc-title{color:var(--accent2)}
+  @supports not (background:color-mix(in srgb,red,blue)){.mode-card.on{background:var(--accent-dim)}}
+  .mode-card.on .mc-desc{color:var(--text2)}
+
+  /* --- Go button sits above bottom nav: ensure body clears the nav --- */
+  body{padding-bottom:calc(72px + max(2rem,env(safe-area-inset-bottom)))}
+
+  /* --- Bottom navigation --- */
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:900;display:flex;background:rgba(14,14,16,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--border2);padding:8px 6px max(8px,env(safe-area-inset-bottom));padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right))}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;font-family:var(--sans);color:var(--text3);padding:6px 4px;border-radius:12px;transition:color .14s,background .14s;min-height:48px}
+  .bnav-item .bnav-ic{font-size:19px;line-height:1}
+  .bnav-item .bnav-lbl{font-size:10.5px;font-weight:600;letter-spacing:.01em}
+  .bnav-item:hover{color:var(--text2)}
+  .bnav-item.active{color:var(--accent2)}
+  .bnav-item.active .bnav-ic{filter:drop-shadow(0 0 8px rgba(232,176,75,.35))}
+
+  @media (max-width:640px){
+    .pcard{padding:1.1rem 1rem}
+    .adv-disc-btn{padding:1rem 1.05rem}
+    .adv-disc-body{padding-left:1.05rem;padding-right:1.05rem}
+    .mode-cards{grid-template-columns:repeat(2,1fr)}
+    .mode-card{padding:.95rem .7rem}
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- HERO -->
-  <div class="hero">
-    <h1>What Should I <span class="em">Watch Tonight?</span></h1>
+  <!-- TOPBAR: Lists / Preferences + account pill top-right
+       (#lists-btn & #prefs-btn preserved here; the bottom nav also reaches these) -->
+  <div class="topbar">
+    <button class="prefs-btn" id="lists-btn" onclick="openLists()" aria-label="Lists">
+      <span class="prefs-ico">🎞️</span><span class="prefs-txt">Lists</span>
+    </button>
+    <button class="prefs-btn" id="prefs-btn" onclick="openSettings()" aria-label="Preferences">
+      <span class="prefs-ico">⚙</span><span class="prefs-txt">Preferences</span>
+    </button>
+    <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
   </div>
 
-  <!-- FAST FILTERS -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-title">Fast Filters</span>
-      <div class="sec-head-right">
-        <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span>🔑</span>Sign in</button>
-        <button class="prefs-btn" id="lists-btn" onclick="openLists()" aria-label="Lists">
-          <span class="prefs-ico">🎞️</span><span class="prefs-txt">Lists</span>
-        </button>
-        <button class="prefs-btn" id="prefs-btn" onclick="openSettings()" aria-label="Preferences">
-          <span class="prefs-ico">⚙</span><span class="prefs-txt">Preferences</span>
-        </button>
-      </div>
-    </div>
-    <div class="card-surface">
+  <!-- HERO -->
+  <div class="hero-new">
+    <h1>What Should I <span class="em">Watch Tonight?</span></h1>
+    <p class="hero-sub">Get the perfect movie recommendation in seconds.</p>
+  </div>
+
+  <!-- DISCOVER SCREEN -->
+  <div id="screen-discover">
+
+    <!-- PRIMARY FILTERS: Genre / Era / Length -->
+    <div class="pcard">
       <div class="field">
         <div class="field-lbl">Genre <button class="clr" onclick="clearGroup('genre')">Clear</button></div>
         <div class="pills" id="genre-pills"></div>
-      </div>
-      <div class="field">
-        <div class="field-lbl">Length <span class="clr-group"><button class="clr" onclick="selectAllGroup('length')">All</button><button class="clr" onclick="clearGroup('length')">Clear</button></span></div>
-        <div class="pills" id="length-pills"></div>
       </div>
       <div class="field">
         <div class="field-lbl">Era <span class="clr-group"><button class="clr" onclick="selectAllGroup('era')">All</button><button class="clr" onclick="clearGroup('era')">Clear</button></span></div>
         <div class="pills" id="era-pills"></div>
       </div>
       <div class="field">
-        <div class="field-lbl">Preferences</div>
-        <div class="cost-seg">
-          <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
-          <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
-        </div>
-        <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
-      </div>
-      <div class="field">
-        <div class="cost-seg" id="cost-seg">
-          <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
-            <span class="cost-ico">🎬</span>
-            <span class="cost-txt">Stream, Rent, or Buy</span>
-          </div>
-          <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
-            <span class="cost-ico">📺</span>
-            <span class="cost-txt">My Subscriptions</span>
-          </div>
-        </div>
-        <div class="svc-picker" id="svc-picker">
-          <div class="field-lbl" style="margin-top:1.1rem">Which services do you have? <span class="clr-group"><button class="clr" onclick="selectAllServices()">All</button><button class="clr" onclick="clearServices()">Clear</button></span></div>
-          <div class="pills" id="service-pills"></div>
-          <p class="section-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px">Pick a few — some services have small catalogs, so a single pick can leave thin results.</p>
-        </div>
-      </div>
-      <div class="field">
-        <div class="cost-seg" id="rating-seg">
-          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
-          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
-          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
-        </div>
-        <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
-      </div>
-      <div class="field adv-card" style="margin-bottom:0">
-        <div class="adv-head">
-          <div class="field-lbl slider-lbl">How Adventurous?</div>
-          <span class="adv-badge band-2" id="adv-badge">Balanced</span>
-        </div>
-        <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
-        <div class="adv-ticks" id="adv-ticks">
-          <span class="adv-tick"><span class="adv-ic">💎</span><span class="adv-tlabel">Hidden Gems</span></span>
-          <span class="adv-tick on"><span class="adv-ic">⚖️</span><span class="adv-tlabel">Balanced</span></span>
-          <span class="adv-tick"><span class="adv-ic">⭐</span><span class="adv-tlabel">Crowd Favorites</span></span>
-        </div>
-        <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
-      </div>
-      <div class="field" id="rec-mode-field" style="margin-bottom:0">
-        <div class="field-lbl">Recommendation Mode</div>
-        <div class="cost-seg" id="mode-seg">
-          <div class="cost-opt on" id="mode-hybrid" onclick="setMode('hybrid')"><span class="cost-txt">Smart Mix</span></div>
-          <div class="cost-opt" id="mode-fresh" onclick="setMode('fresh')"><span class="cost-txt">Fresh Picks</span></div>
-          <div class="cost-opt" id="mode-random" onclick="setMode('random')"><span class="cost-txt">Surprise Me</span></div>
-          <div class="cost-opt" id="mode-rewatches" onclick="setMode('rewatches')"><span class="cost-txt">Rewatch Mode</span></div>
-        </div>
-        <p class="section-note" id="mode-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Fresh recommendations + a few you may want to revisit.</p>
+        <div class="field-lbl">Length <span class="clr-group"><button class="clr" onclick="selectAllGroup('length')">All</button><button class="clr" onclick="clearGroup('length')">Clear</button></span></div>
+        <div class="pills" id="length-pills"></div>
       </div>
     </div>
-  </div>
 
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat s1"><div class="stat-n" id="s-total">—</div><div class="stat-l">Films in catalog</div><span class="stat-arrow">›</span></div>
-    <div class="stat s3"><div class="stat-n" id="seen-count">0</div><div class="stat-l">Films seen</div></div>
-    <div class="stat s2"><div class="stat-n" id="s-pool">—</div><div class="stat-l">Match your filters</div></div>
-  </div>
+    <!-- ADVANCED FILTERS (disclosure) -->
+    <div class="adv-disc" id="adv-disc">
+      <button class="adv-disc-btn" type="button" onclick="toggleAdvanced()" aria-expanded="false" aria-controls="adv-disc-body">
+        <span class="adv-disc-ic">⚙</span><span>Advanced Filters</span>
+        <span class="adv-disc-meta">Services · Cost · Ratings · Adventure</span>
+        <span class="adv-disc-chev">⌄</span>
+      </button>
+      <div class="adv-disc-body" id="adv-disc-body">
+        <div class="field">
+          <div class="field-lbl">Language</div>
+          <div class="cost-seg">
+            <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
+            <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
+          </div>
+          <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
+        </div>
+        <div class="field">
+          <div class="field-lbl">Where to watch</div>
+          <div class="cost-seg" id="cost-seg">
+            <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
+              <span class="cost-ico">🎬</span>
+              <span class="cost-txt">Stream, Rent, or Buy</span>
+            </div>
+            <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
+              <span class="cost-ico">📺</span>
+              <span class="cost-txt">My Subscriptions</span>
+            </div>
+          </div>
+          <div class="svc-picker" id="svc-picker">
+            <div class="field-lbl" style="margin-top:1.1rem">Which services do you have? <span class="clr-group"><button class="clr" onclick="selectAllServices()">All</button><button class="clr" onclick="clearServices()">Clear</button></span></div>
+            <div class="pills" id="service-pills"></div>
+            <p class="section-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px">Pick a few — some services have small catalogs, so a single pick can leave thin results.</p>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-lbl">Ratings lean</div>
+          <div class="cost-seg" id="rating-seg">
+            <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
+            <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
+            <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
+          </div>
+          <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
+        </div>
+        <div class="field adv-card" style="margin-bottom:0">
+          <div class="adv-head">
+            <div class="field-lbl slider-lbl">How Adventurous?</div>
+            <span class="adv-badge band-2" id="adv-badge">Balanced</span>
+          </div>
+          <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
+          <div class="adv-ticks" id="adv-ticks">
+            <span class="adv-tick"><span class="adv-ic">💎</span><span class="adv-tlabel">Hidden Gems</span></span>
+            <span class="adv-tick on"><span class="adv-ic">⚖️</span><span class="adv-tlabel">Balanced</span></span>
+            <span class="adv-tick"><span class="adv-ic">⭐</span><span class="adv-tlabel">Crowd Favorites</span></span>
+          </div>
+          <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
+        </div>
+      </div>
+    </div>
 
-  <button class="go-btn" id="go-btn">✦ Find my movie</button>
-  <div id="output"></div>
+    <!-- RECOMMENDATION MODE as cards -->
+    <div class="field" id="rec-mode-field" style="margin-bottom:1rem">
+      <div class="field-lbl" style="margin-bottom:.85rem">Recommendation Mode</div>
+      <div class="mode-cards" id="mode-seg">
+        <div class="mode-card on" id="mode-hybrid" onclick="setMode('hybrid')">
+          <span class="mc-ico">🎯</span><span class="mc-title">Smart Mix</span><span class="mc-desc">Best overall match</span>
+        </div>
+        <div class="mode-card" id="mode-fresh" onclick="setMode('fresh')">
+          <span class="mc-ico">🌱</span><span class="mc-title">Fresh Picks</span><span class="mc-desc">New to you</span>
+        </div>
+        <div class="mode-card" id="mode-random" onclick="setMode('random')">
+          <span class="mc-ico">🎲</span><span class="mc-title">Surprise Me</span><span class="mc-desc">Random wildcard</span>
+        </div>
+        <div class="mode-card" id="mode-rewatches" onclick="setMode('rewatches')">
+          <span class="mc-ico">🔁</span><span class="mc-title">Rewatch Mode</span><span class="mc-desc">Revisit favorites</span>
+        </div>
+      </div>
+      <p class="section-note" id="mode-desc" style="padding-left:0;margin:.7rem 0 0;font-size:12px;font-style:italic;text-align:center">Fresh recommendations + a few you may want to revisit.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat s1"><div class="stat-n" id="s-total">—</div><div class="stat-l">Movies in catalog</div><span class="stat-arrow">›</span></div>
+      <div class="stat s3"><div class="stat-n" id="seen-count">0</div><div class="stat-l">Movies seen</div></div>
+      <div class="stat s2"><div class="stat-n" id="s-pool">—</div><div class="stat-l">Match your filters</div></div>
+    </div>
+
+    <button class="go-btn" id="go-btn">✦ Find My Movie</button>
+    <div id="output"></div>
+  </div><!-- /#screen-discover -->
 
   <!-- Hidden elements preserved for auto-connect logic; users don't see these -->
   <div style="display:none">
@@ -648,6 +733,78 @@
     </div>
   </div>
 </div>
+
+<!-- ===== Bottom navigation (mobile-first, fixed) ===== -->
+<nav class="bottom-nav" id="bottom-nav" aria-label="Primary">
+  <button class="bnav-item active" id="nav-discover" onclick="navTo('discover')" aria-label="Discover">
+    <span class="bnav-ic">✦</span><span class="bnav-lbl">Discover</span>
+  </button>
+  <button class="bnav-item" id="nav-watchlist" onclick="navTo('watchlist')" aria-label="Watchlist">
+    <span class="bnav-ic">🔖</span><span class="bnav-lbl">Watchlist</span>
+  </button>
+  <button class="bnav-item" id="nav-favorites" onclick="navTo('favorites')" aria-label="Favorites">
+    <span class="bnav-ic">♥</span><span class="bnav-lbl">Favorites</span>
+  </button>
+  <button class="bnav-item" id="nav-seen" onclick="navTo('seen')" aria-label="Seen">
+    <span class="bnav-ic">✓</span><span class="bnav-lbl">Seen</span>
+  </button>
+  <button class="bnav-item" id="nav-more" onclick="navTo('more')" aria-label="More">
+    <span class="bnav-ic">☰</span><span class="bnav-lbl">More</span>
+  </button>
+</nav>
+
+<script>
+/* ===== Phase 1 UI: Advanced-filters disclosure + bottom-nav router =====
+   These are presentation-only helpers. They do NOT touch the recommendation
+   engine, scoring, Supabase, auth, or list functions — they only toggle
+   visibility and delegate to the existing openLists()/openList()/openSettings(). */
+function toggleAdvanced(){
+  var d=document.getElementById('adv-disc');
+  if(!d) return;
+  var open=d.classList.toggle('open');
+  var btn=d.querySelector('.adv-disc-btn');
+  if(btn) btn.setAttribute('aria-expanded', open?'true':'false');
+}
+/* Bottom-nav router. Discover shows the discover screen; the list tabs reuse
+   the existing overlay via openLists()+openList(); More opens settings.
+   The "active" highlight resets to Discover whenever the overlay closes. */
+function navTo(tab){
+  if(tab==='discover'){
+    if(typeof closeSettings==='function') closeSettings();
+    setNavActive('discover');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  if(tab==='more'){
+    setNavActive('more');
+    if(typeof openSettings==='function') openSettings();
+    return;
+  }
+  // watchlist | favorites | seen -> open the lists overlay then the detail list
+  setNavActive(tab);
+  if(typeof openLists==='function') openLists();
+  if(typeof openList==='function') openList(tab);
+}
+function setNavActive(tab){
+  ['discover','watchlist','favorites','seen','more'].forEach(function(t){
+    var el=document.getElementById('nav-'+t);
+    if(el) el.classList.toggle('active', t===tab);
+  });
+}
+/* When the overlay is dismissed, snap the bottom nav back to Discover so the
+   highlighted tab always reflects the visible screen. */
+(function(){
+  document.addEventListener('DOMContentLoaded',function(){
+    var ov=document.getElementById('set-overlay');
+    if(!ov) return;
+    var obs=new MutationObserver(function(){
+      if(!ov.classList.contains('open')) setNavActive('discover');
+    });
+    obs.observe(ov,{attributes:true,attributeFilter:['class']});
+  });
+})();
+</script>
+
 <script>
 const SUPABASE_URL='https://fmhmvvsbxofoqriekfyj.supabase.co';
 const TABLE='movies';
