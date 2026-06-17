@@ -653,6 +653,11 @@ const TABLE='movies';
 // had nothing obscure to promote. 500 well-rated films include ~110 hidden gems.
 const CANDIDATE_LIMIT=500;
 const POOL_LIMIT=CANDIDATE_LIMIT;   // ranking math operates over the full candidate pool
+// Mixed pool: when the rating-sorted fetch is FULL (more films match than we pulled), also pull
+// this many of the LEAST-popular quality films (rating floor) so the adventurous slider has
+// genuinely obscure picks to promote instead of only obscure-among-the-top-rated.
+const DISCOVERY_LIMIT=150;
+const MERGED_LIMIT=POOL_LIMIT+DISCOVERY_LIMIT;
 // ===== DEV DIAGNOSTICS (read-only scoring inspector) =====
 // Off by default. Renders a panel AFTER the result cards that mirrors the existing
 // console.table breakdowns so the owner can see WHY films ranked as they did.
@@ -1534,6 +1539,28 @@ async function getRecs(){
     let pool=await resp.json();
     if(!pool.length){out.innerHTML='<div class="status">No films matched your filters. Try loosening genre, era, or length.</div>';document.getElementById('go-btn').disabled=false;return;}
 
+    // ---- Mixed pool (discovery) ----
+    // Only when the primary rating-sorted fetch is FULL (i.e. more films matched than we pulled, so
+    // the obscure-but-good end was cut off). Pull a small batch of the least-popular quality films
+    // (lowest vote_count, rating >= 6.5) and merge them in, deduped. When the primary pool isn't full
+    // (narrow filters already contain everything) this is SKIPPED, leaving behavior identical.
+    // Best-effort: any failure is ignored and we proceed with the primary pool.
+    if(pool.length >= fetchLimit){
+      try{
+        let dq=buildQuery(baseCols+',streaming',DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
+        let dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
+        if(!dresp.ok){
+          dq=buildQuery(baseCols,DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
+          dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
+        }
+        if(dresp.ok){
+          const disc=await dresp.json();
+          const have=new Set(pool.map(m=>m.imdb_id));
+          disc.forEach(m=>{ if(!have.has(m.imdb_id)){ have.add(m.imdb_id); pool.push(m); } });
+        }
+      }catch(e){ /* discovery is best-effort; ignore and use the primary pool */ }
+    }
+
     // ---- Language and audience filters (client-side) ----
     pool=pool.filter(m=>passesLang(m)&&passesKid(m)&&!isNotInterested(m));
     if(!pool.length){
@@ -1546,14 +1573,14 @@ async function getRecs(){
 
     // ---- Streaming filter (client-side; only engages in Free to me mode with services picked) ----
     if(streamingActive){
-      pool=pool.filter(passesStreaming).slice(0,POOL_LIMIT);
+      pool=pool.filter(passesStreaming).slice(0,MERGED_LIMIT);
       if(!pool.length){
         const svcNames=[...selServices].map(k=>SERVICES.find(s=>s.key===k).label).join(', ');
         out.innerHTML='<div class="status">No films matching your filters are free to stream on '+svcNames+'.<br><small style="display:block;margin-top:6px;color:var(--text3)">Try adding more services, loosening other filters, or switching to "Stream, Rent, or Buy."</small></div>';
         document.getElementById('go-btn').disabled=false;return;
       }
     }else{
-      pool=pool.slice(0,POOL_LIMIT);
+      pool=pool.slice(0,MERGED_LIMIT);
     }
 
     const lengthSel=[...selGroups.length], eraSel=[...selGroups.era];
@@ -1814,6 +1841,18 @@ async function getRecs(){
       return Math.min(9, norm * 9);                          // bounded [0, 9], gentle, never negative
     };
 
+    // Recency nudge: a gentle, bounded tiebreaker toward fresher releases. Max +4, decaying
+    // linearly to 0 over the last REC_SPAN years — small by design so it never overrides
+    // quality/fit; it only nudges near-ties toward newer films. Null year -> 0.
+    const REC_MAX = 4, REC_SPAN = 15, nowYear = new Date().getFullYear();
+    const recencyBonus = (m) => {
+      if(m.year==null) return 0;
+      const age = nowYear - m.year;
+      if(age <= 0) return REC_MAX;
+      if(age >= REC_SPAN) return 0;
+      return REC_MAX * (1 - age/REC_SPAN);
+    };
+
     // Exposure memory (variety): films shown often get a gentle demotion so the list rotates.
     // Guarded — degrades to a no-op if localStorage is unavailable (e.g. preview sandboxes).
     let exposure = {};
@@ -1844,13 +1883,14 @@ async function getRecs(){
       const expCount   = exposure[m.imdb_id]||0;
       const expPen     = -Math.min(8, expCount*1.5);                    // gentle rotation demotion
       const favBon     = favoriteBonus(m);                             // additive nudge, 0 when no favorites
+      const recBon     = recencyBonus(m);                              // gentle recency tiebreaker [0,4]
 
       // RAW score for ranking — intentionally NOT clamped, so heavily-penalized blockbusters
       // keep a real ordering instead of all colliding at 0.
-      const raw = base + popMod + genreBonus + animPen + docPen + fPen + confPen + expPen + favBon;
+      const raw = base + popMod + genreBonus + animPen + docPen + fPen + confPen + expPen + favBon + recBon;
 
       m._popMod = popMod; m._fPen = fPen; m._genreBonus = genreBonus;
-      m._confPen = confPen; m._expPen = expPen; m._favBon = favBon; m._raw = raw;
+      m._confPen = confPen; m._expPen = expPen; m._favBon = favBon; m._recBon = recBon; m._raw = raw;
       m._surprise = Math.round(fame);
       m.why = whyFor(m, quality, fame);
       m.ws = Math.max(0, Math.min(100, Math.round(raw)));   // DISPLAY score only (clamped)
@@ -1947,10 +1987,10 @@ async function getRecs(){
             return h;
           };
           // Scoring breakdown (same fields as the first console.table, top 40).
-          const scoreCols=['#','title','imdb_votes','fame','pop_mod','franchise_pen','genre_bonus','conf_pen','exp_pen','fav_bonus','quality','raw','display'];
+          const scoreCols=['#','title','imdb_votes','fame','pop_mod','franchise_pen','genre_bonus','conf_pen','exp_pen','fav_bonus','recency','quality','raw','display'];
           const scoreRows=ranked.slice(0,40).map((m,i)=>[
             i+1, m.title, m.vote_count, m._fame, r1(m._popMod), r1(m._fPen),
-            r1(m._genreBonus), r1(m._confPen), r1(m._expPen), r1(m._favBon||0), m._quality, r1(m._raw), m.ws
+            r1(m._genreBonus), r1(m._confPen), r1(m._expPen), r1(m._favBon||0), r1(m._recBon||0), m._quality, r1(m._raw), m.ws
           ]);
           // Genre breakdown (same fields as the second console.table, top 40).
           const genreCols=['#','title','selected','movie_genres','positions','primary','secondary','purity','multi','total'];
