@@ -115,7 +115,7 @@ async function main(){
       runtime_minutes: det.runtime || null,
       genre: (det.genres || []).map(g => g.name).join(', '),
       imdb_rating: r.imdb, rotten_tomatoes_score: r.rt, metascore: r.meta, vote_count: r.votes,
-      popularity: c.popularity, revenue: det.revenue, release_date: det.release_date || null,
+      popularity: c.popularity, release_date: det.release_date || null,
       original_language: det.original_language || null,
       poster_url: det.poster_path ? 'https://image.tmdb.org/t/p/w500' + det.poster_path : null,
       source: matureQualify ? 'ingest-mature' : 'ingest-theatrical',
