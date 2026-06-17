@@ -140,15 +140,15 @@
   .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.4rem;margin-bottom:.9rem;display:flex;gap:17px;transition:border-color .15s,transform .15s;position:relative}
   .card:hover{border-color:var(--border2);transform:translateY(-1px)}
   .rank{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--text3);line-height:1.1;position:absolute;top:16px;right:18px;z-index:2}
-  .poster{width:120px;height:180px;flex-shrink:0;border-radius:var(--rsm);object-fit:contain}
+  .poster{width:144px;height:216px;flex-shrink:0;border-radius:var(--rsm);object-fit:contain}
   .body{flex:1;min-width:0}
   .title-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:4px;padding-right:34px}
-  .title{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+  .title{font-family:var(--serif);font-size:23px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
   .mpaa-badge{font-size:10.5px;font-weight:700;padding:1px 6px;border:1.5px solid var(--text3);color:var(--text);background:var(--bg3);border-radius:3px;letter-spacing:.04em;font-family:var(--sans);vertical-align:1px;display:inline-block}
   .title-row .seen-btn{margin-left:auto;flex-shrink:0}
   .score{font-size:11px;font-weight:700;padding:3px 9px;border-radius:var(--rpill);transform:translateY(-2px)}
   .sg{background:#052e16;color:#4ade80;border-color:#14532d}.sb{background:#0c1a2e;color:#38bdf8;border-color:#1e3a5f}.sa{background:#2d1f00;color:#fbbf24;border-color:#78350f}.sr{background:#2d0a0a;color:#f87171;border-color:#7f1d1d}
-  .meta{font-size:13.5px;color:var(--text2);margin-bottom:8px}
+  .meta{font-size:12px;color:var(--text2);margin-bottom:8px}
   .rpills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
   .rp{font-size:11px;padding:2px 8px;border-radius:var(--rpill);border:1px solid;font-weight:500}
   .rrt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}.rimdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}.rmeta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
@@ -377,7 +377,7 @@
   /* Fluid type — scale smoothly across breakpoints */
   .section-title{font-size:clamp(17px,4.4vw,20px)}
   .slider-lbl{font-size:clamp(15px,4vw,17px)}
-  .title{font-size:clamp(17px,4.6vw,20px)}
+  .title{font-size:clamp(19px,5vw,23px)}
   .stat-n{font-size:clamp(24px,6.5vw,32px)}
   .section-note{font-size:clamp(12px,3.4vw,13px)}
 
@@ -422,10 +422,10 @@
     /* Make the info column at least poster-height + actions, and anchor the full-width
        action row to the bottom so it always clears the 156px poster with a consistent gap
        (short-text cards no longer ride up into the poster). 264 = 156 poster + ~96 actions + gap. */
-    .body{display:flex;flex-direction:column;min-height:264px}
+    .body{display:flex;flex-direction:column;min-height:294px}
     /* Mobile-only breathing room between the slider note above and Recommendation Mode */
     #rec-mode-field{margin-top:2rem}
-    .poster{width:104px;height:156px;max-width:104px;max-height:156px;flex-shrink:0;object-fit:contain;border-radius:var(--rsm);align-self:flex-start}
+    .poster{width:124px;height:186px;max-width:124px;max-height:186px;flex-shrink:0;object-fit:contain;border-radius:var(--rsm);align-self:flex-start}
     /* Rank as a small badge on the poster's top-left corner */
     .rank{position:absolute;top:14px;left:14px;right:auto;font-size:13px;font-weight:600;width:auto;line-height:1;z-index:2;background:rgba(0,0,0,.6);color:#fff;padding:3px 8px;border-radius:99px}
     .title-row{padding-right:0}
@@ -434,7 +434,6 @@
     /* Card toggles: bump tap height on mobile */
     .card-act{padding:13px 8px;min-height:44px}
     /* Stats row: smaller gap and padding so it doesn't crowd narrow screens */
-    .stat{padding:.85rem .7rem}
     .stat-arrow{display:none}
     /* Tame the hero a touch on the smallest screens */
     h1{margin-bottom:.6rem}
@@ -447,14 +446,14 @@
   @media (min-width:601px) and (max-width:1024px){
     .wrap{max-width:680px}
     .card{padding:1.2rem 1.4rem}
-    .poster{width:140px;height:210px}
+    .poster{width:168px;height:252px}
   }
 
   /* ----- Desktop (≥ 1025px) ----- */
   @media (min-width:1025px){
     .wrap{max-width:760px}  /* keep the elegant centered layout */
     body{padding-top:3.5rem;padding-bottom:5rem}
-    .poster{width:180px;height:270px}  /* larger poster fills the wider card; rank stays as-is */
+    .poster{width:216px;height:324px}  /* larger poster fills the wider card; rank stays as-is */
   }
 
   /* Service-pill grid: refine the existing breakpoint so the 2-col stack is
@@ -484,8 +483,8 @@
   .adv-disc-btn .adv-disc-chev{font-size:18px;color:var(--text3);transition:transform .22s;line-height:1}
   .adv-disc.open .adv-disc-chev{transform:rotate(180deg)}
   .adv-disc-btn:hover{color:var(--accent)}
-  .adv-disc-body{display:none;padding:0 1.45rem 1.4rem;border-top:1px solid var(--border)}
-  .adv-disc.open .adv-disc-body{display:block;animation:fade .25s ease;padding-top:1.3rem}
+  .adv-disc-body{padding-left:1.45rem;padding-right:1.45rem}
+  /* open/close behavior (max-height/opacity animation) defined in Phase 2 block below */
 
   /* --- Recommendation mode cards --- */
   .mode-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
@@ -494,7 +493,7 @@
   .mode-card .mc-ico{font-size:22px;line-height:1;margin-bottom:2px}
   .mode-card .mc-title{font-size:13.5px;font-weight:600;color:var(--text);letter-spacing:-.01em}
   .mode-card .mc-desc{font-size:11px;color:var(--text3);line-height:1.35}
-  .mode-card.on{background:color-mix(in srgb,var(--accent) 13%,var(--bg2));border-color:var(--accent)}
+  .mode-card.on{background:color-mix(in srgb,var(--accent) 13%,var(--bg2));border-color:var(--accent);box-shadow:0 0 0 1px rgba(232,176,75,.35),0 6px 26px rgba(232,176,75,.18)}
   .mode-card.on .mc-title{color:var(--accent2)}
   @supports not (background:color-mix(in srgb,red,blue)){.mode-card.on{background:var(--accent-dim)}}
   .mode-card.on .mc-desc{color:var(--text2)}
@@ -517,6 +516,80 @@
     .adv-disc-body{padding-left:1.05rem;padding-right:1.05rem}
     .mode-cards{grid-template-columns:repeat(2,1fr)}
     .mode-card{padding:.95rem .7rem}
+  }
+
+  /* ====================================================================== */
+  /* ===== PHASE 2 REFINEMENT — quick-filter dropdowns, compact stats ===== */
+  /* ====================================================================== */
+
+  /* --- Quick filters: 3 equal-width dropdown buttons in one row --- */
+  .qfilters{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:1rem}
+  .qf{position:relative;min-width:0}
+  .qf-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);
+    padding:.95rem .6rem;cursor:pointer;font-family:var(--sans);color:var(--text);
+    transition:border-color .15s,background .15s,transform .12s;text-align:center;min-height:64px}
+  .qf-btn:hover{border-color:#4a4a52;transform:translateY(-1px)}
+  .qf-btn .qf-name{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:5px}
+  .qf-btn .qf-name .qf-chev{font-size:13px;transition:transform .22s;line-height:1}
+  .qf-btn .qf-val{font-size:14px;font-weight:600;color:var(--text2);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Active (some selection) state: gold accent on the button + value */
+  .qf.has-sel .qf-btn{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--bg2))}
+  @supports not (background:color-mix(in srgb,red,blue)){.qf.has-sel .qf-btn{background:var(--accent-dim)}}
+  .qf.has-sel .qf-val{color:var(--accent2)}
+  .qf.open .qf-btn{border-color:var(--accent)}
+  .qf.open .qf-chev{transform:rotate(180deg)}
+  /* Dropdown panel that reveals the existing JS-populated pill grid */
+  .qf-panel{position:absolute;top:calc(100% + 8px);left:0;z-index:50;
+    width:min(440px,86vw);background:var(--bg2);border:1px solid var(--border2);
+    border-radius:var(--r);padding:1.1rem 1.15rem;box-shadow:0 18px 50px rgba(0,0,0,.55);
+    display:none}
+  .qf.open .qf-panel{display:block;animation:fade .2s ease}
+  /* Center genre/length panels under the row; era opens roughly centered too */
+  .qf:nth-child(2) .qf-panel{left:50%;transform:translateX(-50%)}
+  .qf:nth-child(3) .qf-panel{right:0;left:auto}
+  .qf-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:.85rem}
+  .qf-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+  .qf-panel-acts{display:inline-flex;align-items:center;gap:8px}
+  .qf-panel .clr{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);border-radius:99px;cursor:pointer;padding:4px 11px;font-weight:500;font-family:var(--sans);transition:color .12s,background .12s,border-color .12s}
+  .qf-panel .clr:hover{color:var(--accent);background:var(--bg2);border-color:var(--border)}
+  .qf-backdrop{position:fixed;inset:0;z-index:40;display:none}
+  .qf-backdrop.show{display:block}
+
+  /* --- Advanced filters: animated max-height/opacity open/close --- */
+  .adv-disc-body{display:block;max-height:0;opacity:0;overflow:hidden;
+    padding-top:0;padding-bottom:0;border-top:1px solid transparent;
+    transition:max-height .38s ease,opacity .28s ease,padding .38s ease,border-color .38s ease}
+  .adv-disc.open .adv-disc-body{max-height:2200px;opacity:1;padding-top:1.3rem;padding-bottom:1.4rem;border-top-color:var(--border);animation:none}
+
+  /* --- Compact stats: icon + number + short label, minimal height --- */
+  .stats{gap:9px;margin:0 0 1rem}
+  .stat{display:flex;align-items:center;gap:11px;padding:.8rem .9rem;text-align:left}
+  .stat::before{display:none}
+  .stat .stat-ico{font-size:19px;line-height:1;flex:none}
+  .stat .stat-body{display:flex;flex-direction:column;min-width:0}
+  .stat-n{font-size:clamp(19px,5vw,24px);margin-bottom:0}
+  .stat-l{font-size:9.5px;letter-spacing:.05em}
+  .stat-arrow{display:none}
+
+  /* --- Find CTA: premium glow + tap animation --- */
+  .go-btn{box-shadow:0 6px 30px rgba(232,176,75,.22),0 0 0 1px rgba(255,255,255,.04) inset}
+  .go-btn:active:not(:disabled){transform:translateY(1px) scale(.99);box-shadow:0 3px 16px rgba(232,176,75,.30)}
+
+  /* --- Result card action pills (lighter premium pills, not big outlines) --- */
+  .card-acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .card-act{flex:1 1 calc(50% - 4px);min-width:0;font-size:12px;font-weight:600;
+    padding:7px 10px;border-radius:var(--rpill);min-height:0}
+
+  @media (max-width:640px){
+    .qfilters{gap:7px}
+    .qf-btn{padding:.85rem .45rem;min-height:60px}
+    .qf-btn .qf-val{font-size:13px}
+    .qf-panel{width:min(440px,92vw)}
+    .stat{padding:.75rem .7rem}
+    .card-act{padding:9px 8px;min-height:40px}
+    /* full-width action pills below poster+info (offset = poster 124px + gap 14px) */
+    .card-acts{margin-left:-138px;width:calc(100% + 138px);margin-top:auto;padding-top:14px}
   }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -545,19 +618,50 @@
   <!-- DISCOVER SCREEN -->
   <div id="screen-discover">
 
-    <!-- PRIMARY FILTERS: Genre / Era / Length -->
-    <div class="pcard">
-      <div class="field">
-        <div class="field-lbl">Genre <button class="clr" onclick="clearGroup('genre')">Clear</button></div>
-        <div class="pills" id="genre-pills"></div>
+    <!-- PRIMARY FILTERS: Genre / Era / Length — dropdown-style selectors.
+         Each button opens a panel that REVEALS the existing JS-populated
+         multi-select pill grid (#genre-pills / #era-pills / #length-pills),
+         so togglePill / selGroups / selectAllGroup / clearGroup are untouched. -->
+    <div class="qf-backdrop" id="qf-backdrop" onclick="closeQuickFilters()"></div>
+    <div class="qfilters">
+      <div class="qf" id="qf-genre">
+        <button type="button" class="qf-btn" onclick="toggleQuickFilter('genre')" aria-haspopup="true" aria-expanded="false">
+          <span class="qf-name">Genre <span class="qf-chev">⌄</span></span>
+          <span class="qf-val" id="qf-genre-val">Any</span>
+        </button>
+        <div class="qf-panel">
+          <div class="qf-panel-head">
+            <span class="qf-panel-title">Choose genres</span>
+            <span class="qf-panel-acts"><button class="clr" onclick="clearGroup('genre')">Clear</button></span>
+          </div>
+          <div class="pills" id="genre-pills"></div>
+        </div>
       </div>
-      <div class="field">
-        <div class="field-lbl">Era <span class="clr-group"><button class="clr" onclick="selectAllGroup('era')">All</button><button class="clr" onclick="clearGroup('era')">Clear</button></span></div>
-        <div class="pills" id="era-pills"></div>
+      <div class="qf" id="qf-era">
+        <button type="button" class="qf-btn" onclick="toggleQuickFilter('era')" aria-haspopup="true" aria-expanded="false">
+          <span class="qf-name">Era <span class="qf-chev">⌄</span></span>
+          <span class="qf-val" id="qf-era-val">Any</span>
+        </button>
+        <div class="qf-panel">
+          <div class="qf-panel-head">
+            <span class="qf-panel-title">Choose eras</span>
+            <span class="qf-panel-acts"><button class="clr" onclick="selectAllGroup('era')">All</button><button class="clr" onclick="clearGroup('era')">Clear</button></span>
+          </div>
+          <div class="pills" id="era-pills"></div>
+        </div>
       </div>
-      <div class="field">
-        <div class="field-lbl">Length <span class="clr-group"><button class="clr" onclick="selectAllGroup('length')">All</button><button class="clr" onclick="clearGroup('length')">Clear</button></span></div>
-        <div class="pills" id="length-pills"></div>
+      <div class="qf" id="qf-length">
+        <button type="button" class="qf-btn" onclick="toggleQuickFilter('length')" aria-haspopup="true" aria-expanded="false">
+          <span class="qf-name">Length <span class="qf-chev">⌄</span></span>
+          <span class="qf-val" id="qf-length-val">Any</span>
+        </button>
+        <div class="qf-panel">
+          <div class="qf-panel-head">
+            <span class="qf-panel-title">Choose length</span>
+            <span class="qf-panel-acts"><button class="clr" onclick="selectAllGroup('length')">All</button><button class="clr" onclick="clearGroup('length')">Clear</button></span>
+          </div>
+          <div class="pills" id="length-pills"></div>
+        </div>
       </div>
     </div>
 
@@ -625,26 +729,26 @@
       <div class="field-lbl" style="margin-bottom:.85rem">Recommendation Mode</div>
       <div class="mode-cards" id="mode-seg">
         <div class="mode-card on" id="mode-hybrid" onclick="setMode('hybrid')">
-          <span class="mc-ico">🎯</span><span class="mc-title">Smart Mix</span><span class="mc-desc">Best overall match</span>
+          <span class="mc-ico">🎯</span><span class="mc-title">Smart Mix</span><span class="mc-desc">Balanced recommendations</span>
         </div>
         <div class="mode-card" id="mode-fresh" onclick="setMode('fresh')">
-          <span class="mc-ico">🌱</span><span class="mc-title">Fresh Picks</span><span class="mc-desc">New to you</span>
+          <span class="mc-ico">✨</span><span class="mc-title">Fresh Picks</span><span class="mc-desc">Only unseen movies</span>
         </div>
         <div class="mode-card" id="mode-random" onclick="setMode('random')">
-          <span class="mc-ico">🎲</span><span class="mc-title">Surprise Me</span><span class="mc-desc">Random wildcard</span>
+          <span class="mc-ico">🎲</span><span class="mc-title">Surprise Me</span><span class="mc-desc">Anything goes</span>
         </div>
         <div class="mode-card" id="mode-rewatches" onclick="setMode('rewatches')">
-          <span class="mc-ico">🔁</span><span class="mc-title">Rewatch Mode</span><span class="mc-desc">Revisit favorites</span>
+          <span class="mc-ico">❤️</span><span class="mc-title">Rewatch</span><span class="mc-desc">Worth watching again</span>
         </div>
       </div>
       <p class="section-note" id="mode-desc" style="padding-left:0;margin:.7rem 0 0;font-size:12px;font-style:italic;text-align:center">Fresh recommendations + a few you may want to revisit.</p>
     </div>
 
-    <!-- STATS -->
+    <!-- STATS (compact: icon + number + short label) -->
     <div class="stats">
-      <div class="stat s1"><div class="stat-n" id="s-total">—</div><div class="stat-l">Movies in catalog</div><span class="stat-arrow">›</span></div>
-      <div class="stat s3"><div class="stat-n" id="seen-count">0</div><div class="stat-l">Movies seen</div></div>
-      <div class="stat s2"><div class="stat-n" id="s-pool">—</div><div class="stat-l">Match your filters</div></div>
+      <div class="stat s1"><span class="stat-ico">🎬</span><span class="stat-body"><span class="stat-n" id="s-total">—</span><span class="stat-l">Movies</span></span></div>
+      <div class="stat s3"><span class="stat-ico">✅</span><span class="stat-body"><span class="stat-n" id="seen-count">0</span><span class="stat-l">Seen</span></span></div>
+      <div class="stat s2"><span class="stat-ico">🎯</span><span class="stat-body"><span class="stat-n" id="s-pool">—</span><span class="stat-l">Match</span></span></div>
     </div>
 
     <button class="go-btn" id="go-btn">✦ Find My Movie</button>
@@ -765,6 +869,63 @@ function toggleAdvanced(){
   var btn=d.querySelector('.adv-disc-btn');
   if(btn) btn.setAttribute('aria-expanded', open?'true':'false');
 }
+
+/* ===== Quick-filter dropdowns (presentation only) =====
+   These open/close the panels that REVEAL the existing pill grids. They never
+   touch selGroups / togglePill / selectAllGroup / clearGroup — the multi-select
+   pills inside keep working exactly as before. updateQuickFilterLabels() only
+   READS selGroups to summarise each button's label + active state. */
+function closeQuickFilters(){
+  ['genre','era','length'].forEach(function(g){
+    var qf=document.getElementById('qf-'+g);
+    if(qf){ qf.classList.remove('open'); var b=qf.querySelector('.qf-btn'); if(b) b.setAttribute('aria-expanded','false'); }
+  });
+  var bd=document.getElementById('qf-backdrop'); if(bd) bd.classList.remove('show');
+}
+function toggleQuickFilter(group){
+  var qf=document.getElementById('qf-'+group);
+  if(!qf) return;
+  var willOpen=!qf.classList.contains('open');
+  closeQuickFilters();
+  if(willOpen){
+    qf.classList.add('open');
+    var b=qf.querySelector('.qf-btn'); if(b) b.setAttribute('aria-expanded','true');
+    var bd=document.getElementById('qf-backdrop'); if(bd) bd.classList.add('show');
+  }
+}
+/* Summarise the current selection of one group as a short label.
+   Reads window.selGroups (defined in the engine script) — read-only. */
+function quickFilterSummary(group){
+  try{
+    // selGroups / kidOnly are top-level `let` bindings in the engine script. They are
+    // global identifiers but NOT properties of window, so reference them directly.
+    var sg=(typeof selGroups!=='undefined')?selGroups:null; if(!sg||!sg[group]) return 'Any';
+    var kid=(typeof kidOnly!=='undefined')?kidOnly:false;
+    var n=sg[group].size;
+    // Genre row also hosts the Kid-Friendly pseudo-pill (kidOnly), which is NOT in selGroups.
+    if(group==='genre' && kid) n=n+1;
+    if(n===0) return 'Any';
+    if(n===1){
+      if(group==='genre' && kid && sg.genre.size===0) return 'Kid-Friendly';
+      var only=[].slice.call(sg[group])[0];
+      if(only==='Sport') only='Sports';
+      return only;
+    }
+    return n+' selected';
+  }catch(e){ return 'Any'; }
+}
+function updateQuickFilterLabels(){
+  ['genre','era','length'].forEach(function(g){
+    var val=document.getElementById('qf-'+g+'-val');
+    var qf=document.getElementById('qf-'+g);
+    var summary=quickFilterSummary(g);
+    if(val) val.textContent=summary;
+    if(qf) qf.classList.toggle('has-sel', summary!=='Any');
+  });
+}
+// expose for the engine script to call after selection changes
+window.updateQuickFilterLabels=updateQuickFilterLabels;
+document.addEventListener('DOMContentLoaded',function(){ try{ updateQuickFilterLabels(); }catch(e){} });
 /* Bottom-nav router. Discover shows the discover screen; the list tabs reuse
    the existing overlay via openLists()+openList(); More opens settings.
    The "active" highlight resets to Discover whenever the overlay closes. */
@@ -1496,15 +1657,17 @@ function togglePill(btn,group,item,cls){
     kidOnly=!kidOnly;
     btn.classList.toggle(cls,kidOnly);
     updatePoolCount();
+    if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();
     return;
   }
   const s=selGroups[group];
   s.has(item)?s.delete(item):s.add(item);
   btn.classList.toggle(cls);
   if(['genre','length','era'].includes(group))updatePoolCount();
+  if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();
 }
-function clearGroup(group){const cls=GROUPS[group].cls;selGroups[group].clear();document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>b.classList.remove(cls));if(group==='genre')kidOnly=false;if(['genre','length','era'].includes(group))updatePoolCount();}
-function selectAllGroup(group){const cls=GROUPS[group].cls;GROUPS[group].items.forEach(item=>{if(group==='genre'&&item==='Kid-Friendly')return;selGroups[group].add(item);});document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>{if(group==='genre'&&b.textContent==='Kid-Friendly')return;b.classList.add(cls);});if(['genre','length','era'].includes(group))updatePoolCount();}
+function clearGroup(group){const cls=GROUPS[group].cls;selGroups[group].clear();document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>b.classList.remove(cls));if(group==='genre')kidOnly=false;if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
+function selectAllGroup(group){const cls=GROUPS[group].cls;GROUPS[group].items.forEach(item=>{if(group==='genre'&&item==='Kid-Friendly')return;selGroups[group].add(item);});document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>{if(group==='genre'&&b.textContent==='Kid-Friendly')return;b.classList.add(cls);});if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
 function buildQuery(selectCols,limit){const params=['select='+encodeURIComponent(selectCols)];const genres=[...selGroups.genre];if(genres.length){params.push('or='+encodeURIComponent('('+genres.map(g=>'genre.ilike.*'+g+'*').join(',')+')'));}const eras=[...selGroups.era];if(eras.length){const ranges={'Pre-1960':[0,1959],'1960s':[1960,1969],'1970s':[1970,1979],'1980s':[1980,1989],'1990s':[1990,1999],'2000s':[2000,2009],'2010s':[2010,2019],'2020s':[2020,2100]};params.push('or='+encodeURIComponent('('+eras.map(e=>{const[a,b]=ranges[e];return 'and(year.gte.'+a+',year.lte.'+b+')';}).join(',')+')'));}const lengths=[...selGroups.length];if(lengths.length){const lenRanges={'Under 90 min':[0,89],'90\u2013120 min':[90,120],'120\u2013150 min':[121,150],'Over 150 min':[151,999]};params.push('or='+encodeURIComponent('('+lengths.map(l=>{const[a,b]=lenRanges[l];return 'and(runtime_minutes.gte.'+a+',runtime_minutes.lte.'+b+')';}).join(',')+')'));}if(limit)params.push('limit='+limit);return params.join('&');}
 async function updatePoolCount(){
   const el=document.getElementById('s-pool');
