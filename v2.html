@@ -1019,6 +1019,80 @@
     .trend-cell-title{font-size:12px}
   }
 
+  /* ======================================================================
+     PROJECTOR LOADER — cinematic "old movie theater" loading animation.
+     Lives below #go-btn (in place of #trend-row) while recs load.
+     Presentation only; no engine coupling.
+     ====================================================================== */
+  .proj-loader{position:relative;display:none;margin-top:1.5rem;border-radius:var(--r);overflow:hidden;
+    min-height:300px;background:radial-gradient(ellipse 120% 90% at 78% 78%,rgba(232,176,75,.12),transparent 58%),
+      linear-gradient(180deg,var(--bg2),#0b0b0c);
+    border:1px solid var(--border);opacity:0;transition:opacity .5s ease}
+  .proj-loader.show{display:block}
+  .proj-loader.vis{opacity:1}
+  .proj-loader.fading{opacity:0}
+  /* soft gold glow behind the projector (lower-right) */
+  .proj-glow{position:absolute;right:8%;bottom:10%;width:220px;height:220px;pointer-events:none;
+    background:radial-gradient(circle,rgba(232,176,75,.30),rgba(232,176,75,.08) 45%,transparent 70%);
+    filter:blur(8px);animation:projGlow 4.5s ease-in-out infinite;z-index:1}
+  @keyframes projGlow{0%,100%{opacity:.6;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+  /* diagonal warm light beam from projector lens (lower-right) up to the left */
+  .proj-beam{position:absolute;right:20%;bottom:30%;width:135%;height:130px;transform-origin:right center;
+    transform:rotate(-19deg);pointer-events:none;z-index:2;
+    background:linear-gradient(270deg,rgba(243,200,118,.34) 0%,rgba(232,176,75,.16) 28%,rgba(232,176,75,.05) 60%,transparent 88%);
+    -webkit-mask-image:linear-gradient(270deg,#000 0%,rgba(0,0,0,.7) 45%,transparent 92%);
+            mask-image:linear-gradient(270deg,#000 0%,rgba(0,0,0,.7) 45%,transparent 92%);
+    clip-path:polygon(100% 36%,100% 64%,0% 100%,0% 0%);
+    animation:projBeam 4.5s ease-in-out infinite;filter:blur(1px)}
+  @keyframes projBeam{0%,100%{opacity:.55}50%{opacity:.95}}
+  /* floating dust particles inside the beam */
+  .proj-dust{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+  .proj-dust i{position:absolute;width:3px;height:3px;border-radius:50%;
+    background:radial-gradient(circle,rgba(243,222,170,.95),rgba(243,200,118,.25) 60%,transparent);
+    opacity:0;animation:projDust 9s linear infinite}
+  @keyframes projDust{
+    0%{opacity:0;transform:translate(0,0) scale(.7)}
+    12%{opacity:.85}
+    78%{opacity:.7}
+    100%{opacity:0;transform:translate(-150px,-46px) scale(1.15)}}
+  /* very light animated film grain over the whole area */
+  .proj-grain{position:absolute;inset:0;pointer-events:none;z-index:4;opacity:.05;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:projGrain .6s steps(3) infinite}
+  @keyframes projGrain{0%{transform:translate(0,0)}33%{transform:translate(-3%,2%)}66%{transform:translate(2%,-3%)}100%{transform:translate(0,0)}}
+  /* the projector SVG, lower-right */
+  .proj-device{position:absolute;right:6%;bottom:8%;width:160px;z-index:5;
+    filter:drop-shadow(0 8px 22px rgba(0,0,0,.55))}
+  .proj-device svg{display:block;width:100%;height:auto}
+  .proj-reel{transform-origin:center;transform-box:fill-box;animation:projSpin 6s linear infinite}
+  .proj-reel.rev{animation-duration:5s}
+  @keyframes projSpin{to{transform:rotate(360deg)}}
+  .proj-lensglow{transform-origin:center;transform-box:fill-box;animation:projLens 4.5s ease-in-out infinite}
+  @keyframes projLens{0%,100%{opacity:.5}50%{opacity:1}}
+  /* text block, centered upper area */
+  .proj-text{position:relative;z-index:6;text-align:center;padding:2.6rem 1.5rem 1rem}
+  .proj-title{font-family:var(--serif);font-size:clamp(20px,5vw,26px);font-weight:600;letter-spacing:-.01em;
+    color:var(--text);margin-bottom:1.1rem}
+  .proj-status{font-family:var(--sans);font-size:14px;color:var(--text2);letter-spacing:.01em;
+    min-height:1.3em;transition:opacity .45s ease;will-change:opacity}
+  .proj-status.swap{opacity:0}
+  /* thin organic gold progress line */
+  .proj-prog{position:relative;z-index:6;width:140px;height:2px;margin:1.5rem auto 0;border-radius:2px;
+    background:rgba(232,176,75,.14);overflow:hidden}
+  .proj-prog::after{content:'';position:absolute;inset:0;width:42%;border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--accent2),var(--accent),transparent);
+    box-shadow:0 0 8px rgba(232,176,75,.5);animation:projProg 1.9s cubic-bezier(.6,0,.4,1) infinite}
+  @keyframes projProg{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .proj-glow,.proj-beam,.proj-dust i,.proj-grain,.proj-reel,.proj-lensglow,.proj-lens-glow{animation:none!important}
+    .proj-beam{opacity:.7}.proj-glow{opacity:.7}
+    .proj-prog::after{animation:projProgReduced 1.6s ease-in-out infinite alternate}
+    .proj-loader{transition:opacity .25s ease}
+    .proj-status{transition:opacity .2s ease}
+  }
+  @keyframes projProgReduced{0%{transform:translateX(-40%)}100%{transform:translateX(190%)}}
+
   /* --- Full-screen Trending page (reuses .cg-head + .rg-grid/.rg-tile) --- */
   .trend-overlay{position:fixed;inset:0;z-index:1200;
     background:var(--bg);
@@ -1176,6 +1250,59 @@
 
     <button class="go-btn" id="go-btn">✦ Find My Movie</button>
     <div id="output"></div>
+
+    <!-- ===== Projector loader (swaps in for Trending while recs load) ===== -->
+    <section class="proj-loader" id="proj-loader" aria-hidden="true" aria-label="Finding your movie">
+      <div class="proj-text">
+        <div class="proj-title">Finding your perfect movie</div>
+        <div class="proj-status" id="proj-status">Scanning the catalog…</div>
+      </div>
+      <div class="proj-prog" aria-hidden="true"></div>
+      <div class="proj-glow" aria-hidden="true"></div>
+      <div class="proj-beam" aria-hidden="true"></div>
+      <div class="proj-dust" id="proj-dust" aria-hidden="true"></div>
+      <div class="proj-device" aria-hidden="true">
+        <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+          <!-- stand -->
+          <rect x="78" y="128" width="44" height="6" rx="2" fill="#1c1c1f"/>
+          <rect x="96" y="112" width="8" height="18" fill="#28282d"/>
+          <!-- body -->
+          <rect x="30" y="58" width="96" height="54" rx="9" fill="#1c1c1f" stroke="#3a2f18" stroke-width="1.5"/>
+          <rect x="30" y="58" width="96" height="54" rx="9" fill="url(#projBodyGrad)" opacity=".5"/>
+          <!-- lens housing + lens (faces left, toward beam) -->
+          <rect x="118" y="74" width="26" height="22" rx="4" fill="#28282d" stroke="#3a2f18" stroke-width="1.2"/>
+          <ellipse class="proj-lensglow" cx="146" cy="85" rx="8" ry="11" fill="url(#projLensGrad)"/>
+          <circle cx="143" cy="85" r="6.5" fill="#0a0a0b" stroke="#e8b04b" stroke-width="1.4"/>
+          <!-- top reel -->
+          <g class="proj-reel">
+            <circle cx="58" cy="40" r="22" fill="#141416" stroke="#3a2f18" stroke-width="2"/>
+            <circle cx="58" cy="40" r="6" fill="#28282d" stroke="#e8b04b" stroke-width="1.2"/>
+            <circle cx="58" cy="24" r="3.4" fill="#0a0a0b"/>
+            <circle cx="74" cy="40" r="3.4" fill="#0a0a0b"/>
+            <circle cx="58" cy="56" r="3.4" fill="#0a0a0b"/>
+            <circle cx="42" cy="40" r="3.4" fill="#0a0a0b"/>
+          </g>
+          <!-- bottom reel -->
+          <g class="proj-reel rev">
+            <circle cx="100" cy="40" r="18" fill="#141416" stroke="#3a2f18" stroke-width="2"/>
+            <circle cx="100" cy="40" r="5" fill="#28282d" stroke="#e8b04b" stroke-width="1.1"/>
+            <circle cx="100" cy="27" r="2.8" fill="#0a0a0b"/>
+            <circle cx="113" cy="40" r="2.8" fill="#0a0a0b"/>
+            <circle cx="100" cy="53" r="2.8" fill="#0a0a0b"/>
+            <circle cx="87" cy="40" r="2.8" fill="#0a0a0b"/>
+          </g>
+          <defs>
+            <linearGradient id="projBodyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3a2f18"/><stop offset="1" stop-color="#0a0a0b" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="projLensGrad" cx="0.3" cy="0.5" r="0.8">
+              <stop offset="0" stop-color="#f3c876"/><stop offset="1" stop-color="#e8b04b" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="proj-grain" aria-hidden="true"></div>
+    </section>
 
     <!-- ===== Trending Tonight row (lazy, read-only discovery) ===== -->
     <section class="trend-row hidden" id="trend-row" aria-label="Trending Tonight">
@@ -2449,7 +2576,163 @@ async function updatePoolCount(){
   }catch(e){el.textContent='?';}
 }
 function sCls(s){return s>=85?'sg':s>=70?'sb':s>=55?'sa':'sr';}
-document.getElementById('go-btn').addEventListener('click',()=>{ viewMode==='random' ? getRandom() : getRecs(); });
+
+/* ======================================================================
+   PROJECTOR LOADER CONTROLLER  (presentation only)
+   startProjectorLoading() — swaps Trending for the projector below the button.
+   endProjectorLoading()    — clamps to a min duration, fades the projector
+                              out, restores the button. Called right before the
+                              results gallery takes over.
+   The min-duration clamp keeps the animation from flashing on cached/fast
+   searches; if loading runs long, the messages just keep cycling.
+   ====================================================================== */
+const PROJ_MESSAGES = [
+  'Scanning the catalog…',
+  'Comparing audience and critic ratings…',
+  'Looking for hidden gems…',
+  'Checking streaming services…',
+  'Finding your best match…',
+  'Almost ready…'
+];
+const PROJ_MIN_MS = 950;          // clamped 800–1200ms — never flashes
+let projActive    = false;
+let projStartTs    = 0;
+let projMsgTimer  = null;
+let projMsgIdx    = 0;
+let projBtnLabel  = null;          // original #go-btn label, restored on end
+let projDustBuilt = false;
+
+function projBuildDust(){
+  if(projDustBuilt) return;
+  const host=document.getElementById('proj-dust');
+  if(!host) return;
+  let html='';
+  for(let i=0;i<14;i++){
+    const left=45+Math.random()*52;      // start within the beam (right side)
+    const top =30+Math.random()*55;
+    const dur =7+Math.random()*6;
+    const delay=Math.random()*7;
+    const sc  =0.5+Math.random()*0.9;
+    html+='<i style="left:'+left.toFixed(1)+'%;top:'+top.toFixed(1)+'%;'
+        +'animation-duration:'+dur.toFixed(1)+'s;animation-delay:'+(-delay).toFixed(1)+'s;'
+        +'transform:scale('+sc.toFixed(2)+')"></i>';
+  }
+  host.innerHTML=html;
+  projDustBuilt=true;
+}
+
+function projShowMessage(i){
+  const el=document.getElementById('proj-status');
+  if(!el) return;
+  el.classList.add('swap');
+  setTimeout(()=>{ el.textContent=PROJ_MESSAGES[i % PROJ_MESSAGES.length]; el.classList.remove('swap'); },380);
+}
+
+function startProjectorLoading(){
+  const loader=document.getElementById('proj-loader');
+  const trend =document.getElementById('trend-row');
+  const btn   =document.getElementById('go-btn');
+  if(!loader) return;
+  projActive=true;
+  projStartTs=Date.now();
+  // (a) button press feedback + label swap
+  if(btn){
+    if(projBtnLabel===null) projBtnLabel=btn.textContent;
+    btn.textContent='Finding your movie…';
+  }
+  // (b) hide Trending, fade projector in below the button
+  if(trend) trend.classList.add('hidden');
+  projBuildDust();
+  // reset status to first message
+  projMsgIdx=0;
+  const st=document.getElementById('proj-status');
+  if(st){ st.classList.remove('swap'); st.textContent=PROJ_MESSAGES[0]; }
+  loader.classList.add('show');
+  loader.setAttribute('aria-hidden','false');
+  loader.classList.remove('fading');
+  void loader.offsetWidth;             // reflow so the fade-in runs
+  loader.classList.add('vis');
+  // (c) rotate status messages ~every 1.5s, looping
+  clearInterval(projMsgTimer);
+  projMsgTimer=setInterval(()=>{ projMsgIdx++; projShowMessage(projMsgIdx); }, 1500);
+}
+
+function _projTeardown(){
+  const loader=document.getElementById('proj-loader');
+  const btn   =document.getElementById('go-btn');
+  clearInterval(projMsgTimer); projMsgTimer=null;
+  if(loader){
+    loader.classList.add('fading');
+    loader.classList.remove('vis');
+    setTimeout(()=>{
+      loader.classList.remove('show','fading');
+      loader.setAttribute('aria-hidden','true');
+    },520);
+  }
+  if(btn && projBtnLabel!==null){ btn.textContent=projBtnLabel; projBtnLabel=null; }
+  projActive=false;
+}
+
+// Returns a promise that resolves once the projector has faded out, so callers
+// can hand off to the results gallery without an abrupt jump.
+function endProjectorLoading(){
+  return new Promise(resolve=>{
+    if(!projActive){ resolve(); return; }
+    const elapsed=Date.now()-projStartTs;
+    const wait=Math.max(0, PROJ_MIN_MS-elapsed);   // enforce min duration
+    setTimeout(()=>{ _projTeardown(); resolve(); }, wait);
+  });
+}
+
+// Immediate hide (no min-duration) — used when returning home / on error so the
+// projector never lingers behind Trending.
+function hideProjectorLoading(){
+  const loader=document.getElementById('proj-loader');
+  const btn   =document.getElementById('go-btn');
+  clearInterval(projMsgTimer); projMsgTimer=null;
+  if(loader){ loader.classList.remove('show','vis','fading'); loader.setAttribute('aria-hidden','true'); }
+  if(btn && projBtnLabel!==null){ btn.textContent=projBtnLabel; projBtnLabel=null; }
+  projActive=false;
+}
+
+// Wrap openResultsGallery so the projector fades out, THEN the gallery opens —
+// keeps the recommendation engine untouched (it still just calls openResultsGallery).
+const _origOpenResultsGallery = openResultsGallery;
+openResultsGallery = function(groups, mode){
+  if(projActive){
+    endProjectorLoading().then(()=>{ _origOpenResultsGallery(groups, mode); });
+  } else {
+    _origOpenResultsGallery(groups, mode);
+  }
+};
+
+// When the gallery closes (back/close → homepage), restore Trending and make
+// sure the projector is gone.
+const _origCloseResultsGallery = closeResultsGallery;
+closeResultsGallery = function(){
+  _origCloseResultsGallery();
+  hideProjectorLoading();
+  const trend=document.getElementById('trend-row');
+  if(trend && trend.querySelector('.trend-cell')) trend.classList.remove('hidden');
+};
+
+// Safety net: getRecs/getRandom report "no match" / errors by writing into
+// #output and returning WITHOUT opening the gallery. If that happens while the
+// projector is up, tear it down (respecting min-duration) so the message shows.
+(function(){
+  const out=document.getElementById('output');
+  if(!out || typeof MutationObserver==='undefined') return;
+  new MutationObserver(()=>{
+    if(projActive && out.querySelector('.status,.err')) endProjectorLoading();
+  }).observe(out,{childList:true,subtree:true});
+})();
+
+document.getElementById('go-btn').addEventListener('click',()=>{
+  // Don't show the projector if we can't actually search (engine alerts + bails).
+  if(typeof sbKey!=='undefined' && !sbKey){ viewMode==='random' ? getRandom() : getRecs(); return; }
+  startProjectorLoading();
+  viewMode==='random' ? getRandom() : getRecs();
+});
 // ===== Settings overlay =====
 let overlayMode='settings';   // 'settings' | 'lists' — which top-level screen the overlay shows
 function openSettings(){ overlayMode='settings'; showOverlayMenu(); refreshSettings(); openOverlay(); }
@@ -2958,7 +3241,7 @@ async function getRandom(){
   const out=document.getElementById('output');
   document.getElementById('go-btn').disabled=true;
   try{
-    out.innerHTML='<div class="status"><span class="spin"></span>Shuffling the catalog…</div>';
+    out.innerHTML='';  /* projector loader presents the loading state below the button */
     const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     const streamingActive = freeOnly && selServices.size>0;
     // Fetch a generous matching pool — large enough that low-rated indies can also be drawn.
@@ -3003,7 +3286,7 @@ async function getRecs(){
   const out=document.getElementById('output');
   document.getElementById('go-btn').disabled=true;
   try{
-    out.innerHTML='<div class="status"><span class="spin"></span>Searching the catalog…</div>';
+    out.innerHTML='';  /* projector loader presents the loading state below the button */
     const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
