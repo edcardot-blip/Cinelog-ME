@@ -18,10 +18,8 @@ on:
         description: "Films to refresh ratings for (OMDb-budgeted)"
         type: string
         default: "500"
-  # Nightly schedule is added once the dry-run + first live sweep are validated and
-  # migration 002 (tmdb_id) is applied:
-  #   schedule:
-  #     - cron: "0 10 * * *"   # daily 10:00 UTC (after the additions run at 09:00)
+  schedule:
+    - cron: "0 10 * * *"   # daily 10:00 UTC (after the additions run at 09:00)
 
 jobs:
   maintain:
@@ -38,6 +36,6 @@ jobs:
           OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run == true) && '1' || '0' }}
-          STREAMING_BATCH: ${{ github.event_name == 'workflow_dispatch' && inputs.streaming_batch || '2500' }}
+          STREAMING_BATCH: ${{ github.event_name == 'workflow_dispatch' && inputs.streaming_batch || '5000' }}
           RATINGS_BATCH: ${{ github.event_name == 'workflow_dispatch' && inputs.ratings_batch || '500' }}
         run: node pipeline/refresh.mjs
