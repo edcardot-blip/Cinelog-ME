@@ -20,11 +20,10 @@ const DRY = process.env.DRY_RUN !== '0';
 const REGION = 'US';
 
 // ---- Gate constants (tune after the first dry-run) ----
-const VOTE_FLOOR = 12000;              // mature-path auto-qualify (matches existing catalog bar)
-const BLOCKBUSTER_REVENUE = 100_000_000;
-const BLOCKBUSTER_POP = 80;            // TMDB popularity (theatrical hits run high)
-const ACCLAIM_RT = 80, ACCLAIM_META = 70;
-const ACCLAIM_TMDB_VOTE = 7.0, ACCLAIM_TMDB_MINVOTES = 200;  // cheap pre-gate signal
+const VOTE_FLOOR = 12000;              // mature-path qualify (matches existing catalog bar)
+const ACCLAIM_RT = 80, ACCLAIM_META = 70;   // critically-acclaimed final gate (early path)
+const ACCLAIM_TMDB_VOTE = 7.0, ACCLAIM_TMDB_MINVOTES = 200;  // cheap acclaim proxy
+const MATURE_TMDB_MINVOTES = 1000;     // cheap proxy for the 12k IMDb-vote mature path
 const OMDB_DAILY_CAP = 900;            // hard budget stop (headroom under 1000)
 const MAX_ADDITIONS = 10;              // additions per run (keep growth slow)
 
@@ -86,10 +85,12 @@ async function main(){
 
   for(const c of candidates){
     if(toAdd.length >= MAX_ADDITIONS) break;
-    // 2. Cheap TMDB pre-gate — spend NO OMDb call unless this passes.
-    const blockbusterish = (c.popularity || 0) >= BLOCKBUSTER_POP;
+    // 2. Cheap TMDB pre-gate — spend NO OMDb call unless a film could plausibly clear the
+    // stricter final gate (critically acclaimed OR 12k+ votes). vote_average proxies acclaim;
+    // vote_count proxies IMDb vote volume.
     const acclaimedish = (c.vote_average || 0) >= ACCLAIM_TMDB_VOTE && (c.vote_count || 0) >= ACCLAIM_TMDB_MINVOTES;
-    if(!blockbusterish && !acclaimedish){ cheapRejected++; continue; }
+    const popularEnough = (c.vote_count || 0) >= MATURE_TMDB_MINVOTES;
+    if(!acclaimedish && !popularEnough){ cheapRejected++; continue; }
 
     const det = await tmdb('/movie/' + c.id, { append_to_response: 'external_ids' });
     const imdbId = det.external_ids && det.external_ids.imdb_id;
@@ -100,12 +101,12 @@ async function main(){
     const o = await omdb(imdbId);
     const r = o ? omdbRatings(o) : { imdb: null, rt: null, meta: null, votes: null };
 
-    // 4. Final gate — mature (>=12k votes) OR early theatrical (blockbuster OR acclaimed).
+    // 4. Final gate (LOCKED: acclaim-required) — mature (>=12k votes) OR critically acclaimed
+    // (RT>=80 or Meta>=70). The blockbuster-alone path was dropped so popular-but-mediocre
+    // films don't get in. imdb_rating must be present either way.
     const matureQualify = (r.votes || 0) >= VOTE_FLOOR && r.imdb != null;
-    const blockbuster = (det.revenue || 0) >= BLOCKBUSTER_REVENUE || (c.popularity || 0) >= BLOCKBUSTER_POP;
     const acclaimed = (r.rt != null && r.rt >= ACCLAIM_RT) || (r.meta != null && r.meta >= ACCLAIM_META);
-    const earlyQualify = (blockbuster || acclaimed) && r.imdb != null;
-    if(!(matureQualify || earlyQualify)){ finalRejected++; continue; }
+    if(!((matureQualify || acclaimed) && r.imdb != null)){ finalRejected++; continue; }
 
     toAdd.push({
       imdb_id: imdbId, title: det.title,
@@ -118,7 +119,7 @@ async function main(){
       poster_url: det.poster_path ? 'https://image.tmdb.org/t/p/w500' + det.poster_path : null,
       source: matureQualify ? 'ingest-mature' : 'ingest-theatrical',
       _path: matureQualify ? 'mature' : 'early',
-      _why: matureQualify ? 'votes>=12k' : (blockbuster ? 'blockbuster' : 'acclaimed')
+      _why: matureQualify ? 'votes>=12k' : 'acclaimed'
     });
   }
 
