@@ -23,7 +23,7 @@ const REGION = 'US';
 const VOTE_FLOOR = 12000;              // mature-path qualify (matches existing catalog bar)
 const ACCLAIM_RT = 80, ACCLAIM_META = 70;   // critically-acclaimed final gate (early path)
 const ACCLAIM_TMDB_VOTE = 7.0, ACCLAIM_TMDB_MINVOTES = 200;  // cheap acclaim proxy
-const MATURE_TMDB_MINVOTES = 1000;     // cheap proxy for the 12k IMDb-vote mature path
+const NOTABLE_POP = 80;                // cheap-gate: popular enough to be worth an OMDb look
 const OMDB_DAILY_CAP = 900;            // hard budget stop (headroom under 1000)
 const MAX_ADDITIONS = 10;              // additions per run (keep growth slow)
 
@@ -85,12 +85,13 @@ async function main(){
 
   for(const c of candidates){
     if(toAdd.length >= MAX_ADDITIONS) break;
-    // 2. Cheap TMDB pre-gate — spend NO OMDb call unless a film could plausibly clear the
-    // stricter final gate (critically acclaimed OR 12k+ votes). vote_average proxies acclaim;
-    // vote_count proxies IMDb vote volume.
+    // 2. Cheap TMDB pre-gate — its ONLY job is to avoid wasting OMDb on clearly-irrelevant
+    // films; stay GENEROUS (budget is ample) and let the strict final gate decide. TMDB
+    // popularity OR a decent vote_average makes a film worth one OMDb look. (Note: TMDB
+    // vote_count is a different scale than IMDb votes, so it's NOT used as a mature-path proxy.)
     const acclaimedish = (c.vote_average || 0) >= ACCLAIM_TMDB_VOTE && (c.vote_count || 0) >= ACCLAIM_TMDB_MINVOTES;
-    const popularEnough = (c.vote_count || 0) >= MATURE_TMDB_MINVOTES;
-    if(!acclaimedish && !popularEnough){ cheapRejected++; continue; }
+    const notable = (c.popularity || 0) >= NOTABLE_POP;
+    if(!acclaimedish && !notable){ cheapRejected++; continue; }
 
     const det = await tmdb('/movie/' + c.id, { append_to_response: 'external_ids' });
     const imdbId = det.external_ids && det.external_ids.imdb_id;
