@@ -1254,8 +1254,8 @@
     <!-- ===== Projector loader (swaps in for Trending while recs load) ===== -->
     <section class="proj-loader" id="proj-loader" aria-hidden="true" aria-label="Finding your movie">
       <div class="proj-text">
-        <div class="proj-title">Finding your perfect movie</div>
-        <div class="proj-status" id="proj-status">Scanning the catalog…</div>
+        <div class="proj-title">Scanning the catalog</div>
+        <div class="proj-status" id="proj-status">Comparing audience and critic ratings…</div>
       </div>
       <div class="proj-prog" aria-hidden="true"></div>
       <div class="proj-glow" aria-hidden="true"></div>
@@ -2587,7 +2587,6 @@ function sCls(s){return s>=85?'sg':s>=70?'sb':s>=55?'sa':'sr';}
    searches; if loading runs long, the messages just keep cycling.
    ====================================================================== */
 const PROJ_MESSAGES = [
-  'Scanning the catalog…',
   'Comparing audience and critic ratings…',
   'Looking for hidden gems…',
   'Checking streaming services…',
