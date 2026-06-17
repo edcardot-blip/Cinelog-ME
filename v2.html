@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>CINELOG ME · What Should I Watch Tonight?</title>
+<title>CINELOG ME · What Should I Watch?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600&display=swap" rel="stylesheet">
@@ -971,10 +971,11 @@
   /* --- Homepage row (below the Find My Movie button) --- */
   .trend-row{margin-top:1.6rem;margin-bottom:.75rem}
   .trend-row.hidden{display:none}
-  .trend-head{display:flex;align-items:center;gap:10px;margin-bottom:.85rem;padding:0 2px}
+  .trend-head{display:flex;align-items:center;gap:10px;margin-bottom:.45rem;padding:0 2px}
   .trend-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;color:var(--text);
     display:inline-flex;align-items:center;gap:7px}
-  .trend-title .trend-spark{font-size:14px;filter:drop-shadow(0 0 8px rgba(232,176,75,.4))}
+  .trend-title .trend-spark{font-size:14px;color:var(--accent2);filter:drop-shadow(0 0 8px rgba(232,176,75,.4))}
+  .adv-disc-ic svg,.rg-refine-ic svg{width:17px;height:17px;color:var(--accent);vertical-align:-3px}
   .trend-seeall{margin-left:auto;font-size:12px;font-weight:600;letter-spacing:.02em;
     padding:6px 13px;border-radius:var(--rpill);background:var(--bg3);border:1px solid var(--border2);
     color:var(--text2);cursor:pointer;font-family:var(--sans);transition:border-color .14s,color .14s,background .14s;
@@ -1055,7 +1056,7 @@
   <div class="apphead">
     <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span></button>
     <div class="hero-new">
-      <h1>What Should I <span class="em">Watch Tonight?</span></h1>
+      <h1>What Should I <span class="em">Watch?</span></h1>
       <p class="hero-sub">The perfect movie in seconds.</p>
     </div>
   </div>
@@ -1139,7 +1140,7 @@
          inside #adv-modal below so the homepage stays compact. -->
     <div class="adv-disc" id="adv-disc">
       <button class="adv-disc-btn" type="button" onclick="openAdvanced()" aria-haspopup="dialog">
-        <span class="adv-disc-ic">⚙</span><span>Advanced Filters</span>
+        <span class="adv-disc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Advanced Filters</span>
         <span class="adv-disc-meta">Services · Cost · Ratings · Adventure</span>
         <span class="adv-disc-chev" style="transform:rotate(-90deg)">⌄</span>
       </button>
@@ -1297,7 +1298,7 @@
       <div class="rg-count" id="rg-count">0 picks</div>
     </div>
     <button class="rg-refine" onclick="closeResultsGallery()" aria-label="Refine filters">
-      <span class="rg-refine-ic">⚙</span><span>Refine</span>
+      <span class="rg-refine-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Refine</span>
     </button>
   </header>
   <div class="rg-body" id="rg-body"></div>
@@ -3686,8 +3687,7 @@ function trendCellHTML(m){
     ? '<img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=trendNoPoster('+JSON.stringify(JSON.stringify(m.title))+')">'
     : trendNoPoster(m.title);
   return '<div class="trend-cell">'
-    + '<button class="trend-tile" type="button" onclick="openTrendDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'+art+'</button>'
-    + '<div class="trend-cell-title">'+esc(m.title)+'</div></div>';
+    + '<button class="trend-tile" type="button" onclick="openTrendDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'+art+'</button></div>';
 }
 function openTrendDetail(id){ const m=trendFilmsById[id]; if(m) openMovieDetail(m); }
 
