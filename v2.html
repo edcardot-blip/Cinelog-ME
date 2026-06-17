@@ -158,6 +158,13 @@
     border-radius:var(--rpill);border:1px solid;font-weight:600;
     white-space:nowrap;font-variant-numeric:tabular-nums}
   .rrt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}.rimdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}.rmeta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
+  /* Unified rating badge — ONE class for IMDb / RT / Meta on cards AND detail; only the color differs */
+  .rating-badge{display:inline-flex;align-items:center;justify-content:center;height:25px;padding:0 10px;
+    font-size:11.5px;font-weight:600;line-height:1;border-radius:999px;border:1px solid;box-sizing:border-box;
+    font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:middle}
+  .rb-imdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}
+  .rb-rt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}
+  .rb-meta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
   .why{font-size:13px;color:#c8c7c3;line-height:1.6;margin-bottom:10px}
   .tags{display:flex;flex-wrap:wrap;gap:5px}
   .tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:var(--rpill)}
@@ -570,6 +577,8 @@
     transition:border-color .15s,background .15s,transform .12s;text-align:center;min-height:58px}
   .qf-btn:hover{border-color:#4a4a52;transform:translateY(-1px)}
   .qf-btn:active{transform:scale(.98)}
+  /* On touch devices, neutralize the lift-on-hover so a first tap never gets "stuck" on :hover */
+  @media (hover:none){.qf-btn:hover{transform:none}}
   .qf-btn .qf-name{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
   .qf-btn .qf-val{font-size:14px;font-weight:600;color:var(--text2);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Active (some selection) state: gold accent */
@@ -590,22 +599,24 @@
      the nav. (Was position:absolute;z-index:800 — below the nav — which let
      the nav float over the dialog's lower half and swallow taps on the Done
      button + bottom pills. That was the "pills don't tap" bug.) */
-  .sheet-host{position:fixed;inset:0;z-index:1500;display:none}
-  .sheet-host.open{display:block}
+  .sheet-host{position:fixed;inset:0;z-index:1500;display:none;align-items:center;justify-content:center;
+    padding:max(1rem,env(safe-area-inset-top)) 1rem max(1rem,env(safe-area-inset-bottom))}
+  .sheet-host.open{display:flex}
   .sheet-backdrop{position:fixed;inset:0;background:rgba(6,6,8,.66);
     -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
     opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
   .sheet-host.shown .sheet-backdrop{opacity:1;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-  .sheet{position:fixed;left:50%;top:50%;width:min(440px,calc(100vw - 2rem));
-    max-height:min(82vh,calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem));
+  .sheet{position:relative;width:min(440px,100%);max-height:100%;
     display:flex;flex-direction:column;
     background:var(--bg2);border:1px solid var(--border2);
     border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;
-    padding:max(1.1rem,env(safe-area-inset-top)) 1.15rem max(1rem,env(safe-area-inset-bottom));
-    transform:translate(-50%,-50%) scale(.92);opacity:0;
+    padding:1.15rem 1.15rem 1rem;
+    transform:scale(.92);opacity:0;
     transition:transform .25s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
-  .sheet.show{transform:translate(-50%,-50%) scale(1);opacity:1}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 .55rem}
+  .sheet.show{transform:scale(1);opacity:1}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 .7rem}
+  /* All / Clear / X grouped together top-right */
+  .sheet-head-acts{display:flex;align-items:center;gap:7px;flex:none}
   .sheet-title{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--text);margin:0}
   /* Cleaner, lighter native-iOS close button — less visual weight */
   .sheet-x{width:30px;height:30px;flex:none;border-radius:50%;border:none;
@@ -1068,10 +1079,10 @@
       <section class="sheet" id="sheet-genre" role="dialog" aria-modal="true" aria-label="Choose Genre">
         <div class="sheet-head">
           <h3 class="sheet-title">Choose Genre</h3>
-          <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
-        </div>
-        <div class="sheet-tools">
-          <span class="sheet-tools-acts"><button class="clr" onclick="clearGroup('genre')">Clear</button></span>
+          <div class="sheet-head-acts">
+            <button class="clr" onclick="clearGroup('genre')">Clear</button>
+            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+          </div>
         </div>
         <div class="sheet-body"><div class="pills" id="genre-pills"></div></div>
         <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
@@ -1080,10 +1091,11 @@
       <section class="sheet" id="sheet-era" role="dialog" aria-modal="true" aria-label="Choose Era" hidden>
         <div class="sheet-head">
           <h3 class="sheet-title">Choose Era</h3>
-          <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
-        </div>
-        <div class="sheet-tools">
-          <span class="sheet-tools-acts"><button class="clr" onclick="selectAllGroup('era')">All</button><button class="clr" onclick="clearGroup('era')">Clear</button></span>
+          <div class="sheet-head-acts">
+            <button class="clr" onclick="selectAllGroup('era')">All</button>
+            <button class="clr" onclick="clearGroup('era')">Clear</button>
+            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+          </div>
         </div>
         <div class="sheet-body"><div class="pills" id="era-pills"></div></div>
         <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
@@ -1092,10 +1104,11 @@
       <section class="sheet" id="sheet-length" role="dialog" aria-modal="true" aria-label="Choose Length" hidden>
         <div class="sheet-head">
           <h3 class="sheet-title">Choose Length</h3>
-          <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
-        </div>
-        <div class="sheet-tools">
-          <span class="sheet-tools-acts"><button class="clr" onclick="selectAllGroup('length')">All</button><button class="clr" onclick="clearGroup('length')">Clear</button></span>
+          <div class="sheet-head-acts">
+            <button class="clr" onclick="selectAllGroup('length')">All</button>
+            <button class="clr" onclick="clearGroup('length')">Clear</button>
+            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+          </div>
         </div>
         <div class="sheet-body"><div class="pills" id="length-pills"></div></div>
         <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
@@ -2505,7 +2518,7 @@ function renderCard(m, i, streamingActive){
   const availHtml=badges.length
     ? '<div class="avail">'+badges.map(a=>'<span class="av" style="--svc:'+a.svc.color+'"><span class="dot"></span>'+a.svc.label+'<span class="tier '+(a.free?'free':'paid')+'">'+(a.free?'Free':(a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'$'))+'</span></span>').join('')+'</div>'
     : '';
-  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(m._imdb!=null?'<span class="rp rimdb">IMDb '+m.imdb_rating+'</span>':'')+(m._rt!=null?'<span class="rp rrt">RT '+m.rotten_tomatoes_score+'%</span>':'')+(m._meta!=null?'<span class="rp rmeta">Meta '+m.metascore+'</span>':'')+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-acts">'+'<button class="card-act act-seen'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button>'+'<button class="card-act act-fav'+(isFavorite(m)?' marked':'')+'" onclick="onFavClick(this,\''+m.imdb_id+'\')">'+(isFavorite(m)?'♥ Liked':'♡ Like')+'</button>'+'<button class="card-act act-watch'+(isWatchlisted(m)?' marked':'')+'" onclick="onWatchClick(this,\''+m.imdb_id+'\')">'+(isWatchlisted(m)?'✓ Watchlist':'+ Watchlist')+'</button>'+'<button class="card-act act-hide'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
+  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(m._imdb!=null?'<span class="rating-badge rb-imdb">IMDb '+m.imdb_rating+'</span>':'')+(m._rt!=null?'<span class="rating-badge rb-rt">RT '+m.rotten_tomatoes_score+'%</span>':'')+(m._meta!=null?'<span class="rating-badge rb-meta">Meta '+m.metascore+'</span>':'')+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-acts">'+'<button class="card-act act-seen'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button>'+'<button class="card-act act-fav'+(isFavorite(m)?' marked':'')+'" onclick="onFavClick(this,\''+m.imdb_id+'\')">'+(isFavorite(m)?'♥ Liked':'♡ Like')+'</button>'+'<button class="card-act act-watch'+(isWatchlisted(m)?' marked':'')+'" onclick="onWatchClick(this,\''+m.imdb_id+'\')">'+(isWatchlisted(m)?'✓ Watchlist':'+ Watchlist')+'</button>'+'<button class="card-act act-hide'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
 }
 
 // ======================================================================
@@ -2613,9 +2626,9 @@ function openMovieDetail(m){
 
   // rating badges (only present ones)
   let ratings='';
-  if(imdb!=null && imdb!=='' && imdb!=='N/A') ratings+='<span class="md-rb imdb"><span class="md-rb-ic">★</span>IMDb '+esc(''+imdb)+'</span>';
-  if(rt!=null && rt!=='' && rt!=='N/A')       ratings+='<span class="md-rb rt"><span class="md-rb-ic">🍅</span>RT '+esc(''+rt)+'%</span>';
-  if(meta!=null && meta!=='' && meta!=='N/A') ratings+='<span class="md-rb meta"><span class="md-rb-ic">Ⓜ</span>Meta '+esc(''+meta)+'</span>';
+  if(imdb!=null && imdb!=='' && imdb!=='N/A') ratings+='<span class="rating-badge rb-imdb">IMDb '+esc(''+imdb)+'</span>';
+  if(rt!=null && rt!=='' && rt!=='N/A')       ratings+='<span class="rating-badge rb-rt">RT '+esc(''+rt)+'%</span>';
+  if(meta!=null && meta!=='' && meta!=='N/A') ratings+='<span class="rating-badge rb-meta">Meta '+esc(''+meta)+'</span>';
 
   // streaming availability
   let avail=movieAvailability(m);
