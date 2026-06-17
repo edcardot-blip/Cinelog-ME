@@ -637,10 +637,15 @@
   .sheet-tools{display:flex;align-items:center;gap:9px;margin-bottom:.7rem;min-height:0}
   .sheet-tools:empty{display:none}
   .sheet-tools-acts{display:inline-flex;gap:8px;margin-left:auto}
+  /* Gold confirm pill in the header (replaces the bottom Done bar) */
+  .sheet-done-sm{font-size:12px;font-weight:600;padding:6px 15px;border-radius:99px;border:none;cursor:pointer;font-family:var(--sans);white-space:nowrap;background:linear-gradient(180deg,var(--accent2),var(--accent));color:#1a1305;transition:filter .12s,transform .1s}
+  .sheet-done-sm:hover{filter:brightness(1.05)}
+  .sheet-done-sm:active{transform:scale(.95)}
   .sheet .clr{font-size:12px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);border-radius:99px;cursor:pointer;padding:6px 13px;font-weight:500;font-family:var(--sans);transition:color .12s,background .12s,border-color .12s,transform .1s;white-space:nowrap}
   .sheet .clr:hover{color:var(--accent);background:var(--bg2);border-color:var(--border)}
   .sheet .clr:active{transform:scale(.95)}
-  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.4rem}
+  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.2rem}
+  .sheet-body .pills{gap:9px}
   .sheet-foot{padding:.75rem 0 .15rem;border-top:1px solid var(--border)}
   .sheet-done{width:100%;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);
     background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);
@@ -1101,11 +1106,10 @@
           <h3 class="sheet-title">Choose Genre</h3>
           <div class="sheet-head-acts">
             <button class="clr" onclick="clearGroup('genre')">Clear</button>
-            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+            <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
         </div>
         <div class="sheet-body"><div class="pills" id="genre-pills"></div></div>
-        <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
       </section>
 
       <section class="sheet" id="sheet-era" role="dialog" aria-modal="true" aria-label="Choose Era" hidden>
@@ -1114,11 +1118,10 @@
           <div class="sheet-head-acts">
             <button class="clr" onclick="selectAllGroup('era')">All</button>
             <button class="clr" onclick="clearGroup('era')">Clear</button>
-            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+            <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
         </div>
         <div class="sheet-body"><div class="pills" id="era-pills"></div></div>
-        <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
       </section>
 
       <section class="sheet" id="sheet-length" role="dialog" aria-modal="true" aria-label="Choose Length" hidden>
@@ -1127,11 +1130,10 @@
           <div class="sheet-head-acts">
             <button class="clr" onclick="selectAllGroup('length')">All</button>
             <button class="clr" onclick="clearGroup('length')">Clear</button>
-            <button type="button" class="sheet-x" onclick="closeSheet()" aria-label="Close">✕</button>
+            <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
         </div>
         <div class="sheet-body"><div class="pills" id="length-pills"></div></div>
-        <div class="sheet-foot"><button class="sheet-done" onclick="closeSheet()">Done</button></div>
       </section>
     </div>
 
