@@ -867,6 +867,90 @@
     .md-body{padding:1.05rem 1.1rem 1.3rem}
     .md-title{font-size:23px}
   }
+
+  /* ====================================================================== */
+  /* ===== TRENDING TONIGHT — homepage row + full-screen tabbed page ====== */
+  /* Lightweight, read-only discovery. Reuses .rg-grid/.rg-tile + the detail */
+  /* modal. Does not touch the recommendation engine.                       */
+  /* ====================================================================== */
+
+  /* --- Homepage row (below the Find My Movie button) --- */
+  .trend-row{margin-top:1.9rem}
+  .trend-row.hidden{display:none}
+  .trend-head{display:flex;align-items:center;gap:10px;margin-bottom:.85rem;padding:0 2px}
+  .trend-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;color:var(--text);
+    display:inline-flex;align-items:center;gap:7px}
+  .trend-title .trend-spark{font-size:14px;filter:drop-shadow(0 0 8px rgba(232,176,75,.4))}
+  .trend-seeall{margin-left:auto;font-size:12px;font-weight:600;letter-spacing:.02em;
+    padding:6px 13px;border-radius:var(--rpill);background:var(--bg3);border:1px solid var(--border2);
+    color:var(--text2);cursor:pointer;font-family:var(--sans);transition:border-color .14s,color .14s,background .14s;
+    -webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;gap:4px}
+  .trend-seeall:hover{border-color:var(--accent);color:var(--accent2);background:var(--bg4)}
+  .trend-seeall .trend-seeall-chev{font-size:14px;line-height:1}
+
+  /* Horizontal scroller: ~4 posters visible on mobile, scroll to ~12 */
+  .trend-scroller{display:flex;gap:11px;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;
+    padding:2px 2px 10px;margin:0 -2px;scrollbar-width:none}
+  .trend-scroller::-webkit-scrollbar{display:none}
+  .trend-tile{position:relative;flex:0 0 auto;width:30vw;max-width:128px;min-width:96px;aspect-ratio:2/3;
+    border:none;padding:0;margin:0;cursor:pointer;background:var(--bg3);border-radius:11px;overflow:hidden;
+    scroll-snap-align:start;box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 0 1px var(--border) inset;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .15s cubic-bezier(.2,1.2,.4,1),box-shadow .15s;
+    animation:trendin .4s both}
+  @keyframes trendin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .trend-tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.55),0 0 0 1px var(--border2) inset}
+  .trend-tile:active{transform:scale(.96)}
+  .trend-tile img{width:100%;height:100%;object-fit:cover;display:block;background:var(--bg3)}
+  .trend-tile .trend-noposter{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;padding:10px;text-align:center;
+    background:linear-gradient(160deg,var(--bg4),var(--bg3))}
+  .trend-tile .trend-noposter .tn-ic{font-size:22px;opacity:.5}
+  .trend-tile .trend-noposter .tn-title{font-family:var(--serif);font-size:12px;font-weight:600;color:var(--text2);line-height:1.25}
+  /* Loading skeletons */
+  .trend-skel{flex:0 0 auto;width:30vw;max-width:128px;min-width:96px;aspect-ratio:2/3;border-radius:11px;
+    background:linear-gradient(100deg,var(--bg3) 30%,var(--bg4) 50%,var(--bg3) 70%);
+    background-size:200% 100%;animation:trendskel 1.3s ease infinite}
+  @keyframes trendskel{from{background-position:200% 0}to{background-position:-200% 0}}
+  @media (min-width:520px){
+    .trend-tile,.trend-skel{width:140px;max-width:140px}
+    .trend-title{font-size:20px}
+  }
+  @media (min-width:820px){
+    .trend-tile,.trend-skel{width:148px;max-width:148px}
+  }
+
+  /* --- Full-screen Trending page (reuses .cg-head + .rg-grid/.rg-tile) --- */
+  .trend-overlay{position:fixed;inset:0;z-index:1200;
+    background:var(--bg);
+    background-image:radial-gradient(ellipse 90% 45% at 50% -8%,rgba(232,176,75,.12),transparent 60%),radial-gradient(circle at 92% 4%,rgba(80,120,200,.05),transparent 42%);
+    display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;transform:translateY(14px);
+    transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.3,1),visibility 0s linear .3s;
+    overflow:hidden}
+  .trend-overlay.open{opacity:1;visibility:visible;transform:none;
+    transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.3,1),visibility 0s}
+
+  /* Tab strip */
+  .trend-tabs{flex:none;display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    padding:.8rem max(1rem,env(safe-area-inset-right)) .85rem max(1rem,env(safe-area-inset-left));
+    border-bottom:1px solid var(--border)}
+  .trend-tabs::-webkit-scrollbar{display:none}
+  .trend-tab{flex:0 0 auto;font-size:13px;font-weight:600;font-family:var(--sans);letter-spacing:.01em;
+    padding:9px 16px;border-radius:var(--rpill);cursor:pointer;white-space:nowrap;
+    background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
+    -webkit-tap-highlight-color:transparent;transition:all .14s}
+  .trend-tab:hover{border-color:#4a4a52;color:var(--text)}
+  .trend-tab.on{background:color-mix(in srgb,var(--accent) 14%,var(--bg3));border-color:var(--accent);color:var(--accent2)}
+  @supports not (background:color-mix(in srgb,red,blue)){.trend-tab.on{background:var(--accent-dim)}}
+
+  .trend-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
+  .trend-blurb{font-size:12.5px;color:var(--text3);line-height:1.5;margin:-.2rem 0 1rem;font-style:italic}
+  @media (max-width:600px){
+    .trend-tab{padding:11px 16px}
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1035,6 +1119,15 @@
 
     <button class="go-btn" id="go-btn">✦ Find My Movie</button>
     <div id="output"></div>
+
+    <!-- ===== Trending Tonight row (lazy, read-only discovery) ===== -->
+    <section class="trend-row hidden" id="trend-row" aria-label="Trending Tonight">
+      <div class="trend-head">
+        <span class="trend-title"><span class="trend-spark">✦</span>Trending Tonight</span>
+        <button class="trend-seeall" type="button" onclick="openTrendingPage()" aria-label="See all trending movies">See all<span class="trend-seeall-chev">›</span></button>
+      </div>
+      <div class="trend-scroller" id="trend-scroller"></div>
+    </section>
   </div><!-- /#screen-discover -->
 
   <!-- Hidden elements preserved for auto-connect logic; users don't see these -->
@@ -1188,6 +1281,28 @@
     </div>
   </div>
   <div class="cg-body" id="cg-body"></div>
+</div>
+
+<!-- ===== Trending page overlay (See all → tabbed poster grid) =====
+     Reuses the .cg-head visual language + .rg-grid/.rg-tile from the gallery. -->
+<div class="trend-overlay" id="trend-overlay" aria-hidden="true">
+  <header class="cg-head">
+    <button class="rg-back" onclick="closeTrendingPage()" aria-label="Back">
+      <span class="rg-chev">‹</span><span>Back</span>
+    </button>
+    <div class="cg-titles">
+      <div class="cg-title">Trending</div>
+      <div class="cg-count" id="trend-count">&nbsp;</div>
+    </div>
+    <span class="cg-head-spacer" aria-hidden="true"></span>
+  </header>
+  <div class="trend-tabs" id="trend-tabs" role="tablist">
+    <button class="trend-tab on" type="button" role="tab" data-tab="foryou"  onclick="setTrendingTab('foryou')">For You</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="popular" onclick="setTrendingTab('popular')">Popular</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="gems"    onclick="setTrendingTab('gems')">Hidden Gems</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="newer"   onclick="setTrendingTab('newer')">Newer Movies</button>
+  </div>
+  <div class="trend-body" id="trend-page-body"></div>
 </div>
 
 <!-- ===== Movie detail modal (reusable: openMovieDetail(m)) ===== -->
@@ -3177,6 +3292,240 @@ async function getRecs(){
     out.innerHTML='<div class="err">⚠ '+e.message+'<br><small style="display:block;margin-top:6px">'+hint+'</small></div>';
   }
   document.getElementById('go-btn').disabled=false;}
+
+/* ======================================================================
+   TRENDING TONIGHT  — lightweight, read-only discovery.
+   Catalog-wide (no login required). Reuses sbHeaders()/the fetch pattern,
+   movieAvailability(), niSet/seenSet/favSet, and openMovieDetail() + the
+   gallery's poster-grid styles. Does NOT touch getRecs/scoring/auth/writes.
+   ====================================================================== */
+const TREND_POOL_SIZE  = 250;   // candidate pool size (top by imdb_rating desc)
+const TREND_ROW_COUNT  = 12;    // posters in the homepage scroller
+let trendPool      = null;      // cached candidate pool (array of movie objects)
+let trendPoolReady = false;     // pool fetched at least once this session
+let trendPageTab   = 'foryou';  // active tab on the full page
+let trendFilmsById = {};        // imdb_id -> movie (for tap → detail)
+
+/* --- Deterministic per-day pseudo-random in ~[0,15].
+   Seeded from today's date + imdb_id so the row is stable within a day but
+   shifts daily. Tiny FNV-ish string hash; intentionally NOT Math.random. --- */
+function trendDailySeed(){ return new Date().toISOString().slice(0,10); }
+function trendHash(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619)>>>0; }
+  return h>>>0;
+}
+function trendDailyJitter(m){
+  const h=trendHash(trendDailySeed()+'|'+(m.imdb_id||m.title||''));
+  return (h%10000)/10000*15;   // 0–15
+}
+
+/* --- Score components --- */
+function trendNum(v){ const n=parseFloat(v); return isNaN(n)?null:n; }
+// quality: average of present rating scales, normalized to 0–100.
+function trendQuality(m){
+  const parts=[];
+  const imdb=trendNum(m.imdb_rating);   if(imdb!=null) parts.push(Math.max(0,Math.min(100,imdb*10)));
+  const rt  =trendNum(m.rotten_tomatoes_score); if(rt!=null) parts.push(Math.max(0,Math.min(100,rt)));
+  const meta=trendNum(m.metascore);     if(meta!=null) parts.push(Math.max(0,Math.min(100,meta)));
+  if(!parts.length) return 0;
+  return parts.reduce((a,b)=>a+b,0)/parts.length;
+}
+// popularity: log-scaled vote_count → ~0–100.
+function trendPopularity(m){
+  const v=trendNum(m.vote_count);
+  if(v==null||v<=0) return 0;
+  return Math.max(0,Math.min(100,(Math.log10(v)-3)/3*100));
+}
+function trendAvailable(m){
+  const a=movieAvailability(m);
+  return a.length>0;   // any recognized service (free or paid)
+}
+function trendFreeAvailable(m){
+  return movieAvailability(m).some(x=>x.free);
+}
+function trendingScore(m){
+  let s = trendQuality(m) + trendPopularity(m) + trendDailyJitter(m);
+  if(trendAvailable(m)) s += 8;                 // availability boost
+  if(typeof isSeen==='function' && isSeen(m)) s -= 40; // prefer unseen (seen can still surface)
+  return s;
+}
+
+/* --- Cheap taste bias from favorited genres (For You). favProfile is built by
+   the engine when signed in; null => no bias (just trendingScore). --- */
+function trendTasteBonus(m){
+  if(!favProfile || !favProfile.genres || !favProfile.n) return 0;
+  const gs=(m.genre||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  let hits=0; gs.forEach(g=>{ if(favProfile.genres[g]) hits+=favProfile.genres[g]; });
+  if(!hits) return 0;
+  return Math.min(25, hits/favProfile.n*30);   // modest, capped
+}
+
+/* --- Fetch the candidate pool once (top by imdb_rating, with streaming col). --- */
+async function loadTrendPool(){
+  if(trendPoolReady && trendPool) return trendPool;
+  if(!sbKey) return null;
+  const cols='imdb_id,title,year,runtime_minutes,genre,director,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,mpaa_rating,streaming';
+  const base='?select='+encodeURIComponent(cols)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
+  try{
+    let resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+base,{headers:sbHeaders()});
+    if(!resp.ok){
+      // streaming column may not exist — retry without it.
+      const cols2=cols.replace(',streaming','');
+      const base2='?select='+encodeURIComponent(cols2)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
+      resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+base2,{headers:sbHeaders()});
+      if(!resp.ok) throw new Error('HTTP '+resp.status);
+    }
+    trendPool=await resp.json();
+    trendPoolReady=true;
+    return trendPool;
+  }catch(e){ return null; }
+}
+
+/* --- Build the ranked "For You" list (excludes hidden). --- */
+function trendRanked(pool){
+  return pool
+    .filter(m=>!(typeof isNotInterested==='function' && isNotInterested(m)))
+    .map(m=>({m, s:trendingScore(m)+trendTasteBonus(m)}))
+    .sort((a,b)=>b.s-a.s)
+    .map(x=>x.m);
+}
+
+/* --- Poster tile (poster only, no metadata). --- */
+function trendNoPoster(title){
+  return '<div class="trend-noposter"><span class="tn-ic">🎞</span><span class="tn-title">'+esc(title||'Untitled')+'</span></div>';
+}
+function trendTileHTML(m, cls){
+  trendFilmsById[m.imdb_id]=m;
+  const art=m.poster_url
+    ? '<img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=trendNoPoster('+JSON.stringify(JSON.stringify(m.title))+')">'
+    : trendNoPoster(m.title);
+  return '<button class="'+cls+'" type="button" onclick="openTrendDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'+art+'</button>';
+}
+function openTrendDetail(id){ const m=trendFilmsById[id]; if(m) openMovieDetail(m); }
+
+/* --- Homepage row: lazy-render after catalog is reachable. --- */
+async function initTrendingRow(){
+  const sc=document.getElementById('trend-scroller');
+  const row=document.getElementById('trend-row');
+  if(!sc||!row) return;
+  // Skeletons while loading
+  sc.innerHTML=Array.from({length:6}).map(()=>'<div class="trend-skel"></div>').join('');
+  row.classList.remove('hidden');
+  const pool=await loadTrendPool();
+  if(!pool||!pool.length){ row.classList.add('hidden'); return; }
+  const ranked=trendRanked(pool).slice(0,TREND_ROW_COUNT);
+  if(!ranked.length){ row.classList.add('hidden'); return; }
+  sc.innerHTML=ranked.map(m=>trendTileHTML(m,'trend-tile')).join('');
+  sc.querySelectorAll('.trend-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*45,540)+'ms'; });
+}
+
+/* --- Full Trending page + tabs --- */
+const TREND_TAB_BLURB={
+  foryou :'Hot picks tuned to your taste tonight.',
+  popular:'The most-watched films in the catalog.',
+  gems   :'Highly rated but under the radar.',
+  newer  :'The best of the last few years.'
+};
+function trendTabList(tab, pool){
+  const notHidden=m=>!(typeof isNotInterested==='function' && isNotInterested(m));
+  if(tab==='popular'){
+    return pool.filter(notHidden)
+      .slice().sort((a,b)=>(trendNum(b.vote_count)??-1)-(trendNum(a.vote_count)??-1));
+  }
+  if(tab==='gems'){
+    // High quality + modest popularity (obscure-but-good).
+    return pool.filter(notHidden)
+      .filter(m=>{ const q=trendQuality(m); const v=trendNum(m.vote_count)??0; return q>=70 && v>0 && v<60000; })
+      .sort((a,b)=>{
+        const qa=trendQuality(a),qb=trendQuality(b);
+        // reward quality, gently penalize popularity so the truly obscure rise
+        const sa=qa-trendPopularity(a)*0.35, sb=qb-trendPopularity(b)*0.35;
+        return sb-sa;
+      });
+  }
+  if(tab==='newer'){
+    const yr=new Date().getFullYear();
+    return pool.filter(notHidden)
+      .filter(m=>{ const y=trendNum(m.year); const q=trendNum(m.imdb_rating); return y!=null && y>=yr-5 && (q==null||q>=6.3); })
+      .sort((a,b)=>{
+        const dy=(trendNum(b.year)??0)-(trendNum(a.year)??0);
+        if(dy) return dy;
+        return trendingScore(b)-trendingScore(a);
+      });
+  }
+  // foryou (default): the trendingScore ranking with taste bias
+  return trendRanked(pool);
+}
+function renderTrendingPage(){
+  const body=document.getElementById('trend-page-body');
+  const cnt=document.getElementById('trend-count');
+  if(!body) return;
+  trendFilmsById={};
+  const pool=trendPool;
+  if(!pool){
+    body.innerHTML='<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Loading…</div></div>';
+    return;
+  }
+  const list=trendTabList(trendPageTab, pool).slice(0,120);
+  const blurb=TREND_TAB_BLURB[trendPageTab]||'';
+  if(!list.length){
+    body.innerHTML=(blurb?'<p class="trend-blurb">'+esc(blurb)+'</p>':'')
+      +'<div class="cg-state"><div class="cg-state-ic">🎬</div>Nothing here yet.<div class="cg-state-sub">Try another tab.</div></div>';
+    if(cnt) cnt.innerHTML='&nbsp;';
+    return;
+  }
+  body.innerHTML=(blurb?'<p class="trend-blurb">'+esc(blurb)+'</p>':'')
+    +'<div class="rg-grid">'+list.map(m=>trendTileHTML(m,'rg-tile')).join('')+'</div>';
+  body.querySelectorAll('.rg-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*28,500)+'ms'; });
+  if(cnt) cnt.textContent=list.length+(list.length===1?' film':' films');
+  body.scrollTop=0;
+}
+function setTrendingTab(tab){
+  trendPageTab=tab;
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  renderTrendingPage();
+}
+let trendPageOpen=false;
+async function openTrendingPage(){
+  const ov=document.getElementById('trend-overlay');
+  if(!ov) return;
+  trendPageTab='foryou';
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab==='foryou'));
+  ov.setAttribute('aria-hidden','false');
+  void ov.offsetWidth;
+  setTimeout(()=>ov.classList.add('open'),0);
+  document.body.style.overflow='hidden';
+  trendPageOpen=true;
+  // Ensure the pool is loaded (handles tapping See all before the row finished).
+  document.getElementById('trend-page-body').innerHTML='<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Loading…</div></div>';
+  await loadTrendPool();
+  if(!trendPageOpen) return;
+  renderTrendingPage();
+}
+function closeTrendingPage(){
+  const ov=document.getElementById('trend-overlay');
+  if(ov){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); }
+  trendPageOpen=false;
+  if(!document.getElementById('md-overlay').classList.contains('open') && !galleryOpen && !collectionOpen) document.body.style.overflow='';
+}
+// Esc closes the trending page (after modal). Extends the existing handler.
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  if(document.getElementById('md-overlay').classList.contains('open')) return; // modal handler runs first
+  if(trendPageOpen){ closeTrendingPage(); }
+});
+
+/* --- Lazy kickoff: once the catalog is reachable, populate the row.
+   The auto-connect IIFE sets sbKey asynchronously; poll briefly for it. --- */
+(function trendBoot(){
+  let tries=0;
+  (function wait(){
+    if(sbKey){ initTrendingRow(); return; }
+    if(tries++>40) return;   // ~10s ceiling, then give up quietly
+    setTimeout(wait,250);
+  })();
+})();
 </script>
 </body>
 </html>
