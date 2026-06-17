@@ -85,6 +85,19 @@ async function supaGet(qs){
   if(!r.ok) throw new Error('Supabase read failed: HTTP ' + r.status);
   return r.json();
 }
+// PostgREST caps each response at 1000 rows; page through with offset to gather up to `max`.
+// All reads happen before any writes, so the stalest-first ordering stays stable mid-sweep.
+async function supaGetPaged(baseQs, max){
+  const pageSize = 1000, out = [];
+  while(out.length < max){
+    const lim = Math.min(pageSize, max - out.length);
+    const rows = await supaGet(baseQs + '&offset=' + out.length + '&limit=' + lim);
+    if(!rows.length) break;
+    out.push(...rows);
+    if(rows.length < lim) break;
+  }
+  return out;
+}
 async function supaPatch(imdbId, body){
   if(DRY) return true;
   const r = await fetch(SUPABASE_URL + '/rest/v1/movies?imdb_id=eq.' + encodeURIComponent(imdbId), {
@@ -98,7 +111,7 @@ async function supaPatch(imdbId, body){
 
 async function refreshStreaming(){
   console.log('\n--- Streaming refresh (stalest ' + STREAMING_BATCH + ' first) ---');
-  const films = await supaGet('select=imdb_id,tmdb_id&order=streaming_updated_at.asc.nullsfirst&limit=' + STREAMING_BATCH);
+  const films = await supaGetPaged('select=imdb_id,tmdb_id&order=streaming_updated_at.asc.nullsfirst', STREAMING_BATCH);
   let resolved = 0, unresolved = 0, updated = 0, sampleShown = 0;
   const now = new Date().toISOString();
   for(const f of films){
@@ -118,7 +131,7 @@ async function refreshStreaming(){
 
 async function refreshRatings(){
   console.log('\n--- Ratings refresh (stalest ' + RATINGS_BATCH + ' first, OMDb cap ' + OMDB_DAILY_CAP + ') ---');
-  const films = await supaGet('select=imdb_id&order=ratings_updated_at.asc.nullsfirst&limit=' + RATINGS_BATCH);
+  const films = await supaGetPaged('select=imdb_id&order=ratings_updated_at.asc.nullsfirst', RATINGS_BATCH);
   let updated = 0, missed = 0, sampleShown = 0;
   const now = new Date().toISOString();
   for(const f of films){
