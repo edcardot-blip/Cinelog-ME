@@ -528,16 +528,41 @@
   .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem 1.45rem;margin-bottom:1rem}
   .pcard .field:last-child{margin-bottom:0}
 
-  /* --- Advanced filters disclosure --- */
-  .adv-disc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:.85rem;overflow:hidden;transition:border-color .14s}
-  .adv-disc-btn{width:100%;display:flex;align-items:center;gap:11px;padding:.85rem 1.2rem;background:none;border:none;color:var(--text);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;text-align:left}
-  .adv-disc-btn .adv-disc-ic{font-size:16px;line-height:1}
-  .adv-disc-btn .adv-disc-meta{margin-left:auto;font-size:12px;font-weight:500;color:var(--text3)}
-  .adv-disc-btn .adv-disc-chev{font-size:18px;color:var(--text3);transition:transform .22s;line-height:1}
-  .adv-disc.open .adv-disc-chev{transform:rotate(180deg)}
-  .adv-disc-btn:hover{color:var(--accent)}
-  .adv-disc-body{padding-left:1.45rem;padding-right:1.45rem}
-  /* open/close behavior (max-height/opacity animation) defined in Phase 2 block below */
+  /* --- Advanced filters entry: premium "Refine Results" summary card --- */
+  .refine-card{
+    width:100%;display:block;text-align:left;cursor:pointer;
+    background:linear-gradient(180deg,var(--bg3),var(--bg2));
+    border:1px solid rgba(232,176,75,.30);
+    border-radius:18px;margin-bottom:.85rem;padding:1.15rem 1.25rem 1.05rem;
+    font-family:var(--sans);color:var(--text);
+    box-shadow:0 0 0 1px rgba(232,176,75,.05) inset,0 8px 30px rgba(0,0,0,.45),0 0 24px rgba(232,176,75,.06);
+    transition:border-color .18s,box-shadow .18s,transform .12s;
+    -webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+  .refine-card::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 80% at 0% 0%,rgba(232,176,75,.10),transparent 55%)}
+  .refine-card:hover{border-color:rgba(232,176,75,.55);box-shadow:0 0 0 1px rgba(232,176,75,.10) inset,0 10px 34px rgba(0,0,0,.5),0 0 30px rgba(232,176,75,.12)}
+  .refine-card:active{transform:scale(.985)}
+  .refine-card:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.45)}
+  .refine-head{display:flex;align-items:center;gap:12px;position:relative}
+  .refine-spark{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+    color:var(--accent);background:var(--accent-dim);
+    box-shadow:0 0 0 1px rgba(232,176,75,.30),0 0 16px rgba(232,176,75,.18)}
+  .refine-spark svg{width:21px;height:21px;filter:drop-shadow(0 0 6px rgba(232,176,75,.35))}
+  .refine-titles{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .refine-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.15;color:var(--text)}
+  .refine-sub{font-size:12px;font-weight:450;color:var(--text2);line-height:1.3}
+  .refine-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:.95rem;position:relative}
+  .refine-chip{display:inline-flex;align-items:center;gap:6px;
+    padding:6px 11px;border-radius:var(--rpill);
+    font-size:12px;font-weight:500;line-height:1;color:var(--text);
+    background:color-mix(in srgb,var(--accent) 8%,var(--bg3));
+    border:1px solid rgba(232,176,75,.18);white-space:nowrap}
+  @supports not (background:color-mix(in srgb,red,blue)){.refine-chip{background:var(--bg3)}}
+  .refine-chip svg{width:14px;height:14px;flex-shrink:0;color:var(--accent)}
+  .refine-adjust{display:flex;align-items:center;justify-content:flex-end;gap:5px;
+    margin-top:.95rem;font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--accent2);position:relative}
+  .refine-arrow{transition:transform .2s;display:inline-block}
+  .refine-card:hover .refine-arrow{transform:translateX(3px)}
 
   /* --- Recommendation mode cards: three EQUAL cards in one row --- */
   .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -566,7 +591,7 @@
 
   @media (max-width:640px){
     .pcard{padding:1.1rem 1rem}
-    .adv-disc-btn{padding:1rem 1.05rem}
+    .refine-card{padding:1.05rem 1.05rem .95rem}
     .adv-disc-body{padding-left:1.05rem;padding-right:1.05rem}
     .mode-cards{grid-template-columns:repeat(3,1fr);gap:7px}
     .mode-card{padding:.65rem .4rem}
@@ -1317,13 +1342,17 @@
     <!-- ADVANCED FILTERS — opens a FULL-SCREEN modal (no longer an inline expand).
          The trigger keeps the same #adv-disc id/visual style; the controls live
          inside #adv-modal below so the homepage stays compact. -->
-    <div class="adv-disc" id="adv-disc">
-      <button class="adv-disc-btn" type="button" onclick="openAdvanced()" aria-haspopup="dialog">
-        <span class="adv-disc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>Advanced Filters</span>
-        <span class="adv-disc-meta">Services · Cost · Ratings · Adventure</span>
-        <span class="adv-disc-chev" style="transform:rotate(-90deg)">⌄</span>
-      </button>
-    </div>
+    <button class="refine-card" id="adv-disc" type="button" onclick="openAdvanced()" aria-haspopup="dialog" aria-label="Refine results — personalize your recommendations">
+      <div class="refine-head">
+        <span class="refine-spark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 14l.7 1.8L21.5 16.5 19.7 17.2 19 19l-.7-1.8L16.5 16.5l1.8-.7L19 14z"/></svg></span>
+        <div class="refine-titles">
+          <span class="refine-title">Refine Results</span>
+          <span class="refine-sub">Personalize your recommendations</span>
+        </div>
+      </div>
+      <div class="refine-chips" id="refine-chips" aria-hidden="true"></div>
+      <span class="refine-adjust">Adjust <span class="refine-arrow" aria-hidden="true">→</span></span>
+    </button>
 
     <!-- RECOMMENDATION MODE as cards -->
     <div class="field" id="rec-mode-field" style="margin-bottom:.5rem">
@@ -1801,7 +1830,83 @@ function closeModalHost(id){
    visibility and delegate to the existing openLists()/openList()/openSettings(). */
 /* Advanced Filters is now a full-screen modal (was an inline disclosure). */
 function openAdvanced(){ openModalHost('adv-modal'); positionAllSegPills(); }
-function closeAdvanced(){ closeModalHost('adv-modal'); }
+function closeAdvanced(){ closeModalHost('adv-modal'); renderRefineChips(); }
+
+/* ===== Refine Results summary card — live preference chips =====
+   Reads the engine's live state vars and renders ~4 gold-icon chips that
+   summarize the user's current settings. Purely a READ of engine state —
+   no engine logic is modified. Everything guarded so a missing global can
+   never break the card. */
+var REFINE_ICONS={
+  tv:'<path d="M3 5h18v12H3zM8 21h8M12 17v4"/>',
+  trophy:'<path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0V4zM6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/>',
+  spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/>'
+};
+function refineChip(icon,label){
+  return '<span class="refine-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    +(REFINE_ICONS[icon]||'')+'</svg>'+label+'</span>';
+}
+function renderRefineChips(){
+  try{
+    var host=document.getElementById('refine-chips');
+    if(!host) return;
+    var chips=[];
+    // Streaming
+    try{ chips.push(refineChip('tv',(typeof freeOnly!=='undefined'&&freeOnly)?'My Subscriptions':'Stream, Rent, or Buy')); }catch(e){}
+    // Ratings
+    try{
+      var rm=(typeof ratingMode!=='undefined')?ratingMode:'balanced';
+      chips.push(refineChip('trophy', rm==='critics'?"Critics' Choice":rm==='audience'?'Audience Pick':'Balanced Ratings'));
+    }catch(e){}
+    // Language
+    try{ chips.push(refineChip('globe',(typeof langFilter!=='undefined'&&langFilter==='en')?'English Only':'Subtitles OK')); }catch(e){}
+    // Discovery (adventurous slider)
+    try{
+      var p=(typeof advPos!=='undefined')?advPos:50;
+      chips.push(refineChip('spark', p<=38?'Hidden Gems':p>=62?'Mainstream Picks':'Balanced Mix'));
+    }catch(e){}
+    host.innerHTML=chips.join('');
+  }catch(e){}
+}
+/* Wire the chips to refresh after each engine setter, without touching the
+   engine functions themselves — wrap them on window (call original first).
+   The engine setters and the #adv-slider handler are defined in the SECOND
+   <script> block (below this one), so we defer wiring until after that block
+   has parsed. */
+function wireRefineChips(){
+  function wrapRefine(name){
+    try{
+      var orig=window[name];
+      if(typeof orig!=='function') return;
+      if(orig.__refineWrapped) return;
+      var w=function(){
+        var r=orig.apply(this,arguments);
+        try{ renderRefineChips(); }catch(e){}
+        return r;
+      };
+      w.__refineWrapped=true;
+      window[name]=w;
+    }catch(e){}
+  }
+  wrapRefine('setFreeOnly');
+  wrapRefine('setRatingMode');
+  wrapRefine('setLangFilter');
+  // Discovery slider drives advPos via its own input handler; mirror it here.
+  try{
+    var sl=document.getElementById('adv-slider');
+    if(sl && !sl.__refineWired){
+      sl.__refineWired=true;
+      sl.addEventListener('input',function(){ try{ renderRefineChips(); }catch(e){} });
+      sl.addEventListener('change',function(){ try{ renderRefineChips(); }catch(e){} });
+    }
+  }catch(e){}
+  try{ renderRefineChips(); }catch(e){}
+}
+try{
+  if(document.readyState==='complete'){ wireRefineChips(); }
+  else{ window.addEventListener('load',wireRefineChips); }
+}catch(e){ try{ setTimeout(wireRefineChips,0); }catch(_){} }
 
 /* ===== Gold sliding-pill positioner (visual layer only) =====
    Each .af-seg contains an absolutely-positioned .af-pill that we move to sit
