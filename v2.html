@@ -787,8 +787,8 @@
   /* My Subscriptions service grid inside its modal: comfortable tap targets */
   #subs-sheet #service-pills{margin-top:.3rem}
   /* My Subscriptions chips: 2-up grid, comfortable tap targets, fits iPhone w/o scroll */
-  #subs-sheet .sheet-body .pills{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}
-  #subs-sheet .svc-pill{min-height:46px;justify-content:center}
+  #subs-sheet .sheet-body .pills{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  #subs-sheet .svc-pill{min-height:48px;width:100%;justify-content:center}
 
   /* --- Compact stats: icon + number + short label, minimal height --- */
   .stats{gap:8px;margin:.85rem 0 .85rem}
@@ -1020,10 +1020,24 @@
   .md-hero-fallback{width:100%;height:100%;display:grid;place-items:center;font-size:38px;opacity:.4;
     background:linear-gradient(160deg,var(--bg3),var(--bg2))}
   .md-body{padding:1.1rem 1.3rem 1.4rem}
-  .md-title{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:-.01em;line-height:1.12;margin-bottom:6px}
-  .md-meta{font-size:12.5px;color:var(--text2);line-height:1.5;margin-bottom:.85rem;display:flex;flex-wrap:wrap;align-items:center;gap:7px}
-  .md-meta .md-dot{color:var(--text3)}
+  /* Title = top priority: wraps naturally, max 2 lines w/ ellipsis, and RESERVES exactly 2
+     lines of height so a short title ("Up") and a long one ("Spider-Man: Across the
+     Spider-Verse") leave everything below at the same position. */
+  .md-title{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:-.012em;line-height:1.18;margin:0 0 7px;
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+    overflow-wrap:break-word;min-height:2.36em}
+  /* Metadata: Year • Runtime • Rating — always exactly one line. */
+  .md-meta{font-size:13px;color:var(--text2);line-height:1.4;min-height:1.4em;margin:0 0 5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .md-meta .md-dot{color:var(--text3);margin:0 2px}
   .md-meta .mpaa-badge{vertical-align:0}
+  /* Director + Genres: secondary info, lighter weight, each EXACTLY one fixed-height line. */
+  .md-credit{font-size:12.5px;font-weight:500;line-height:1.4;min-height:1.4em;margin:0 0 5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .md-director{color:var(--text2)}
+  .md-genres{color:var(--text3);margin-bottom:1rem}
+  .md-credit .md-dot{color:var(--text3);margin:0 4px}
+  .md-credit .md-more{color:var(--text3);font-weight:500}
   .md-ratings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;align-items:center}
   .md-ratings:empty{display:none}
   /* Matched-set: IMDb / RT / Meta identical height, padding, font, alignment.
@@ -1422,7 +1436,7 @@
           <div class="sheet-titles">
             <span class="sheet-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg></span>
             <h3 class="sheet-title">Length</h3>
-            <p class="sheet-sub">How long tonight?</p>
+            <p class="sheet-sub">How long tonight? (in minutes)</p>
           </div>
           <div class="sheet-head-acts">
             <button class="clr" onclick="clearGroup('length')">Clear</button>
@@ -2226,7 +2240,9 @@ let sbKey='',totalFilms=null;
 let selGroups=Object.fromEntries(Object.keys(GROUPS).map(k=>[k,new Set()]));
 Object.entries(GROUPS).forEach(([group,{items,cls}])=>{
   // Display label may differ from the data value (e.g. show "Sports" but match "Sport" in DB)
-  const displayName=v=>v==='Sport'?'Sports':v;
+  // "Sport"->"Sports"; strip the trailing " min" from Length options (the header says "in minutes").
+  // The underlying values (e.g. "Under 90 min") are unchanged, so the engine's matching still works.
+  const displayName=v=>v==='Sport'?'Sports':(typeof v==='string'?v.replace(/\s*min$/,''):v);
   document.getElementById(group+'-pills').innerHTML=items.map(item=>'<button class="pill" onclick="togglePill(this,\''+group+'\',\''+item.replace(/'/g,"\\'")+'\',\''+cls+'\')">'+displayName(item)+'</button>').join('');
 });
 
@@ -3405,16 +3421,27 @@ function openMovieDetail(m){
   const heroPoster = m.poster_url
     ? '<div class="md-hero-poster"><img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'"></div>' : '';
 
-  // meta line
+  // ---- Metadata: Year • Runtime • Rating — single line ----
   const metaBits=[];
   if(m.year) metaBits.push(esc(''+m.year));
   if(m.runtime_minutes) metaBits.push(m.runtime_minutes+' min');
-  if(m.director) metaBits.push(esc(m.director));
-  let metaLine = metaBits.join(' <span class="md-dot">·</span> ');
+  let metaLine = metaBits.join(' <span class="md-dot">•</span> ');
   if(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated')
-    metaLine += ' <span class="mpaa-badge">'+esc(m.mpaa_rating)+'</span>';
+    metaLine += (metaLine?' <span class="md-dot">•</span> ':'') + '<span class="mpaa-badge">'+esc(m.mpaa_rating)+'</span>';
+
+  // ---- Director: first director only; "+N directors" if more — always one line ----
+  const dirs=(m.director||'').split(',').map(s=>s.trim()).filter(d=>d && d!=='N/A');
+  let directorLine='';
+  if(dirs.length){
+    directorLine = esc(dirs[0]);
+    if(dirs.length>1) directorLine += ' <span class="md-more">+'+(dirs.length-1)+' director'+(dirs.length-1>1?'s':'')+'</span>';
+  }
+
+  // ---- Genres: max two; "+N" if more — always one line ----
   const genres=(m.genre||'').split(',').map(g=>g.trim()).filter(Boolean).map(g=>g==='Sport'?'Sports':g);
-  if(genres.length) metaLine += '<br>'+genres.map(esc).join(', ');
+  let genreParts=genres.slice(0,2).map(esc);
+  if(genres.length>2) genreParts.push('<span class="md-more">+'+(genres.length-2)+'</span>');
+  let genreLine=genreParts.join(' <span class="md-dot">•</span> ');
 
   // rating badges (only present ones)
   let ratings='';
@@ -3432,9 +3459,9 @@ function openMovieDetail(m){
       + '</div>'
     : '';
 
-  const whyHtml = m.why
-    ? '<div class="md-why"><div class="md-section-lbl">Why we recommended this</div><p>'+esc(m.why)+'</p></div>'
-    : '';
+  // "Why we recommended this" hidden for now (m.why is still computed by the engine, so
+  // this section can be restored later by reinstating the markup below).
+  const whyHtml = '';
 
   sheet.innerHTML =
     '<button class="md-close" onclick="closeMovieDetail()" aria-label="Close">✕</button>'
@@ -3442,6 +3469,8 @@ function openMovieDetail(m){
     + '<div class="md-body">'
     +   '<h2 class="md-title">'+esc(m.title)+'</h2>'
     +   '<div class="md-meta">'+metaLine+'</div>'
+    +   '<div class="md-credit md-director">'+directorLine+'</div>'
+    +   '<div class="md-credit md-genres">'+genreLine+'</div>'
     +   (ratings?'<div class="md-ratings">'+ratings+'</div>':'')
     +   availHtml
     +   whyHtml
