@@ -92,6 +92,14 @@
   }
   .on-blue{background:#0d1f3c!important;border-color:#3b6fd4!important;color:#7db0ff!important}
   .on-amber{background:#2d1a00!important;border-color:#d97706!important;color:#fbbf24!important}
+  /* Content-rating selector (Advanced Filters) — 4 equal BOXES matching the segmented scheme */
+  .cr-pills{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:.2rem}
+  .cr-pills .pill{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 4px;
+    font-size:13.5px;font-weight:600;border-radius:var(--rsm);text-align:center;
+    transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .12s cubic-bezier(.3,1.35,.5,1)}
+  .cr-pills .pill:active{transform:scale(.95)}
+  .cr-pills .pill.on{background:linear-gradient(180deg,var(--accent2),var(--accent));border:1.5px solid var(--accent);
+    color:#1a1305;box-shadow:0 3px 14px rgba(232,176,75,.34),0 0 0 1px rgba(232,176,75,.45)}
   .on-purple{background:#1a0a2e!important;border-color:#9333ea!important;color:#d8b4fe!important}
   .on-green{background:#052e16!important;border-color:#16a34a!important;color:#4ade80!important}
   .on-sky{background:#0c1a2e!important;border-color:#0284c7!important;color:#38bdf8!important}
@@ -306,7 +314,8 @@
   .adv-slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;cursor:pointer;border:3px solid var(--accent);box-shadow:0 2px 12px rgba(0,0,0,.55),0 0 0 6px rgba(232,176,75,.10)}
   .adv-ticks{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;font-size:12.5px;color:var(--text2);margin-top:.7rem;gap:8px;position:relative;z-index:1}
   .adv-tick{display:flex;align-items:center;gap:6px;font-weight:500;transition:color .2s}
-  .adv-tick .adv-ic{font-size:15px;line-height:1}
+  .adv-tick .adv-ic{display:inline-flex;align-items:center;color:var(--accent)}
+  .adv-tick .adv-ic svg{width:16px;height:16px;display:block}
   .adv-tick:nth-child(1){justify-content:flex-start}
   .adv-tick:nth-child(2){justify-content:center}
   .adv-tick:nth-child(3){justify-content:flex-end}
@@ -456,7 +465,7 @@
     .adv-badge{font-size:13px;padding:5px 12px}
     /* Lean on the dynamic label + helper; reduce tick text to clean icon anchors */
     .adv-tick .adv-tlabel{display:none}
-    .adv-tick .adv-ic{font-size:19px}
+    .adv-tick .adv-ic svg{width:19px;height:19px}
     .adv-help{font-size:13px;margin-top:.7rem}
     /* Result cards (mobile = poster-left layout): small poster, info beside it, toggles full-width below */
     .card{flex-direction:row;align-items:flex-start;padding:1rem;gap:14px}
@@ -1779,6 +1788,21 @@
         <p class="af-note" id="ratings-desc">Mixes audience and critic perspectives.</p>
       </div>
 
+      <!-- ===== Content rating (maturity) ===== -->
+      <div class="af-sec">
+        <div class="af-head">
+          <svg class="af-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V6l7-3z"/></svg>
+          <span class="af-title">Content Rating</span>
+        </div>
+        <div class="pills cr-pills" id="cr-pills">
+          <button type="button" class="pill" onclick="toggleRating(this,'G')">G</button>
+          <button type="button" class="pill" onclick="toggleRating(this,'PG')">PG</button>
+          <button type="button" class="pill" onclick="toggleRating(this,'PG-13')">PG-13</button>
+          <button type="button" class="pill" onclick="toggleRating(this,'R')">R</button>
+        </div>
+        <p class="af-note">Leave all off to include every rating.</p>
+      </div>
+
       <!-- ===== Adventurous slider ===== -->
       <div class="af-sec af-sec-adv adv-card">
         <div class="adv-head">
@@ -1787,9 +1811,9 @@
         </div>
         <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
         <div class="adv-ticks" id="adv-ticks">
-          <span class="adv-tick"><span class="adv-ic">💎</span><span class="adv-tlabel">Hidden Gems</span></span>
-          <span class="adv-tick on"><span class="adv-ic">⚖️</span><span class="adv-tlabel">Balanced</span></span>
-          <span class="adv-tick"><span class="adv-ic">⭐</span><span class="adv-tlabel">Crowd Favorites</span></span>
+          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 7 4h10l4 5.5L12 21z"/><path d="M3 9.5h18"/></svg></span><span class="adv-tlabel">Hidden Gems</span></span>
+          <span class="adv-tick on"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="adv-tlabel">Balanced</span></span>
+          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.47 5.16 5.53.66-4.1 3.78 1.08 5.5L12 16.9l-4.95 2.7 1.08-5.5-4.1-3.78 5.53-.66z"/></svg></span><span class="adv-tlabel">Crowd Favorites</span></span>
         </div>
         <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
       </div>
@@ -2928,6 +2952,33 @@ function passesKid(m){
   return m.mpaa_rating && KID_RATINGS.has(m.mpaa_rating);
 }
 
+// --- Content-rating filter (Advanced Filters) ---
+// Multi-select maturity buckets. Each bucket maps the messy real mpaa_rating values
+// (incl. legacy "GP"/"M", TV ratings) to one of G / PG / PG-13 / R. Ambiguous/unknown
+// ratings (Approved, Passed, Not Rated, Unrated, null) match no bucket, so they're only
+// excluded when the filter is actually engaged. No bucket selected => no filtering.
+let selRatings=new Set();
+const CONTENT_RATING_MAP={
+  'G':     new Set(['g','tv-g']),
+  'PG':    new Set(['pg','tv-pg','gp','m/pg','m']),
+  'PG-13': new Set(['pg-13','tv-14']),
+  'R':     new Set(['r','nc-17','tv-ma','x'])
+};
+function passesContentRating(m){
+  if(!selRatings.size) return true;
+  const r=(m.mpaa_rating||'').trim().toLowerCase();
+  if(!r) return false;
+  for(const b of selRatings){ const set=CONTENT_RATING_MAP[b]; if(set && set.has(r)) return true; }
+  return false;
+}
+function toggleRating(btn,bucket){
+  if(selRatings.has(bucket)){selRatings.delete(bucket);btn.classList.remove('on');}
+  else{selRatings.add(bucket);btn.classList.add('on');}
+  if(typeof updatePoolCount==='function') updatePoolCount();
+  if(typeof renderRefineChips==='function') renderRefineChips();
+}
+window.toggleRating=toggleRating;
+
 // --- "How adventurous tonight?" slider (presentation only) ---
 // advPos (0..100) is the continuous driver for ALL adventurous scoring math and is left
 // completely unchanged. The bands below only label the current position for the UI.
@@ -3059,7 +3110,7 @@ async function updatePoolCount(){
     const sr=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+sq,{headers:sbHeaders()});
     if(!sr.ok){el.textContent='~'+dbCount;return;}
     const sample=await sr.json();
-    const passing=sample.filter(m=>passesStreaming(m)&&passesLang(m)&&passesKid(m)).length;
+    const passing=sample.filter(m=>passesStreaming(m)&&passesLang(m)&&passesKid(m)&&passesContentRating(m)).length;
     const ratio=sample.length?passing/sample.length:0;
     const est=Math.round(dbCount*ratio);
     el.textContent='~'+est;
@@ -3772,7 +3823,7 @@ async function getRandom(){
     }
     let pool = await resp.json();
     // Apply the same client-side filters as recommendation mode.
-    pool = pool.filter(m => passesLang(m) && passesKid(m) && !isNotInterested(m));
+    pool = pool.filter(m => passesLang(m) && passesKid(m) && passesContentRating(m) && !isNotInterested(m));
     if(streamingActive) pool = pool.filter(passesStreaming);
     if(!pool.length){
       out.innerHTML = '<div class="status">No films match your filters. Try loosening genre, era, length, or streaming filters.</div>';
@@ -3845,7 +3896,7 @@ async function getRecs(){
     }
 
     // ---- Language and audience filters (client-side) ----
-    pool=pool.filter(m=>passesLang(m)&&passesKid(m)&&!isNotInterested(m));
+    pool=pool.filter(m=>passesLang(m)&&passesKid(m)&&passesContentRating(m)&&!isNotInterested(m));
     if(!pool.length){
       const reasons=[];
       if(langFilter==='en') reasons.push('English only');
