@@ -1,0 +1,41 @@
+name: Streaming originals backfill
+
+# One-off, manually-triggered curated backfill of streaming-service ORIGINAL movies.
+# Defaults to a DRY RUN: it prints the grouped add-list + per-service counts + dedupe
+# confirmation (no writes) so you can review first. Flip "dry_run" off to write.
+#
+# Tip: the daily OMDb budget is ~1000 calls. If a full run hits the cap, re-run on another
+# day with `services` set to the ones that were incomplete (e.g. "netflix,prime").
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (preview only, no writes)"
+        type: boolean
+        default: true
+      services:
+        description: "Limit to services (comma list; blank = all). e.g. apple,netflix,prime"
+        type: string
+        default: ""
+      omdb_cap:
+        description: "Max OMDb calls this run (budget guard)"
+        type: string
+        default: "800"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Backfill streaming originals
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run == true && '1' || '0' }}
+          SERVICES: ${{ inputs.services }}
+          OMDB_CAP: ${{ inputs.omdb_cap }}
+        run: node pipeline/streaming-originals.mjs
