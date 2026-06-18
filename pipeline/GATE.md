@@ -29,17 +29,14 @@ Targeted catalog gaps can be filled by a dedicated script with its OWN looser ba
 distinct `source` so it's auditable and never confused with the daily gate.
 - **Streaming-service originals** (`pipeline/streaming-originals.mjs`, workflow
   `streaming-originals.yml`, manual dispatch, dry-run by default). The subscription filters were
-  near-empty for service originals. Per service it discovers original FILMS via TMDB production
-  companies (TMDB has no definitive "original" flag — company match is the best proxy), enriches
-  via OMDb, applies the service gate, **excludes** non-movies (runtime < 60), concert/stand-up
-  (title heuristic), shorts, docs (unless notable: IMDb ≥ 7.5 or ≥ 100k votes), and ultra-obscure
-  DTV (< 2k votes), then **curates** by keeping the best-scoring titles up to a per-service target
-  (quality over completeness). Cross-service + against-catalog dedupe by imdb_id (title+year
-  fallback). Tag `source='ingest-originals'`. Per-service gates / targets:
-  Apple TV+ (≥5.0 or 25k, ~60) · Netflix (≥5.5 or 40k, ~150) · Max (≥6.0 or 20k, ~60) ·
-  Hulu (≥5.5 or 20k, ~50) · Disney+ (≥5.5 or 20k, ~40) · Prime Video (≥5.5 or 30k, ~80) ·
-  Paramount+ (≥5.5 or 15k, ~30) · Peacock (≥5.5 or 15k, ~25).
-  OMDb daily budget (~1000) may require running a few services at a time via the `services` input.
+  near-empty for service originals. TMDB has no reliable "original" flag and company-based
+  discovery proved skewed/incomplete, so this uses **hand-picked title+year seed lists per
+  service** (the originals genuinely worth recommending — ~190 titles across the 8 services).
+  Each is resolved to the correct film via TMDB search (no hand-typed IMDb IDs), enriched with
+  OMDb ratings + metadata + poster, **force-tagged** to its service's streaming key so it shows
+  under that subscription filter, and **deduped** against the live catalog by imdb_id. Tag
+  `source='ingest-originals'`. Curate the seed lists by hand to add/remove titles. (~190 OMDb
+  calls, well under budget.) The `services` input limits which services run.
 
 ## API split
 - **TMDB** = discovery + streaming (cheap, high limit). `now_playing` (US), movie details
