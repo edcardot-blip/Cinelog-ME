@@ -502,7 +502,7 @@
 
   /* --- App header: brand hero centered, circular profile icon pinned top-right --- */
   .apphead{position:relative;margin-bottom:1.1rem}
-  .apphead .auth-pill{position:absolute;top:2px;right:0;z-index:5;
+  .apphead .auth-pill{position:absolute;top:15px;right:0;z-index:5;
     width:34px;height:34px;min-width:0;padding:0;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;gap:0;
     font-size:0;letter-spacing:0;overflow:hidden;
@@ -588,8 +588,8 @@
   @media (hover:none){.qf-btn:hover{transform:none}}
   .qf-btn .qf-ic{width:18px;height:18px;flex:none;color:var(--accent);display:block}
   .qf-btn .qf-text{display:flex;flex-direction:column;gap:2px;min-width:0}
-  .qf-btn .qf-name{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
-  .qf-btn .qf-val{font-size:14px;font-weight:600;color:var(--text2);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qf-btn .qf-name{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
+  .qf-btn .qf-val{font-size:11px;font-weight:500;color:var(--text3);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Active (some selection) state: gold accent */
   .qf-btn.has-sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--bg2))}
   @supports not (background:color-mix(in srgb,red,blue)){.qf-btn.has-sel{background:var(--accent-dim)}}
@@ -736,7 +736,7 @@
   @media (max-width:640px){
     .qfilters{gap:7px}
     .qf-btn{padding:.85rem .45rem;min-height:60px}
-    .qf-btn .qf-val{font-size:13px}
+    .qf-btn .qf-val{font-size:11px}
     .qf-panel{width:min(440px,92vw)}
     .stat{padding:.75rem .7rem}
     .card-act{padding:9px 8px;min-height:40px}
@@ -1329,13 +1329,13 @@
     <div class="field" id="rec-mode-field" style="margin-bottom:.5rem">
       <div class="mode-cards" id="mode-seg">
         <div class="mode-card on" id="mode-hybrid" onclick="setMode('hybrid')">
-          <span class="mc-title">Smart Mix</span><span class="mc-desc">Best overall</span>
+          <span class="mc-title">Smart Mix</span><span class="mc-desc">Best Overall</span>
         </div>
         <div class="mode-card" id="mode-fresh" onclick="setMode('fresh')">
-          <span class="mc-title">Fresh Picks</span><span class="mc-desc">New movies</span>
+          <span class="mc-title">Fresh Picks</span><span class="mc-desc">New Movies</span>
         </div>
         <div class="mode-card" id="mode-random" onclick="setMode('random')">
-          <span class="mc-title">Surprise Me</span><span class="mc-desc">Random pick</span>
+          <span class="mc-title">Surprise Me</span><span class="mc-desc">Random Pick</span>
         </div>
         <!-- Rewatch mode removed from the UI. Hidden stub kept so setMode()'s
              getElementById('mode-rewatches') stays non-null and never throws. -->
