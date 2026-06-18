@@ -66,9 +66,14 @@ popularity penalty has nothing obscure to promote. 500 well-rated films include 
 - **Streaming-column fallback:** if the request 4xx/5xx's (the `streaming` column might not
   exist in some deployments), it retries the same query *without* `,streaming` so the app still
   works.
-- **Wider net when streaming-filtering:** `streamingActive = freeOnly && selServices.size > 0`;
-  `fetchLimit = streamingActive ? Math.max(POOL_LIMIT, 80) : POOL_LIMIT`. Since `POOL_LIMIT = 500`
-  already exceeds 80, `fetchLimit` stays 500 in practice.
+- **Streaming = eligibility, not a rating cap (Tier-3 fix):** `streamingActive = freeOnly &&
+  selServices.size > 0`. When active, the fetch is **streaming-aware** — `buildQuery(...) +
+  streamingFilterParam()` adds a server-side `&or=(streaming->>alias.not.is.null,…)` so the pool is
+  *films available on the selected service(s)* (matching genre/era/length), limit 1000, ranked after.
+  This replaces the old "top-500-by-rating then filter" path, which created an accidental ~7.9 IMDb
+  cutoff that hid most on-service titles. `passesStreaming` still does the precise free-tier check
+  client-side; the discovery merge is skipped on this path. **No service selected → unchanged**
+  (top-rated `POOL_LIMIT=500` + discovery). `getRandom()` and the MATCH counter use the same filter.
 - Empty result → contextual "No films matched…" status, early return.
 
 ### Mixed candidate pool — discovery fetch (≈ lines 3591–3611)
