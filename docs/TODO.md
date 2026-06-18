@@ -4,7 +4,7 @@
 > status). Vision and rules live in **[../CLAUDE.md](../CLAUDE.md)**. All work happens in
 > `v2.html` unless stated otherwise.
 
-Last updated: 2026-06-17.
+Last updated: 2026-06-18.
 
 ---
 

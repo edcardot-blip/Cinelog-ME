@@ -69,15 +69,19 @@ Elegant over flashy.**
 
 - One-screen recommendation **wizard** (Title → Quick Filters → Refine → Mode → Find My Movie).
 - **Quick filters:** Genre, Era, Length — each opens a full-screen slide-up sheet of pills.
+- **Streaming Services selector** on the homepage (under the Genre/Era/Length row) — opens the
+  centered subscriptions picker; selecting any service auto-enables "My Subscriptions."
 - **Refine Results** (Advanced Filters) full-screen modal: Language (Subtitles OK / English
   Only), Where to Watch (Stream/Rent/Buy vs. My Subscriptions), Ratings emphasis
   (Audience / Balanced / Critics), and the **"How Adventurous?"** slider
   (Hidden Gems ↔ Balanced ↔ Crowd Favorites).
-- **My Subscriptions:** pick streaming services (Netflix, Max, Disney+, Prime Video, Hulu,
-  Paramount+, Apple TV+, Peacock) to filter to what's free to you; rent/buy stores show as
-  badges only.
-- **Recommendation modes:** Smart Mix (best overall), Fresh Picks (new movies),
-  Surprise Me (random pick).
+- **My Subscriptions:** a **centered picker modal** (matches the Genre/Era/Length style — blurred
+  backdrop, gold Done, All/None, services as chips) to choose streaming services (Netflix, Max,
+  Disney+, Prime Video, Hulu, Paramount+, Apple TV+, Peacock) and filter to what's free to you;
+  rent/buy stores show as badges only. Selections **persist per user** (Supabase `user_prefs`,
+  with a localStorage fallback) and auto-restore + auto-enable on next sign-in.
+- **Recommendation modes:** Smart Mix (best overall — unseen picks + a few rewatches) and
+  Surprise Me (random, unseen-first). *(Fresh Picks was removed — it duplicated Smart Mix.)*
 - **Cinematic projector loading** animation between request and results.
 - **Results poster gallery** with a header showing the active mode and refine chips.
 - **Movie detail modal** (reusable `openMovieDetail(m)`): poster, ratings, metadata, where
@@ -99,7 +103,8 @@ The app is a single screen plus full-screen overlays (all overlays are direct ch
 | **Discover / Home** | The one-screen wizard | `#screen-discover` |
 | **Quick-filter sheets** | Genre / Era / Length pickers | `#sheet-host`, `openSheet()`, `closeSheet()` |
 | **Refine Results** | Advanced filters modal | `#adv-disc` → `openAdvanced()` |
-| **My Subscriptions** | Streaming-service picker | `#subs-modal`, `openSubscriptions()` |
+| **Streaming Services** | Homepage selector (opens picker) | `#home-subs-row` → `openSubscriptions()` |
+| **My Subscriptions** | Centered streaming-service picker | `#subs-sheet-host`, `openSubscriptions()`, `loadSubscriptionPrefs()` |
 | **Projector loader** | Cinematic loading state | `#proj-loader`, `startProjectorLoading()` |
 | **Results gallery** | Poster grid of recommendations | `#output`, `#rg-mode`, `.rg-grid`/`.rg-tile` |
 | **Movie Detail modal** | Per-film detail + actions | `openMovieDetail(m)` |
@@ -114,7 +119,9 @@ Three layers:
 
 1. **One-screen homepage wizard** — vertical hierarchy that must never be reordered:
    **Title → Quick Filters → Refine Results → Recommendation Mode → Find My Movie**.
-2. **Bottom nav** (`.bottom-nav`, fixed, translucent) — five tabs routed by `navTo(tab)`:
+2. **Bottom nav** (`.bottom-nav`, fixed, translucent, safe-area-aware) — five tabs routed by
+   `navTo(tab)`, each with a **unified gold-stroke SVG icon** (no emoji) and a gold active
+   state + indicator dot (premium iOS tab-bar feel):
    - **Discover** → scrolls home, closes overlays.
    - **Watchlist / Likes / Seen** → open the reusable collection page via `openCollection`.
    - **More** → opens Settings.
@@ -156,11 +163,12 @@ excluded from Fresh Picks until marked unseen. Likes also build a **taste profil
 
 Set via `setMode(m)`; the Find My Movie button relabels to "✦ Surprise me" for random.
 
-- **Smart Mix** (`hybrid`) — best overall; the full tuned ranking.
-- **Fresh Picks** (`fresh`) — newer movies, excludes already-seen.
-- **Surprise Me** (`random`) — a single random quality pick (`getRandom()`); ignores the
-  Ratings emphasis.
-- (A legacy **Rewatch** mode is hidden but kept as a non-null stub so `setMode` never throws.)
+- **Smart Mix** (`hybrid`) — best overall; the full tuned ranking. Up to 10 unseen picks +
+  up to 10 (even-rounded) "Worth a rewatch" seen films.
+- **Surprise Me** (`random`) — 20 random matching films (`getRandom()`), **unseen-first**;
+  ignores the slider/ratings math.
+- (A legacy **Rewatch** mode is hidden but kept as a non-null stub so `setMode` never throws.
+  **Fresh Picks was removed** — it duplicated Smart Mix's ranking with no real recency bias.)
 
 The **Ratings emphasis** (`setRatingMode`: audience / balanced / critics) and the
 **"How Adventurous?"** slider (`#adv-slider`, 0–100) tune the same engine — not separate modes.
@@ -194,6 +202,10 @@ Project: `https://fmhmvvsbxofoqriekfyj.supabase.co`. Two tables:
   columns (migrations 001/002) but never rename the contract.
 - **`user_movies`** — per-user lists (`seen`, `favorite`, `watchlist`, `not_interested`),
   RLS-scoped to the signed-in user.
+- **`user_prefs`** — per-user app preferences (`streaming_services` jsonb, `free_only` bool),
+  RLS-scoped to `auth.uid()`. Created by `pipeline/migrations/003_user_prefs.sql`. The app
+  **degrades gracefully**: if the table doesn't exist it falls back to `localStorage`
+  (`cinelog_subs`), so subscriptions persist locally even before the migration is run.
 - **Auth** — Google OAuth (see §10).
 
 ## 15. Tech Stack
@@ -227,7 +239,8 @@ Cinelog ME/
 │   ├── refresh.mjs            # Nightly: streaming + ratings + poster migration
 │   └── migrations/
 │       ├── 001_add_ingestion_columns.sql
-│       └── 002_add_tmdb_id.sql
+│       ├── 002_add_tmdb_id.sql
+│       └── 003_user_prefs.sql        # per-user streaming-service preferences (+ RLS)
 └── .github/workflows/
     ├── catalog-refresh.yml        # Daily 09:00 UTC → ingest.mjs
     └── catalog-maintenance.yml    # Daily 10:00 UTC → refresh.mjs
