@@ -117,7 +117,7 @@
   .flow .arrow{color:var(--accent);font-size:14px}
 
   /* ===== Stats ===== */
-  .stats{display:flex;justify-content:center;gap:10px;margin:.85rem 0 .4rem}
+  .stats{display:flex;justify-content:center;gap:10px;margin:.45rem 0 .3rem}
   .stats .stat{flex:0 1 220px}
   .stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1rem;text-align:center;position:relative;overflow:hidden}
   .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.5}
@@ -128,7 +128,7 @@
   .stat-arrow{position:absolute;right:-6px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:18px}
 
   /* ===== CTA ===== */
-  .go-btn{width:100%;padding:17px;font-size:16px;font-weight:600;background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);cursor:pointer;color:#1a1305;transition:all .14s;margin-top:.35rem;font-family:var(--sans);letter-spacing:.01em;box-shadow:0 4px 24px rgba(232,176,75,.18)}
+  .go-btn{width:100%;padding:17px;font-size:16px;font-weight:600;background:linear-gradient(180deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);cursor:pointer;color:#1a1305;transition:all .14s;margin-top:.15rem;font-family:var(--sans);letter-spacing:.01em;box-shadow:0 4px 24px rgba(232,176,75,.18)}
   .go-btn:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 6px 30px rgba(232,176,75,.28)}
   .go-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 
@@ -447,7 +447,7 @@
     #cost-seg .cost-opt{flex-direction:column;gap:3px;padding:10px 6px}
     #cost-seg .cost-ico{font-size:18px}
     #cost-seg .cost-txt{text-align:center;line-height:1.18}
-    .go-btn{padding:18px;font-size:17px;min-height:56px}
+    .go-btn{padding:14px;font-size:16px;min-height:50px}
     /* Sliders: thicker hit area for fingers + signature-control mobile tuning */
     .adv-slider{height:50px}
     .adv-slider::-webkit-slider-thumb{width:30px;height:30px;margin-top:-11px}
@@ -505,7 +505,7 @@
   /* ====================================================================== */
 
   /* --- App header: brand hero centered, circular profile icon pinned top-right --- */
-  .apphead{position:relative;margin-bottom:.75rem}
+  .apphead{position:relative;margin-bottom:.5rem}
   .apphead .auth-pill{position:absolute;top:15px;right:0;z-index:5;
     width:34px;height:34px;min-width:0;padding:0;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;gap:0;
@@ -533,29 +533,25 @@
   .pcard .field:last-child{margin-bottom:0}
 
   /* --- Advanced filters entry: premium "Refine Results" summary card --- */
+  /* Compact row — same footprint as the Streaming Services (.home-subs) selector */
   .refine-card{
-    width:100%;display:block;text-align:left;cursor:pointer;
-    background:linear-gradient(180deg,var(--bg3),var(--bg2));
-    border:1px solid rgba(232,176,75,.30);
-    border-radius:18px;margin-bottom:.6rem;padding:.92rem 1.25rem .85rem;
+    width:100%;display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;
+    background:var(--bg2);border:1px solid rgba(232,176,75,.30);
+    border-radius:var(--r);margin-bottom:.6rem;padding:.7rem .85rem;min-height:52px;
     font-family:var(--sans);color:var(--text);
-    box-shadow:0 0 0 1px rgba(232,176,75,.05) inset,0 8px 30px rgba(0,0,0,.45),0 0 24px rgba(232,176,75,.06);
-    transition:border-color .18s,box-shadow .18s,transform .12s;
-    -webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
-  .refine-card::before{content:'';position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 80% at 0% 0%,rgba(232,176,75,.10),transparent 55%)}
-  .refine-card:hover{border-color:rgba(232,176,75,.55);box-shadow:0 0 0 1px rgba(232,176,75,.10) inset,0 10px 34px rgba(0,0,0,.5),0 0 30px rgba(232,176,75,.12)}
-  .refine-card:active{transform:scale(.985)}
-  .refine-card:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.45)}
-  .refine-head{display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
-  .refine-spark{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
-    color:var(--accent);background:var(--accent-dim);
-    box-shadow:0 0 0 1px rgba(232,176,75,.30),0 0 16px rgba(232,176,75,.18)}
-  .refine-spark svg{width:21px;height:21px;filter:drop-shadow(0 0 6px rgba(232,176,75,.35))}
-  .refine-titles{display:flex;flex-direction:column;gap:1px;min-width:0;text-align:center}
-  .refine-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.15;color:var(--text)}
-  .refine-title .refine-arrow{color:var(--accent2);font-size:.95em;font-weight:600}
-  .refine-sub{font-size:12px;font-weight:450;color:var(--text2);line-height:1.3}
+    transition:border-color .15s,background .15s,transform .12s;
+    -webkit-tap-highlight-color:transparent;position:relative}
+  .refine-card:hover{border-color:rgba(232,176,75,.55)}
+  @media (hover:none){.refine-card:hover{border-color:rgba(232,176,75,.30)}}
+  .refine-card:active{transform:scale(.99)}
+  .refine-card:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.40)}
+  .refine-head{display:flex;align-items:center;gap:11px;width:100%}
+  .refine-spark{flex:none;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+  .refine-spark svg{width:20px;height:20px;display:block}
+  .refine-titles{display:flex;flex-direction:column;gap:1px;min-width:0;text-align:left}
+  .refine-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.2;color:var(--text)}
+  .refine-title .refine-arrow{color:var(--accent2);font-weight:700;margin-left:2px}
+  .refine-sub{font-size:12px;font-weight:500;color:var(--text3);line-height:1.3}
   .refine-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:.95rem;position:relative}
   .refine-chip{display:inline-flex;align-items:center;gap:6px;
     padding:6px 11px;border-radius:var(--rpill);
@@ -602,10 +598,10 @@
 
   @media (max-width:640px){
     .pcard{padding:1.1rem 1rem}
-    .refine-card{padding:.85rem 1.05rem .8rem}
+    .refine-card{padding:.7rem .85rem;min-height:50px}
     .adv-disc-body{padding-left:1.05rem;padding-right:1.05rem}
     .mode-cards{grid-template-columns:repeat(2,1fr);gap:7px}
-    .mode-card{padding:.65rem .4rem}
+    .mode-card{padding:.5rem .4rem}
   }
 
   /* ====================================================================== */
@@ -791,8 +787,8 @@
   /* My Subscriptions service grid inside its modal: comfortable tap targets */
   #subs-sheet #service-pills{margin-top:.3rem}
   /* My Subscriptions chips: 2-up grid, comfortable tap targets, fits iPhone w/o scroll */
-  #subs-sheet .sheet-body .pills{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-  #subs-sheet .svc-pill{min-height:48px;width:100%;justify-content:center}
+  #subs-sheet .sheet-body .pills{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}
+  #subs-sheet .svc-pill{min-height:46px;justify-content:center}
 
   /* --- Compact stats: icon + number + short label, minimal height --- */
   .stats{gap:8px;margin:.85rem 0 .85rem}
@@ -816,7 +812,7 @@
 
   @media (max-width:640px){
     .qfilters{gap:7px}
-    .qf-btn{padding:.85rem .45rem;min-height:60px}
+    .qf-btn{padding:.62rem .45rem;min-height:52px}
     .qf-btn .qf-val{font-size:11px}
     .qf-panel{width:min(440px,92vw)}
     .stat{padding:.75rem .7rem}
@@ -941,20 +937,37 @@
   .cg-controls{flex:none;display:flex;gap:9px;align-items:center;
     padding:.85rem max(1rem,env(safe-area-inset-right)) .85rem max(1rem,env(safe-area-inset-left));
     border-bottom:1px solid var(--border)}
-  .cg-search{flex:1;position:relative;min-width:0}
-  .cg-search .cg-search-ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);
-    font-size:13px;color:var(--text3);pointer-events:none}
-  .cg-search input{width:100%;padding:10px 12px 10px 33px;border:1px solid var(--border2);border-radius:var(--rpill);
-    font-size:13.5px;background:var(--bg3);color:var(--text);outline:none;font-family:var(--sans);
-    transition:border-color .14s}
-  .cg-search input:focus{border-color:var(--accent)}
-  .cg-search input::placeholder{color:var(--text3)}
+  /* ===== Native-style search pill (single reusable component, used by every list) =====
+     font-size:16px is the ROOT-CAUSE fix for iOS Safari focus-zoom (no viewport hacks). */
+  .cg-search{flex:1;position:relative;min-width:0;display:flex;align-items:center}
+  .cg-search .cg-search-ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;color:var(--text3);pointer-events:none;display:flex;transition:color .2s ease}
+  .cg-search .cg-search-ic svg{width:18px;height:18px;display:block}
+  .cg-search input{width:100%;height:50px;padding:0 42px 0 44px;border:1px solid var(--border2);border-radius:var(--rpill);
+    font-size:16px;font-weight:500;background:var(--bg3);color:var(--text);outline:none;font-family:var(--sans);
+    -webkit-appearance:none;appearance:none;
+    transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
+  .cg-search input::placeholder{color:var(--text3);transition:color .2s ease}
+  .cg-search input:focus{border-color:var(--accent);background:var(--bg2);
+    box-shadow:0 0 0 3px rgba(232,176,75,.16),0 4px 14px rgba(232,176,75,.10)}
+  .cg-search input:focus::placeholder{color:transparent}   /* fade placeholder on focus */
+  .cg-search:focus-within .cg-search-ic{color:var(--accent)}
+  /* Clear (×) button — fades/scales in only when there's text */
+  .cg-search-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%) scale(.7);opacity:0;pointer-events:none;
+    width:28px;height:28px;border:none;border-radius:50%;background:var(--bg4);color:var(--text2);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+    transition:opacity .18s ease,transform .18s cubic-bezier(.3,1.3,.5,1),background .15s,color .15s}
+  .cg-search-clear svg{width:13px;height:13px;display:block}
+  .cg-search-clear:hover{background:#3a3a40;color:var(--text)}
+  .cg-search-clear:active{transform:translateY(-50%) scale(.88)}
+  .cg-search.has-text .cg-search-clear{opacity:1;transform:translateY(-50%) scale(1);pointer-events:auto}
   .cg-sort{flex:none;position:relative}
-  .cg-sort select{appearance:none;-webkit-appearance:none;
+  .cg-sort select{appearance:none;-webkit-appearance:none;height:50px;
     background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rpill);
-    color:var(--text);font-size:12.5px;font-weight:600;font-family:var(--sans);cursor:pointer;
-    padding:10px 30px 10px 14px;outline:none;transition:border-color .14s;max-width:160px}
+    color:var(--text);font-size:16px;font-weight:600;font-family:var(--sans);cursor:pointer;
+    padding:0 30px 0 15px;outline:none;transition:border-color .2s ease,box-shadow .2s ease;max-width:150px}
   .cg-sort select:focus,.cg-sort select:hover{border-color:var(--accent)}
+  .cg-sort select:focus{box-shadow:0 0 0 3px rgba(232,176,75,.16)}
   .cg-sort .cg-sort-chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);
     font-size:11px;color:var(--text2);pointer-events:none}
 
@@ -974,8 +987,8 @@
   .cg-state .cg-state-load{display:inline-flex;align-items:center;gap:9px;color:var(--text2);font-size:13.5px}
   @media (max-width:600px){
     .cg-head-spacer{width:44px}
-    .cg-sort select{font-size:13.5px;padding:12px 30px 12px 14px}
-    .cg-search input{padding-top:12px;padding-bottom:12px}
+    /* height-based pill handles vertical sizing; keep font-size:16px to block iOS zoom */
+    .cg-sort select{max-width:130px}
   }
 
   /* --- Movie detail modal --- */
@@ -1059,7 +1072,7 @@
   /* ====================================================================== */
 
   /* --- Homepage row (below the Find My Movie button) --- */
-  .trend-row{margin-top:1rem;margin-bottom:.6rem}
+  .trend-row{margin-top:.15rem;margin-bottom:.4rem}
   .trend-row.hidden{display:none}
   .trend-head{display:flex;align-items:center;gap:10px;margin-bottom:.45rem;padding:0 2px}
   .trend-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;color:var(--text);
@@ -1382,7 +1395,6 @@
             <p class="sheet-sub">Select one or more genres</p>
           </div>
           <div class="sheet-head-acts">
-            <button class="clr" onclick="selectAllGroup('genre')">All</button>
             <button class="clr" onclick="clearGroup('genre')">Clear</button>
             <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
@@ -1398,7 +1410,6 @@
             <p class="sheet-sub">Pick a moment in time</p>
           </div>
           <div class="sheet-head-acts">
-            <button class="clr" onclick="selectAllGroup('era')">All</button>
             <button class="clr" onclick="clearGroup('era')">Clear</button>
             <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
@@ -1414,7 +1425,6 @@
             <p class="sheet-sub">How long tonight?</p>
           </div>
           <div class="sheet-head-acts">
-            <button class="clr" onclick="selectAllGroup('length')">All</button>
             <button class="clr" onclick="clearGroup('length')">Clear</button>
             <button type="button" class="sheet-done-sm" onclick="closeSheet()">Done</button>
           </div>
@@ -1667,18 +1677,21 @@
     <span class="cg-head-spacer" aria-hidden="true"></span>
   </header>
   <div class="cg-controls" id="cg-controls">
-    <div class="cg-search">
-      <span class="cg-search-ic">🔍</span>
-      <input type="text" id="cg-search-input" placeholder="Search this collection…"
+    <div class="cg-search" id="cg-search">
+      <span class="cg-search-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.2-4.2"/></svg></span>
+      <input type="text" id="cg-search-input" placeholder="Search" inputmode="search" enterkeyhint="search"
         autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-        oninput="renderCollectionGrid()" aria-label="Search this collection">
+        oninput="onCollectionSearchInput()" aria-label="Search this collection">
+      <button type="button" class="cg-search-clear" id="cg-search-clear" onclick="clearCollectionSearch()" aria-label="Clear search" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
     </div>
     <div class="cg-sort">
       <select id="cg-sort-select" onchange="renderCollectionGrid()" aria-label="Sort collection">
-        <option value="added">Recently Added</option>
-        <option value="title">Alphabetical</option>
-        <option value="year">Release Year</option>
-        <option value="imdb">IMDb Rating</option>
+        <option value="added">Added</option>
+        <option value="title">A–Z</option>
+        <option value="year">Year</option>
+        <option value="imdb">Rating</option>
         <option value="runtime">Runtime</option>
       </select>
       <span class="cg-sort-chev">▾</span>
@@ -1734,31 +1747,8 @@
         <p class="af-note" id="lang-note">Some all-time classics aren't in English — toggle thoughtfully.</p>
       </div>
 
-      <!-- ===== Where to watch ===== -->
-      <div class="af-sec">
-        <div class="af-head">
-          <svg class="af-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/></svg>
-          <span class="af-title">Where to Watch</span>
-        </div>
-        <div class="af-seg" id="cost-seg">
-          <span class="af-pill" aria-hidden="true"></span>
-          <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)"><span class="cost-txt">Stream, Rent, or Buy</span></div>
-          <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)"><span class="cost-txt">My Subscriptions</span></div>
-        </div>
-        <!-- "My Subscriptions" opens its own full-screen modal; this compact card
-             shows a live summary + opens the picker. The actual #service-pills
-             grid lives in #subs-sheet below (kept the id + toggleService). -->
-        <div class="svc-picker" id="svc-picker">
-          <button type="button" class="subs-row" id="subs-row" onclick="openSubscriptions()" aria-haspopup="dialog">
-            <span class="subs-row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/></svg></span>
-            <span class="subs-row-main">
-              <span class="subs-row-title">My Subscriptions</span>
-              <span class="subs-row-sub" id="subs-row-sub">No services selected</span>
-            </span>
-            <span class="subs-row-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
-          </button>
-        </div>
-      </div>
+      <!-- "Where to Watch" / streaming services moved to the dedicated homepage
+           Streaming Services selector (#home-subs-row), so it's no longer duplicated here. -->
 
       <!-- ===== Ratings ===== -->
       <div class="af-sec">
@@ -1817,7 +1807,7 @@
     </div>
     <div class="sheet-body">
       <div class="pills" id="service-pills"></div>
-      <p class="section-note" style="padding-left:0;margin:.9rem 0 .15rem;font-size:11.5px;text-align:center;color:var(--text3)">Pick a few — some services have small catalogs.</p>
+      <p class="section-note" style="padding-left:0;margin:.9rem 0 .15rem;font-size:11.5px;text-align:center;color:var(--text3)">If no services are selected, rental &amp; purchase options show up too.</p>
     </div>
   </section>
 </div>
@@ -2307,8 +2297,8 @@ function updateSubsRow(){
 window.updateSubsRow=updateSubsRow;
 function setFreeOnly(v){
   freeOnly=v;
-  document.getElementById('cost-free').classList.toggle('on',v);
-  document.getElementById('cost-any').classList.toggle('on',!v);
+  var cf=document.getElementById('cost-free'); if(cf) cf.classList.toggle('on',v);   // guard: the segmented toggle was removed from Refine Results
+  var ca=document.getElementById('cost-any');  if(ca) ca.classList.toggle('on',!v);
   if(!v){ clearServices(); }   // returning to "Stream/Rent/Buy" wipes service selections so nothing filters silently
   else { updatePoolCount(); updateSubsRow(); openSubscriptions(); }  // selecting "My Subscriptions" opens the picker modal only (no inline duplicate)
   saveSubscriptionPrefs();
@@ -2446,7 +2436,7 @@ let viewMode = 'hybrid';    // 'hybrid' | 'rewatches' (legacy stub) ; 'random' h
 const MODE_DESCS = {
   hybrid: "Films you haven't seen, plus a few worth revisiting.",
   rewatches: "Only films you've already seen.",
-  random: "20 at random from everything matching your filters — sliders ignored."
+  random: "20 at random from everything matching your filters."
 };
 function setMode(m){
   viewMode = m;
@@ -3571,6 +3561,20 @@ function renderCollectionTile(m, rank){
 function openCollectionDetail(id){ const m=collectionFilmsById[id]; if(m) openMovieDetail(m); }
 
 // Apply the current search + sort controls and (re)paint the grid.
+/* Search input handler: toggle the clear (×) button's visibility, then re-filter. */
+function onCollectionSearchInput(){
+  const wrap=document.getElementById('cg-search'), inp=document.getElementById('cg-search-input');
+  if(wrap&&inp) wrap.classList.toggle('has-text', !!inp.value);
+  renderCollectionGrid();
+}
+/* Clear (×) button: empty the field, hide the button, re-filter, keep focus (keyboard stays up). */
+function clearCollectionSearch(){
+  const inp=document.getElementById('cg-search-input'); if(!inp) return;
+  inp.value='';
+  const wrap=document.getElementById('cg-search'); if(wrap) wrap.classList.remove('has-text');
+  renderCollectionGrid();
+  inp.focus();
+}
 function renderCollectionGrid(){
   const body=document.getElementById('cg-body');
   if(!body) return;
@@ -3629,6 +3633,7 @@ async function openCollection(type){
   document.getElementById('cg-count').textContent='';
   // Reset controls each open
   const si=document.getElementById('cg-search-input'); if(si) si.value='';
+  const sw=document.getElementById('cg-search'); if(sw) sw.classList.remove('has-text');
   const ss=document.getElementById('cg-sort-select'); if(ss) ss.value='added';
   const controls=document.getElementById('cg-controls');
 
