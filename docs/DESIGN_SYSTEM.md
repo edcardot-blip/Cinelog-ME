@@ -352,7 +352,7 @@ soft padding, subtle hover.
   box-shadow:0 0 0 1px rgba(232,176,75,.35),0 6px 26px rgba(232,176,75,.18)}
 .mode-card.on .mc-title{color:var(--accent2)}
 ```
-Three equal cards (Smart Mix / Fresh Picks / Surprise Me). The selected card gets the gold tint
+Two equal cards (Smart Mix / Surprise Me). The selected card gets the gold tint
 (`color-mix`, with `--accent-dim` fallback) + gold glow; its `.mc-title` turns `--accent2`.
 
 ---

@@ -112,7 +112,8 @@ else                 pool = pool.slice(0, MERGED_LIMIT);
 | Filter | Defined | Behavior |
 |---|---|---|
 | `passesLang(m)` | ≈ 2226 | `langFilter==='all'` → true; else require `m.original_language === 'en'`. |
-| `passesKid(m)` | ≈ 2724 | `kidOnly` off → true; else `m.mpaa_rating ∈ KID_RATINGS = {G, PG, TV-G, TV-PG}`. |
+| `passesKid(m)` | ≈ 2724 | Legacy/inert — the Kid-Friendly pill was removed, so `kidOnly` is always false → always true. |
+| `passesContentRating(m)` | (Advanced Filters) | No buckets selected → true; else `m.mpaa_rating` must fall in a selected **Content Rating** bucket (G / PG / PG-13 / R, with legacy values like TV-G/GP/NC-17 bucketed). |
 | `isNotInterested(m)` | ≈ 2360 | `niSet.has(m.imdb_id)`; engine uses `!isNotInterested(m)` so hidden films are removed. |
 | `passesStreaming(m)` | ≈ 2211 | `freeOnly` off → true; **no** services picked → true; else film must be on ≥1 selected service in a **free tier** (`FREE_TIERS = {flatrate, free, sub, ads, subscription}`). |
 

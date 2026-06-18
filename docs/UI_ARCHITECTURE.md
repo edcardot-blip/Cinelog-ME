@@ -45,11 +45,12 @@ constitution its hierarchy — **Title → Quick Filters → Refine → Recommen
 3. **Refine Results card** (`#adv-disc`, class `.refine-card`) → `onclick="openAdvanced()"`. Shows a
    gold spark icon, "Refine Results" serif title, a subtitle, and `.refine-chip`s summarizing the
    current advanced filters (rebuilt by `renderRefineChips()`).
-4. **Recommendation mode cards** (`#mode-seg`, `.mode-cards`) — three `.mode-card`s:
+4. **Recommendation mode cards** (`#mode-seg`, `.mode-cards`) — two `.mode-card`s (2-col grid):
    - `#mode-hybrid` ("Smart Mix" / "Best Overall", default `.on`) → `setMode('hybrid')`
-   - `#mode-fresh` ("Fresh Picks" / "New Movies") → `setMode('fresh')`
    - `#mode-random` ("Surprise Me" / "Random Pick") → `setMode('random')`
    - `#mode-desc` shows a dynamic italic description; `#mode-rewatches` is a hidden compatibility stub.
+     (Fresh Picks was removed — it duplicated Smart Mix's ranking. Also note: a homepage **Streaming
+     Services** selector sits between the Genre/Era/Length row and Refine Results.)
 5. **Stats row** (`.stats`) — two stat tiles with gold-edge accents and SVG icons:
    `#seen-count` ("Seen") and `#s-pool` ("Match", the current matched-pool size).
 6. **Find My Movie CTA** (`#go-btn`, `.go-btn`) — gold gradient button, label "✦ Find My Movie"
