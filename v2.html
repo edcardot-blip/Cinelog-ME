@@ -714,7 +714,7 @@
   .sheet .clr{font-size:12px;color:var(--text3);background:none;border:none;border-radius:99px;cursor:pointer;padding:7px 10px;font-weight:600;font-family:var(--sans);letter-spacing:.01em;transition:color .12s,transform .1s;white-space:nowrap}
   .sheet .clr:hover{color:var(--text)}
   .sheet .clr:active{transform:scale(.92)}
-  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:.2rem}
+  .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:10px;padding-bottom:.2rem}
   .sheet-body .pills{gap:9px}
   .sheet-foot{padding:.75rem 0 .15rem;border-top:1px solid var(--border)}
   .sheet-done{width:100%;padding:14px;font-size:15px;font-weight:600;font-family:var(--sans);
@@ -748,6 +748,9 @@
   .sheet #length-pills{display:grid;grid-template-columns:1fr 1fr;gap:10px;justify-content:stretch}
   .sheet #length-pills .pill{min-height:66px;border-radius:16px;font-size:15px;font-weight:600;padding:12px 10px;width:100%}
   .sheet #length-pills .pill.on-amber{font-weight:700}
+  /* --- GENRE: uniform 3-col grid of boxes (a partial last row reads as intentional, no lonely centered chip) --- */
+  .sheet #genre-pills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .sheet #genre-pills .pill{display:flex;align-items:center;justify-content:center;min-height:48px;padding:10px 6px;font-size:13.5px;text-align:center;width:100%}
 
   /* ===== FULL-SCREEN MODAL FRAMEWORK (Advanced Filters / My Subscriptions) =====
      Same visual language as the picker dialogs (dark blurred backdrop, gold
@@ -2256,7 +2259,7 @@ const sbAuth = (window.supabase && window.supabase.createClient)
     })
   : null;
 const GROUPS={
-  genre:{items:['Action','Adventure','Animation','Biography','Comedy','Crime','Drama','Family','Fantasy','History','Horror','Music','Mystery','Romance','Sci-Fi','Sport','Thriller','War','Western','Kid-Friendly'],cls:'on-amber'},
+  genre:{items:['Action','Adventure','Animation','Biography','Comedy','Crime','Documentary','Drama','Family','Fantasy','History','Horror','Music','Mystery','Romance','Sci-Fi','Sport','Thriller','War','Western'],cls:'on-amber'},
   length:{items:['Under 90 min','90–120 min','120–150 min','Over 150 min'],cls:'on-amber'},
   era:{items:['Pre-1960','1960s','1970s','1980s','1990s','2000s','2010s','2020s'],cls:'on-amber'}
 };
