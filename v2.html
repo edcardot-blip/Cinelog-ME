@@ -623,6 +623,10 @@
     transform:scale(.96);opacity:0;
     transition:transform .25s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
   .sheet.show{transform:scale(1);opacity:1}
+  /* CRITICAL FIX: .sheet{display:flex} (an author rule) overrides the UA [hidden]{display:none},
+     so hidden sheets still occupied flex space and shoved the visible one off-center by its DOM
+     order (genre=left, era=center, length=right — exactly the observed drift). Re-hide them. */
+  .sheet[hidden]{display:none!important}
   /* Header: centered two-line title on top, All/Clear/Done row below-right — nothing overlaps */
   .sheet-head{display:flex;flex-direction:column;gap:.5rem;padding:0 0 .7rem}
   .sheet-head-acts{display:flex;align-items:center;gap:7px;align-self:flex-end}
