@@ -1,0 +1,383 @@
+# CINELOG — UI Architecture
+
+A screen-by-screen map of CINELOG's interface as built in **`v2.html`** (the active app). For each
+screen: **Purpose · Layout · Components · Interactions · Navigation · Animations**. Element ids,
+class names, and function names are quoted verbatim from the source so future sessions can find and
+extend them safely.
+
+> CINELOG is a single-file vanilla HTML/CSS/JS app. The whole UI is a stack of full-screen
+> overlays and modals layered over one home screen, governed by a strict z-index ladder
+> (nav `900` < settings `1000` < results/collection `1200` < movie detail `1300` < modal host
+> `1500` < stacked modal `1600`) and a reference-counted scroll lock (`lockScroll`/`unlockScroll`).
+> See `DESIGN_SYSTEM.md` for visual tokens.
+
+**Navigation primitives shared by every screen:**
+- `navTo(tab)` — bottom-tab router (`discover` / `watchlist` / `favorites` / `seen` / `more`).
+- `setNavActive(tab)` — moves the gold `.active` state on the bottom nav.
+- `openModalHost(id)` / `closeModalHost(id)` — generic modal show/hide (adds `.open`, then `.shown`
+  next paint for the animation; aria-hidden toggled).
+- `lockScroll()` / `unlockScroll()` — reference-counted body scroll freeze (restores scroll Y).
+- Esc closes overlays in priority order: subscriptions → advanced → sheet/movie-detail → gallery →
+  collection → trending → settings.
+
+---
+
+## 1. Home / Discover
+
+**Container:** `#screen-discover` (the only always-present screen; the default bottom-nav tab).
+
+**Purpose.** The one-screen wizard that takes a user from open to a great pick in seconds. It owns
+the brand hero, quick filters, recommendation mode, and the single "Find My Movie" CTA. Per the
+constitution its hierarchy — **Title → Quick Filters → Refine → Recommendation Mode → Find My Movie**
+— must not be reordered.
+
+**Layout (top → bottom).**
+1. **Header / hero** — `.apphead` containing the circular profile bubble (`#auth-pill`, pinned
+   top-right) and `.hero-new`:
+   ```html
+   <h1>What Should I <span class="em">Watch?</span></h1>   <!-- serif, gold italic "Watch?" -->
+   <p class="hero-sub">The perfect movie in seconds.</p>
+   ```
+2. **Quick-filter buttons** (`.qfilters`) — three tappable summaries with gold-stroke icons:
+   - Genre → `onclick="openSheet('genre')"`, value shown in `#qf-genre-val`
+   - Era → `openSheet('era')`, value in `#qf-era-val`
+   - Length → `openSheet('length')`, value in `#qf-length-val`
+3. **Refine Results card** (`#adv-disc`, class `.refine-card`) → `onclick="openAdvanced()"`. Shows a
+   gold spark icon, "Refine Results" serif title, a subtitle, and `.refine-chip`s summarizing the
+   current advanced filters (rebuilt by `renderRefineChips()`).
+4. **Recommendation mode cards** (`#mode-seg`, `.mode-cards`) — three `.mode-card`s:
+   - `#mode-hybrid` ("Smart Mix" / "Best Overall", default `.on`) → `setMode('hybrid')`
+   - `#mode-fresh` ("Fresh Picks" / "New Movies") → `setMode('fresh')`
+   - `#mode-random` ("Surprise Me" / "Random Pick") → `setMode('random')`
+   - `#mode-desc` shows a dynamic italic description; `#mode-rewatches` is a hidden compatibility stub.
+5. **Stats row** (`.stats`) — two stat tiles with gold-edge accents and SVG icons:
+   `#seen-count` ("Seen") and `#s-pool` ("Match", the current matched-pool size).
+6. **Find My Movie CTA** (`#go-btn`, `.go-btn`) — gold gradient button, label "✦ Find My Movie"
+   (becomes "✦ Surprise me" in random mode).
+7. **Output / loaders** — `#output` (status messages if filters return nothing), `#proj-loader`
+   (the cinematic projector, shown during a fetch), and `#trend-row` (the trending preview).
+
+**Components.** Profile bubble, quick-filter pills, refine card, mode cards, stat tiles, gold CTA,
+projector loader, trending scroller.
+
+**Interactions.**
+- `setMode(m)` toggles the `.on` mode card, updates `#mode-desc` and the CTA label.
+- Tapping `#go-btn` (listener near line 3015) calls `getRecs()` (ranked) or `getRandom()` (shuffle)
+  depending on the active mode; the button disables while the request is in flight.
+- `updatePoolCount()` / `updateSeenCount()` keep `#s-pool` / `#seen-count` live as filters change.
+
+**Navigation.** Quick-filter buttons open the picker sheets; the refine card opens Advanced Filters;
+the CTA opens the **Recommendation Results** gallery; the trending "See all" opens the **Trending**
+page; the profile bubble triggers auth; the bottom nav routes to the collection screens.
+
+**Animations.** The hero is static; tapping a mode card animates its gold-tint `.on` state; the CTA
+lifts on hover and presses on active; launching a recommendation cross-fades `#trend-row` out and the
+`#proj-loader` in.
+
+---
+
+## 2. Movie Detail (floating modal)
+
+**Container:** `#md-overlay` → `#md-sheet` (`role="dialog"`, `aria-modal="true"`). Opened by
+`openMovieDetail(m)` (~line 3206); z-index `1300`.
+
+**Purpose.** The reusable deep-view for a single film: artwork, metadata, ratings, where to watch,
+why it was recommended, and the four personal-list actions. Opened from every poster everywhere
+(gallery, collections, trending) so it's the canonical detail surface.
+
+**Layout.** A centered, scrollable sheet (max `460px`, radius `22px`):
+- `.md-close` — circular close button (top-right of sheet).
+- `.md-hero` — 16/10 artwork (dimmed backdrop image, gradient fade to the body) with a floating
+  2/3 `.md-hero-poster` badge bottom-left.
+- `.md-body`:
+  - `.md-title` (serif), `.md-meta` (year · runtime · director, genres, MPAA badge).
+  - `.md-ratings` — matched rating badges: `.rating-badge.rb-imdb`, `.rb-rt`, `.rb-meta`.
+  - `.md-avail` — streaming availability rows (`.av` with service dot + free/paid tier).
+  - `.md-why` — gold-tinted panel with the recommendation explanation (only if `m.why` exists).
+  - `#md-acts` — four `.md-pill` action toggles built by `mdActionPills(m)`:
+    **Seen** (`act-seen`) · **Like** (`act-fav`) · **Watchlist** (`act-watch`) · **Hide** (`act-hide`).
+
+**Components.** Hero artwork, floating poster, rating-badge set, availability chips, why panel,
+4-up action pills.
+
+**Interactions.**
+- Each pill: `onclick="mdAct(this,'<fn>','<id>')"` where `<fn>` is the engine handler from
+  `mdActFn(act)` — `onSeenClick` / `onFavClick` / `onWatchClick` / `onNiClick`. `mdAct` awaits the
+  global handler, re-syncs the pills, and the icon plays a `pillpulse` bump.
+- Active state shows as `.marked` with each action's color tint (teal/pink/blue/red).
+- Backdrop click or `.md-close` closes; Esc closes the detail first (before any underlying overlay).
+
+**Navigation.** Opened via `openMovieDetailById(id)` from gallery/trending tiles and
+`openCollectionDetail(id)` from collection tiles. `closeMovieDetail()` calls
+`refreshOpenCollection()` so toggling Like/Watchlist updates the underlying collection grid live.
+
+**Animations.** Overlay backdrop blurs in (`blur(7px)`); the sheet enters
+`scale(.9) translateY(10px) → none` via overshoot `cubic-bezier(.2,1.25,.4,1)` over `.34s`; pills
+press to `scale(.93)` and pulse on toggle.
+
+---
+
+## 3. Quick-Filter Sheets (Genre / Era / Length)
+
+**Container:** `#sheet-host` with `#sheet-genre`, `#sheet-era`, `#sheet-length`. Opened by
+`openSheet(group)` (~line 1970), closed by `closeSheet()`; z-index `1500`.
+
+**Purpose.** Centered pop-up sheets that surface the engine's existing multi-select pill grids in a
+focused, mobile-friendly card — keeping the home screen uncluttered.
+
+**Layout.** A centered `.sheet` card (radius `22px`) with `.sheet-head` (centered serif
+`.sheet-title` + "All"/"Clear" `.clr` buttons + a small gold `.sheet-done-sm`) and a scrollable
+`.sheet-body` holding the reused pill grid: `#genre-pills`, `#era-pills`, or `#length-pills`.
+
+**Components.** Sheet card, header actions, picker pills (`.sheet .pills .pill`, selected =
+`.on-amber` gold).
+
+**Interactions.** Tap pills to multi-select; "All"/"Clear" reset; "Done" / backdrop / close-X
+dismiss. Selections flow back into the home quick-filter value labels.
+
+**Navigation.** Launched from the three home quick-filter buttons; returns to Home on close.
+
+**Animations.** `.open` mounts the host, `.shown` (set next paint) blurs the backdrop `2px→10px` and
+springs the card `scale(.96)→1` via `cubic-bezier(.34,1.2,.4,1)`. **Gotcha:** hidden sheets use
+`display:none` (`.sheet[hidden]`) — they must be fully removed from the flex flow or the picker
+drifts off-center.
+
+---
+
+## 4. Advanced Filters — "Refine Results" (full-screen modal)
+
+**Container:** `#adv-modal` (`.modal-host`). Opened by `openAdvanced()` (~line 1831), closed by
+`closeAdvanced()`.
+
+**Purpose.** A full-screen modal for the deeper preference controls that personalize the engine —
+Language, Where to Watch, Ratings lean, and the "How Adventurous?" slider — plus access to My
+Subscriptions. The home `.refine-card` mirrors its current state.
+
+**Layout.** `.modal-fs` with sticky `.modal-fs-head` ("Advanced Filters" + close-X) and a scrolling
+`.modal-fs-body.af-body` of sections:
+- **Language** — `#lang-seg` segmented control (`#lang-all` "Subtitles OK" default / `#lang-en`
+  "English Only"), help in `#lang-note`.
+- **Where to Watch** — `#cost-seg` (`#cost-any` "Stream, Rent, or Buy" default / `#cost-free`
+  "My Subscriptions"). Selecting My Subscriptions slides open `#svc-picker` with a `#subs-row` that
+  opens the Subscriptions modal; `#subs-row-sub` summarizes chosen services.
+- **Ratings** — `#rating-seg` (3-way: `#rating-audience` "Audience" / `#rating-balanced` "Balanced"
+  default / `#rating-critics` "Critics"), help in `#ratings-desc`.
+- **Adventurous slider** (`.adv-card`) — `#adv-slider` (0–100) with a live `#adv-badge`
+  (`band-0`…`band-4`), tick labels (Deep Cuts / Balanced / Crowd Favorites), and `#adv-desc`.
+
+**Components.** Gold sliding-pill segmented controls, the My Subscriptions row, the signature
+adventurous slider (white knob, gold halo, gradient track).
+
+**The gold sliding-pill segment.** Each `.af-seg` contains an absolutely-positioned gold pill
+`.af-pill` (`linear-gradient(180deg,var(--accent2),var(--accent))`) that animates beneath the
+options via `transform:translateX()` + `width` over `cubic-bezier(.34,1.2,.4,1)`. The active
+`.cost-opt.on` text/icon turns near-black `#1a1305`. `positionSegPill(seg)` snaps the pill to the
+current selection; `positionAllSegPills(true)` runs with `.no-anim` on first paint so it doesn't
+slide in from the corner.
+
+**Interactions.** `setLangFilter(v)`, `setFreeOnly(v)` (also opens subscriptions when true),
+`setRatingMode(mode)` (re-scores an open gallery), and the slider's `input` handler updating the
+badge/ticks/description.
+
+**Navigation.** Opened from the home refine card (and the gallery's `.rg-refine` button). On close,
+`renderRefineChips()` refreshes the home summary. The My Subscriptions row opens `#subs-modal`.
+
+**Animations.** Standard `.modal-fs` slide-up + fade; segmented pills slide; the subscriptions
+picker (`#svc-picker`) expands its `max-height`/`opacity`.
+
+### 4a. My Subscriptions (stacked modal)
+**Container:** `#subs-modal` (`.modal-host.stack`, z `1600`). `openSubscriptions()` /
+`closeSubscriptions()`. A `.modal-fs` with "All"/"Clear" actions and `#service-pills` (toggleable
+service pills from the `SERVICES` set). Stacks above Advanced Filters; `updateSubsRow()` keeps the
+`#subs-row-sub` summary in sync.
+
+---
+
+## 5. Recommendation Results (full-screen poster gallery)
+
+**Container:** `#results-overlay` (`.results-overlay`, z `1200`). `openResultsGallery(groups, mode)`
+(~line 3158) / `closeResultsGallery()`.
+
+**Purpose.** The payoff screen — a full-screen poster gallery of the engine's picks after "Find My
+Movie" or "Surprise Me." Poster-first, minimal chrome.
+
+**Layout.**
+- Sticky `.rg-head`: `.rg-back` ("‹ Back"), centered `.rg-titles` with `#rg-mode` (the mode label
+  via `MODE_LABELS`) over `#rg-count` ("N picks"), and a `.rg-refine` gear button.
+- Scrollable `.rg-body` containing `.rg-grid` (responsive 2→5 columns) of `.rg-tile`s. Optional
+  `.rg-group-label`s separate groups (e.g. Fresh + Rewatch picks).
+
+**Components.** Gallery header (back / mode / count / refine), poster tiles with `.rg-rank` and
+`.rg-imdb` badges, `.rg-noposter` fallbacks.
+
+**Interactions.** `renderGalleryTile(m, rank)` builds each tile (rank omitted in Surprise Me);
+tapping `openMovieDetailById(id)` opens the shared detail modal (films cached in `galleryFilms`).
+`.rg-refine` reopens Advanced Filters; Back / Esc close the gallery.
+
+**Navigation.** Entered from the home CTA; tiles → Movie Detail; refine → Advanced Filters; back →
+Home.
+
+**Animations.** Overlay fades + slides up (`translateY(14px)→0`, `.3s`); tiles enter staggered via
+`tilein` (per-tile `animation-delay`, ~32ms step, capped ~520ms); tiles lift on hover.
+
+---
+
+## 6. Collection Pages — Watchlist / Likes / Seen / Hidden
+
+**Container:** `#collection-overlay` (`.collection-overlay`, z `1200`). `openCollection(type)`
+(~line 3423) / `closeCollection()`. One shared page serves all four list types via `COLLECTION_DEFS`:
+```js
+watchlist {set:watchSet, title:'Watchlist', icon:'🔖'}
+favorites {set:favSet,   title:'Likes',     icon:'♥'}
+seen      {set:seenSet,  title:'Seen',      icon:'✓'}
+hidden    {set:niSet,    title:'Hidden',    icon:'🙈'}
+```
+
+**Purpose.** Browse and manage the user's saved films. Reuses the gallery's `.rg-grid`/`.rg-tile`
+visual language for consistency, with added count/search/sort.
+
+**Layout.**
+- `.cg-head`: `.rg-back`, centered `.cg-titles` (`#cg-title` + `#cg-count` "N films"), `.cg-head-spacer`.
+- `#cg-controls`: a `.cg-search` input (`#cg-search-input`, live `renderCollectionGrid()`) and a
+  `.cg-sort` `<select>` (`#cg-sort-select`: Recently Added / Alphabetical / Release Year / IMDb /
+  Runtime).
+- `#cg-body`: the `.rg-grid` of tiles, or a `.cg-state` empty/loading/sign-in state.
+
+**Components.** Collection header, search box, sort dropdown, poster grid, per-type empty states,
+sign-in CTA.
+
+**Interactions.** `renderCollectionGrid()` filters by title (case-insensitive) and sorts by the
+selected key. Tiles → `openCollectionDetail(id)` (shared Movie Detail). When detail closes,
+`refreshOpenCollection()` re-filters so un-liked / un-watchlisted films drop out live. If signed
+out, an empty-state sign-in button calls the auth flow.
+
+**Navigation.** Opened by the bottom nav (`navTo('watchlist'|'favorites'|'seen')`) and from the
+Settings "Lists" shortcuts. Hidden is reached via More → Lists. Close resets nav to `discover`.
+
+**Animations.** Same overlay fade/slide-up as the results gallery; tiles use `tilein`.
+
+---
+
+## 7. Trending (full page, tabbed)
+
+**Container:** `#trend-overlay` (z `1200`). `openTrendingPage()` (~line 4345) / `closeTrendingPage()`.
+
+**Purpose.** A read-only discovery surface (separate from the recommendation engine, per the
+constitution) showing what's trending and what's newer.
+
+**Layout.**
+- `.cg-head` (reuses collection header styling): `.rg-back`, `.cg-title` "Trending", `#trend-count`.
+- `#trend-tabs` (`role="tablist"`): `.trend-tab.on` "Trending" (`data-tab="trending"`) and
+  `.trend-tab` "Newer" (`data-tab="newer"`), each `onclick="setTrendingTab(...)"`. Active tab gets
+  the gold `.on` treatment.
+- `#trend-page-body`: a `.rg-grid` of `.rg-tile`s (`openMovieDetailById(id)` on tap), with a loading
+  spinner during `loadTrendPool()`.
+
+**Components.** Tabbed header, poster grid, the home trending preview row (`#trend-row` /
+`#trend-scroller`, a 4-poster horizontal scroll with a "See all" → `openTrendingPage()`).
+
+**Interactions.** `setTrendingTab(tab)` swaps the active tab and re-renders; tiles open Movie Detail;
+Back / Esc close.
+
+**Navigation.** Opened from the home trending row's "See all"; tiles → Movie Detail; back → Home.
+
+**Animations.** Overlay fade/slide-up; tiles `tilein`; the home preview row uses `trendin` /
+`trendskel` skeleton shimmer while loading.
+
+---
+
+## 8. Profile / Authentication
+
+**Purpose.** Google sign-in/out (Supabase OAuth) and account identity. Per-user lists (`seen`,
+`favorite`/Like, `watchlist`, `not_interested`/Hidden) are RLS-scoped to the signed-in user.
+
+**The gold profile bubble** (`#auth-pill`, in `.apphead`). A circular, gold-ringed button pinned
+top-right with a layered gold glow:
+- Signed out: `.auth-pill` showing a person-outline gold SVG; `aria-label="Sign in with Google"`.
+- Signed in: `.auth-pill.in` showing the user's initials via `authInitials(full, email)`, in `--accent2`.
+
+**Interactions.** `onAuthPill()` (~line 2666) branches: signed-in → confirm → `signOut()`;
+signed-out → `signInGoogle()`. `updateAuthPill()` re-renders the bubble from `currentUser`;
+`updateAccountUI()` updates the Settings account row; `initAuth()` restores an existing session and
+wires auth listeners. The Settings "Account" group (`#set-account`) shows either a "Sign in with
+Google" row or the name/email + "Sign out".
+
+**Navigation.** The bubble is always available from Home. Signing in/out re-renders the bubble,
+account row, and unlocks/locks the collection pages' content.
+
+**Animations.** Bubble lifts/brightens on hover (gold glow intensifies), presses to `scale(.95)`.
+
+---
+
+## 9. Settings ("More") + Lists
+
+**Container:** `#set-overlay` → `.set-panel` (z `1000`). `openSettings()` / `closeSettings()`;
+opened by the **More** bottom-nav tab (`navTo('more')`).
+
+**Purpose.** App settings, the Account/auth row, and shortcuts into the four Lists. Many rows are
+forward-looking ("Planned").
+
+**Layout.** `.set-panel` with `.set-top` (back arrow `#set-back`, `#set-title`, close-X) and three
+mode views toggled by `overlayMode`:
+- `#set-menu` — grouped `.set-list` rows (Recommendations / Filters / App) + account.
+- `#set-lists` — tappable rows for Watchlist / Likes / Seen / Hidden with live counts
+  (e.g. `#set-watch-count`).
+- `#set-listview` — a detail list view populated by `openList(which)`.
+
+**Interactions.** `showOverlayMenu()` switches between menu/lists/listview; `refreshSettings()`
+updates counts + DB/cache status; `openList(which)` drills into a list; `backToMenu()` returns.
+List shortcuts route into the collection pages.
+
+**Navigation.** Reached via More; closing resets the bottom nav to `discover`. Esc closes
+subscriptions → advanced → sheet → settings in order.
+
+**Animations.** `.set-overlay.open` reveals the panel (radial-glow background, blur backdrop); the
+panel carries a soft dark elevation shadow.
+
+---
+
+## 10. Bottom Tab Bar (global)
+
+**Container:** `#bottom-nav` (`.bottom-nav`, `aria-label="Primary"`, z `900`). Persistent across the
+app, floating above content with a blurred translucent background and safe-area bottom padding.
+
+**Purpose.** Primary navigation between the five top-level destinations.
+
+**Tabs & routing** (each `.bnav-item` = `.bnav-ic` glyph over `.bnav-lbl`):
+
+| Tab | id | Glyph | `navTo(...)` → |
+|---|---|---|---|
+| Discover | `#nav-discover` (default `.active`) | ✦ | Home (close settings, scroll top) |
+| Watchlist | `#nav-watchlist` | 🔖 | `openCollection('watchlist')` |
+| Likes | `#nav-favorites` | ♥ | `openCollection('favorites')` |
+| Seen | `#nav-seen` | ✓ | `openCollection('seen')` |
+| More | `#nav-more` | ☰ | `openSettings()` |
+
+**Interactions.** `navTo(tab)` (~line 2047) dispatches; `setNavActive(tab)` (~line 2063) moves the
+`.active` class. The active tab turns gold (`--accent2`) with a gold drop-shadow glow on its icon.
+Closing Settings auto-resets the active tab to Discover.
+
+**Animations.** Tab color transitions `.14s`; the active icon gains
+`filter:drop-shadow(0 0 8px rgba(232,176,75,.35))`.
+
+---
+
+## Quick function index
+
+| Function | Opens / does |
+|---|---|
+| `navTo(tab)` / `setNavActive(tab)` | Bottom-nav routing / active state |
+| `openSheet(g)` / `closeSheet()` | Genre/Era/Length picker sheets |
+| `openAdvanced()` / `closeAdvanced()` | Advanced Filters modal |
+| `openSubscriptions()` / `closeSubscriptions()` | My Subscriptions (stacked) modal |
+| `setMode(m)` | Select recommendation mode (hybrid/fresh/random) |
+| `setLangFilter` / `setFreeOnly` / `setRatingMode` | Advanced filter toggles |
+| `positionSegPill` / `positionAllSegPills` | Animate the gold sliding pill |
+| `getRecs()` / `getRandom()` | Run engine / shuffle, then open gallery |
+| `openResultsGallery(groups,mode)` / `closeResultsGallery()` | Results poster gallery |
+| `openCollection(type)` / `closeCollection()` / `renderCollectionGrid()` | Watchlist/Likes/Seen/Hidden |
+| `openTrendingPage()` / `closeTrendingPage()` / `setTrendingTab(t)` | Trending page + tabs |
+| `openMovieDetail(m)` / `openMovieDetailById(id)` / `closeMovieDetail()` | Movie Detail modal |
+| `openSettings()` / `closeSettings()` / `openList(which)` | Settings + Lists |
+| `onAuthPill()` / `signInGoogle()` / `signOut()` / `updateAuthPill()` | Authentication |
+| `lockScroll()` / `unlockScroll()` / `openModalHost` / `closeModalHost` | Shared overlay plumbing |
