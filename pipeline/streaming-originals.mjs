@@ -58,18 +58,18 @@ const SEEDS = {
   max: { label:'Max', providerKey:'max', titles:[
     ['Zack Snyder\'s Justice League',2021],['An American Pickle',2020],['Kimi',2022],
     ['Let Them All Talk',2020],['Charm City Kings',2020],['Unpregnant',2020],['Moonshot',2022],
-    ['Locked Down',2021],['Bad Education',2019],['Behind the Candelabra',2013],['Father of the Bride',2022],
-    ['House Party',2023],['8-Bit Christmas',2021] ] },
+    ['Locked Down',2021],['Behind the Candelabra',2013],['Father of the Bride',2022],
+    ['8-Bit Christmas',2021] ] },
   hulu: { label:'Hulu', providerKey:'hulu', titles:[
     ['Palm Springs',2020],['Prey',2022],['Run',2020],['No One Will Save You',2023],['Fresh',2022],
     ['Vacation Friends',2021],['Vacation Friends 2',2023],['Boston Strangler',2023],
     ['Happiest Season',2020],['Hellraiser',2022],['Rosaline',2022],['Not Okay',2022],['Quasi',2023],
-    ['Big Time Adolescence',2019],['Plan B',2021],['The Princess',2022] ] },
+    ['Big Time Adolescence',2019],['The Princess',2022] ] },
   disney: { label:'Disney+', providerKey:'disney plus', titles:[
     ['Soul',2020],['Luca',2021],['Turning Red',2022],['Togo',2019],['Hamilton',2020],
     ['Hocus Pocus 2',2022],['Disenchanted',2022],['The One and Only Ivan',2020],['Godmothered',2020],
-    ['Pinocchio',2022],['Peter Pan & Wendy',2023],['Lady and the Tramp',2019],
-    ['Cheaper by the Dozen',2022],['Flora & Ulysses',2021],['Better Nate Than Ever',2022] ] },
+    ['Pinocchio',2022],['Lady and the Tramp',2019],
+    ['Flora & Ulysses',2021],['Better Nate Than Ever',2022] ] },
   prime: { label:'Prime Video', providerKey:'amazon prime video', titles:[
     ['Sound of Metal',2019],['The Big Sick',2017],['Manchester by the Sea',2016],
     ['One Night in Miami',2020],['The Report',2019],['Being the Ricardos',2021],['The Tender Bar',2021],
@@ -82,10 +82,10 @@ const SEEDS = {
     ['Deep Cover',2025],['Late Night',2019],['Hotel Mumbai',2018] ] },
   paramount: { label:'Paramount+', providerKey:'paramount plus', titles:[
     ['Jerry & Marge Go Large',2022],['Infinite',2021],['Clifford the Big Red Dog',2021],
-    ['PAW Patrol: The Movie',2021],['80 for Brady',2023],['On the Come Up',2022],
+    ['PAW Patrol: The Movie',2021],['80 for Brady',2023],
     ['Secret Headquarters',2022] ] },
   peacock: { label:'Peacock', providerKey:'peacock', titles:[
-    ["Five Nights at Freddy's",2023],['Sick',2022],['They/Them',2022],
+    ["Five Nights at Freddy's",2023],['Sick',2022],
     ['Psych 2: Lassie Come Home',2020],['Meet Cute',2022],['The Machine',2023] ] },
 };
 
