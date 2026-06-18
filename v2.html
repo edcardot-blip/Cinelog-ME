@@ -1137,6 +1137,95 @@
   @media (max-width:600px){
     .trend-tab{padding:11px 16px}
   }
+
+  /* ============================================================
+     ADVANCED FILTERS — premium gold redesign (one-screen mobile)
+     Scoped to #adv-modal. Cohesive override of the old segmented
+     controls + spacing. Selected = gold sliding pill, black text.
+     ============================================================ */
+  #adv-modal .modal-fs-body.af-body{
+    padding:1rem max(1.05rem,env(safe-area-inset-right)) 1rem max(1.05rem,env(safe-area-inset-left));
+    display:flex;flex-direction:column;gap:.95rem}
+  #adv-modal .modal-fs-head{padding-top:max(.8rem,env(safe-area-inset-top));padding-bottom:.75rem}
+  #adv-modal .af-sec{margin:0}
+
+  /* Section header: gold icon + title, tight rhythm */
+  #adv-modal .af-head{display:flex;align-items:center;gap:8px;margin-bottom:.5rem}
+  #adv-modal .af-ico{width:18px;height:18px;flex:none;color:var(--accent);opacity:.95}
+  #adv-modal .af-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:.01em}
+
+  /* Helper text: small, sits right under its control */
+  #adv-modal .af-note{margin:.45rem 0 0;font-size:11.5px;font-style:italic;
+    color:var(--text3);text-align:center;line-height:1.4}
+
+  /* ----- Gold sliding-pill segmented control ----- */
+  #adv-modal .af-seg{position:relative;display:grid;grid-template-columns:repeat(2,1fr);
+    gap:0;padding:4px;background:var(--bg3);border:1px solid var(--border2);
+    border-radius:13px;isolation:isolate}
+  #adv-modal .af-seg.af-seg-3{grid-template-columns:repeat(3,1fr)}
+  /* The pill that slides behind the active label */
+  #adv-modal .af-pill{position:absolute;top:4px;left:0;height:calc(100% - 8px);
+    width:0;border-radius:9px;z-index:0;pointer-events:none;
+    background:linear-gradient(180deg,var(--accent2),var(--accent));
+    border:1px solid #b9842b;
+    box-shadow:0 2px 12px rgba(232,176,75,.34),0 1px 2px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.28);
+    transform:translateX(0);
+    transition:transform .24s cubic-bezier(.34,1.2,.4,1),width .24s cubic-bezier(.34,1.2,.4,1)}
+  #adv-modal .af-pill.no-anim{transition:none}
+  /* Option buttons sit above the pill, all visual selected styling removed */
+  #adv-modal .af-seg .cost-opt{position:relative;z-index:1;flex:initial;min-height:0;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:10px 6px;border:none;border-radius:9px;background:transparent;
+    transition:transform .12s ease}
+  #adv-modal .af-seg .cost-opt:hover{background:transparent}
+  #adv-modal .af-seg .cost-opt:active{transform:scale(.96)}
+  #adv-modal .af-seg .cost-opt .cost-txt{font-size:12.5px;font-weight:600;
+    color:var(--text3);transition:color .2s ease;line-height:1.2;text-align:center}
+  /* Active label → black; matches the gold pill underneath */
+  #adv-modal .af-seg .cost-opt.on .cost-txt{color:#1a1305}
+  /* Rating segment: icon + label stacked, gold stroke icons */
+  #adv-modal .af-seg .rt-txt{display:flex;flex-direction:column;align-items:center;gap:3px}
+  #adv-modal .af-seg .rt-emo{display:flex;width:19px;height:19px;color:var(--text3);transition:color .2s ease}
+  #adv-modal .af-seg .rt-emo svg{width:19px;height:19px}
+  #adv-modal .af-seg .cost-opt.on .rt-emo{color:#1a1305}
+  #adv-modal .af-seg .rt-lbl{font-size:12px;font-weight:600;color:var(--text3);transition:color .2s ease}
+  #adv-modal .af-seg .cost-opt.on .rt-lbl{color:#1a1305}
+
+  /* ----- Compact "My Subscriptions" card ----- */
+  #adv-modal .svc-picker.open{margin-top:.55rem}
+  #adv-modal .subs-row{padding:10px 13px;border-radius:11px;gap:11px;
+    background:var(--bg3);border:1px solid var(--border2)}
+  #adv-modal .subs-row:hover{border-color:var(--accent);background:var(--bg4)}
+  #adv-modal .subs-row-ic{display:flex;width:20px;height:20px;color:var(--accent);flex:none}
+  #adv-modal .subs-row-ic svg{width:20px;height:20px}
+  #adv-modal .subs-row-title{font-size:13px;font-weight:600}
+  #adv-modal .subs-row-sub{font-size:11.5px}
+  #adv-modal .subs-row.has-sel .subs-row-sub{color:var(--accent2)}
+  #adv-modal .subs-row-chev{display:flex;width:18px;height:18px;color:var(--text3);flex:none}
+  #adv-modal .subs-row-chev svg{width:18px;height:18px}
+
+  /* ----- Adventurous card: compact ----- */
+  #adv-modal .af-sec-adv{padding:.85rem .95rem .8rem;border-radius:14px;margin:0}
+  #adv-modal .adv-head{margin-bottom:.5rem}
+  #adv-modal .adv-slider{height:34px}
+  #adv-modal .adv-ticks{margin-top:.45rem}
+  #adv-modal .adv-help{margin-top:.5rem;font-size:11.5px;min-height:1em}
+  #adv-modal .adv-badge{font-size:12px;padding:4px 11px}
+
+  /* ----- Done button: gold, slightly shorter, rounder, press anim ----- */
+  #adv-modal .modal-fs-foot{padding-top:.7rem;padding-bottom:max(.8rem,env(safe-area-inset-bottom))}
+  #adv-modal .modal-fs-done{padding:13px;min-height:48px;border-radius:18px;font-size:15px;
+    box-shadow:0 6px 22px rgba(232,176,75,.26)}
+  #adv-modal .modal-fs-done:active{transform:translateY(1px) scale(.985)}
+
+  /* Mobile: keep the segments compact (override the global 56px cost-opt) */
+  @media (max-width:600px){
+    #adv-modal .af-seg .cost-opt{min-height:0;padding:10px 6px}
+    #adv-modal .af-seg .cost-opt .cost-txt{font-size:12.5px}
+    #adv-modal .af-seg .rt-lbl{font-size:11.5px}
+    #adv-modal .adv-tick .adv-tlabel{display:none}
+    #adv-modal .adv-slider{height:40px}
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1511,53 +1600,67 @@
       <h2 class="modal-fs-title">Advanced Filters</h2>
       <button type="button" class="modal-fs-x" onclick="closeAdvanced()" aria-label="Close">✕</button>
     </header>
-    <div class="modal-fs-body">
-      <div class="field">
-        <div class="field-lbl">Language</div>
-        <div class="cost-seg">
+    <div class="modal-fs-body af-body">
+
+      <!-- ===== Language ===== -->
+      <div class="af-sec">
+        <div class="af-head">
+          <svg class="af-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+          <span class="af-title">Language</span>
+        </div>
+        <div class="af-seg" id="lang-seg">
+          <span class="af-pill" aria-hidden="true"></span>
           <div class="cost-opt on" id="lang-all" onclick="setLangFilter('all')"><span class="cost-txt">Subtitles OK</span></div>
           <div class="cost-opt" id="lang-en" onclick="setLangFilter('en')"><span class="cost-txt">English Only</span></div>
         </div>
-        <p class="section-note" id="lang-note" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Some all-time classics aren't in English — toggle thoughtfully.</p>
+        <p class="af-note" id="lang-note">Some all-time classics aren't in English — toggle thoughtfully.</p>
       </div>
-      <div class="field">
-        <div class="field-lbl">Where to watch</div>
-        <div class="cost-seg" id="cost-seg">
-          <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)">
-            <span class="cost-ico">🎬</span>
-            <span class="cost-txt">Stream, Rent, or Buy</span>
-          </div>
-          <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)">
-            <span class="cost-ico">📺</span>
-            <span class="cost-txt">My Subscriptions</span>
-          </div>
+
+      <!-- ===== Where to watch ===== -->
+      <div class="af-sec">
+        <div class="af-head">
+          <svg class="af-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/></svg>
+          <span class="af-title">Where to Watch</span>
         </div>
-        <!-- "My Subscriptions" now opens its own full-screen modal; this row
+        <div class="af-seg" id="cost-seg">
+          <span class="af-pill" aria-hidden="true"></span>
+          <div class="cost-opt on" id="cost-any" onclick="setFreeOnly(false)"><span class="cost-txt">Stream, Rent, or Buy</span></div>
+          <div class="cost-opt" id="cost-free" onclick="setFreeOnly(true)"><span class="cost-txt">My Subscriptions</span></div>
+        </div>
+        <!-- "My Subscriptions" opens its own full-screen modal; this compact card
              shows a live summary + opens the picker. The actual #service-pills
              grid lives in #subs-modal below (kept the id + toggleService). -->
         <div class="svc-picker" id="svc-picker">
           <button type="button" class="subs-row" id="subs-row" onclick="openSubscriptions()" aria-haspopup="dialog">
-            <span class="subs-row-ic">📺</span>
+            <span class="subs-row-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/></svg></span>
             <span class="subs-row-main">
               <span class="subs-row-title">My Subscriptions</span>
               <span class="subs-row-sub" id="subs-row-sub">No services selected</span>
             </span>
-            <span class="subs-row-chev">›</span>
+            <span class="subs-row-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></span>
           </button>
         </div>
       </div>
-      <div class="field">
-        <div class="field-lbl">Ratings lean</div>
-        <div class="cost-seg" id="rating-seg">
-          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo">🍿</span><span class="rt-lbl">Audience Pick</span></span></div>
-          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo">⚖️</span><span class="rt-lbl">Balanced</span></span></div>
-          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo">🏆</span><span class="rt-lbl">Critics Choice</span></span></div>
+
+      <!-- ===== Ratings ===== -->
+      <div class="af-sec">
+        <div class="af-head">
+          <svg class="af-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V4z"/><path d="M6 5H4a2 2 0 0 0 0 4h2M18 5h2a2 2 0 0 1 0 4h-2M10 11.5l-.5 4.5h5l-.5-4.5M8 20h8M9 20l.5-2h5l.5 2"/></svg>
+          <span class="af-title">Ratings</span>
         </div>
-        <p class="section-note" id="ratings-desc" style="padding-left:0;margin:.6rem 0 0;font-size:12px;font-style:italic;text-align:center">Mixes audience and critic perspectives.</p>
+        <div class="af-seg af-seg-3" id="rating-seg">
+          <span class="af-pill" aria-hidden="true"></span>
+          <div class="cost-opt" id="rating-audience" onclick="setRatingMode('audience')"><span class="cost-txt rt-txt"><span class="rt-emo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21h6M8 4h8l-1 10a3 3 0 0 1-6 0L8 4zM6 8a3 3 0 0 0 2 5"/></svg></span><span class="rt-lbl">Audience</span></span></div>
+          <div class="cost-opt on" id="rating-balanced" onclick="setRatingMode('balanced')"><span class="cost-txt rt-txt"><span class="rt-emo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="rt-lbl">Balanced</span></span></div>
+          <div class="cost-opt" id="rating-critics" onclick="setRatingMode('critics')"><span class="cost-txt rt-txt"><span class="rt-emo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 0 1-12 0V4zM6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3"/></svg></span><span class="rt-lbl">Critics</span></span></div>
+        </div>
+        <p class="af-note" id="ratings-desc">Mixes audience and critic perspectives.</p>
       </div>
-      <div class="field adv-card" style="margin-bottom:0">
+
+      <!-- ===== Adventurous slider ===== -->
+      <div class="af-sec af-sec-adv adv-card">
         <div class="adv-head">
-          <div class="field-lbl slider-lbl">How Adventurous?</div>
+          <div class="af-title slider-lbl">How Adventurous?</div>
           <span class="adv-badge band-2" id="adv-badge">Balanced</span>
         </div>
         <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
@@ -1697,8 +1800,49 @@ function closeModalHost(id){
    engine, scoring, Supabase, auth, or list functions — they only toggle
    visibility and delegate to the existing openLists()/openList()/openSettings(). */
 /* Advanced Filters is now a full-screen modal (was an inline disclosure). */
-function openAdvanced(){ openModalHost('adv-modal'); }
+function openAdvanced(){ openModalHost('adv-modal'); positionAllSegPills(); }
 function closeAdvanced(){ closeModalHost('adv-modal'); }
+
+/* ===== Gold sliding-pill positioner (visual layer only) =====
+   Each .af-seg contains an absolutely-positioned .af-pill that we move to sit
+   behind the currently-selected option (the one carrying the `.on` class the
+   engine setters already toggle). We never touch the option buttons, their ids,
+   or their handlers — this purely reads the `.on` offset and drives the pill.
+   Called after each selection (via the setter wrappers below) and on open. */
+function positionSegPill(seg){
+  if(!seg) return;
+  var pill=seg.querySelector('.af-pill');
+  var on=seg.querySelector('.cost-opt.on');
+  if(!pill||!on) return;
+  // If the modal hasn't laid out yet (width 0), skip silently; open() re-runs it.
+  if(on.offsetWidth===0){ return; }
+  var x=on.offsetLeft - seg.clientLeft;
+  pill.style.width=on.offsetWidth+'px';
+  pill.style.transform='translateX('+x+'px)';
+}
+function positionAllSegPills(noAnim){
+  var segs=document.querySelectorAll('#adv-modal .af-seg');
+  segs.forEach(function(seg){
+    var pill=seg.querySelector('.af-pill');
+    // On open/initial paint, snap without animating; selections animate.
+    if(noAnim&&pill){
+      pill.classList.add('no-anim');
+      positionSegPill(seg);
+      // force reflow then re-enable transitions
+      void pill.offsetWidth;
+      pill.classList.remove('no-anim');
+    } else {
+      positionSegPill(seg);
+    }
+  });
+}
+// Re-run once layout settles after the modal's open transition.
+(function(){
+  var _openAdv=openAdvanced;
+  openAdvanced=function(){ _openAdv(); requestAnimationFrame(function(){ positionAllSegPills(true); }); setTimeout(function(){ positionAllSegPills(true); },80); };
+})();
+// Keep pills aligned on viewport resize / orientation change.
+window.addEventListener('resize',function(){ positionAllSegPills(true); });
 /* Back-compat: anything still calling toggleAdvanced() just opens the modal. */
 function toggleAdvanced(){ openAdvanced(); }
 
@@ -2537,6 +2681,28 @@ function setRatingMode(mode){
   const out=document.getElementById('output');
   if(((out && out.querySelector('.card')) || (typeof galleryOpen!=='undefined' && galleryOpen)) && viewMode!=='random' && typeof getRecs==='function') getRecs();
 }
+
+/* ===== Hook the gold sliding pill onto the existing segment setters =====
+   We wrap setLangFilter / setFreeOnly / setRatingMode so that AFTER each call
+   (which toggles the `.on` class exactly as before) we reposition that segment's
+   pill. The original engine logic is untouched — these are visual-only wrappers. */
+(function(){
+  function wrap(name, segId){
+    var orig = window[name];
+    if(typeof orig!=='function') return;
+    window[name] = function(){
+      var r = orig.apply(this, arguments);
+      if(typeof positionSegPill==='function'){
+        var seg=document.getElementById(segId);
+        requestAnimationFrame(function(){ positionSegPill(seg); });
+      }
+      return r;
+    };
+  }
+  wrap('setLangFilter','lang-seg');
+  wrap('setFreeOnly','cost-seg');
+  wrap('setRatingMode','rating-seg');
+})();
 async function saveSbKey(){const v=document.getElementById('sb-input').value.trim();if(v.length<20){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ That key looks too short.</span>';return;}sbKey=v;document.getElementById('sb-status').innerHTML='<span style="color:var(--text2)"><span class="spin"></span>Testing…</span>';try{const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=*',{method:'HEAD',headers:sbHeaders('exact')});if(!r.ok)throw new Error('HTTP '+r.status+(r.status===401?' — key rejected':''));const cr=r.headers.get('content-range');totalFilms=cr?parseInt(cr.split('/')[1],10):null;var _st=document.getElementById('s-total');if(_st)_st.textContent=totalFilms??'✓';document.getElementById('sb-status').innerHTML='<span style="color:#4ade80">✓ Connected — '+(totalFilms!=null?totalFilms+' films.':'reachable.')+'</span>';updatePoolCount();updateConnSummary();}catch(e){document.getElementById('sb-status').innerHTML='<span style="color:#f87171">⚠ '+e.message+'</span>';}}
 function updateConnSummary(){const el=document.getElementById('conn-summary');if(sbKey){el.innerHTML='<b>✓ Connected</b> · '+(totalFilms!=null?totalFilms+' films ready':'catalog ready');}else{el.textContent='Not connected · add your Supabase anon key above';}}
 // Auto-connect on load if a key is baked in (makes the site work with zero setup).
