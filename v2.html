@@ -1083,6 +1083,16 @@
     background:linear-gradient(90deg,transparent,var(--accent2),var(--accent),transparent);
     box-shadow:0 0 8px rgba(232,176,75,.5);animation:projProg 1.9s cubic-bezier(.6,0,.4,1) infinite}
   @keyframes projProg{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
+  /* Smaller projector on phones — the loading area was too tall/dominant on iPhone */
+  @media (max-width:600px){
+    .proj-loader{min-height:206px}
+    .proj-glow{width:148px;height:148px}
+    .proj-beam{height:90px}
+    .proj-device{width:110px}
+    .proj-text{padding:1.7rem 1.2rem .85rem}
+    .proj-title{font-size:clamp(18px,4.6vw,21px)}
+    .proj-prog{margin-top:1.1rem}
+  }
 
   @media (prefers-reduced-motion:reduce){
     .proj-glow,.proj-beam,.proj-dust i,.proj-grain,.proj-reel,.proj-lensglow,.proj-lens-glow{animation:none!important}
@@ -4007,17 +4017,25 @@ const TREND_TAB_BLURB={
 };
 function trendTabList(tab, pool){
   const notHidden=m=>!(typeof isNotInterested==='function' && isNotInterested(m));
+  const qp=(a,b)=>(trendQuality(b)+trendPopularity(b))-(trendQuality(a)+trendPopularity(a));
   if(tab==='newer'){
-    // Recent only (year >= 2015). Sort by quality + popularity (desc).
-    return pool.filter(notHidden)
-      .filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(new Date().getFullYear()-3); })
-      .sort((a,b)=>(trendQuality(b)+trendPopularity(b))-(trendQuality(a)+trendPopularity(a)));
+    // Prefer the last 3 years; if that yields fewer than 20, broaden to the 20 most-recent
+    // films. Sorted by quality+popularity. At least ~20 (when available), capped at 50.
+    const nowY=new Date().getFullYear();
+    const base=pool.filter(notHidden);
+    let recent=base.filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(nowY-3); }).sort(qp);
+    if(recent.length<20){
+      recent=base.filter(m=>trendNum(m.year)!=null)
+        .sort((a,b)=>trendNum(b.year)-trendNum(a.year))   // newest first
+        .slice(0,20).sort(qp);                            // 20 newest, then by quality+popularity
+    }
+    return recent.slice(0,50);
   }
-  // trending (default): highest trending_score. Min IMDb ~7.0 when present
-  // (films without a rating may still pass). Mix of classics + modern —
-  // the 0.30 popularity weight already limits blockbuster dominance.
+  // trending (default): highest trending_score, min IMDb ~7.0 when present (films without a
+  // rating may still pass). Mix of classics + modern. Capped at 50.
   return trendRanked(pool)
-    .filter(m=>{ const q=trendNum(m.imdb_rating); return q==null || q>=7.0; });
+    .filter(m=>{ const q=trendNum(m.imdb_rating); return q==null || q>=7.0; })
+    .slice(0,50);
 }
 function renderTrendingPage(){
   const body=document.getElementById('trend-page-body');
