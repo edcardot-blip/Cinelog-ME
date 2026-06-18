@@ -543,12 +543,12 @@
   .refine-card:hover{border-color:rgba(232,176,75,.55);box-shadow:0 0 0 1px rgba(232,176,75,.10) inset,0 10px 34px rgba(0,0,0,.5),0 0 30px rgba(232,176,75,.12)}
   .refine-card:active{transform:scale(.985)}
   .refine-card:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.45)}
-  .refine-head{display:flex;align-items:center;gap:12px;position:relative}
+  .refine-head{display:flex;align-items:center;justify-content:center;gap:12px;position:relative}
   .refine-spark{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
     color:var(--accent);background:var(--accent-dim);
     box-shadow:0 0 0 1px rgba(232,176,75,.30),0 0 16px rgba(232,176,75,.18)}
   .refine-spark svg{width:21px;height:21px;filter:drop-shadow(0 0 6px rgba(232,176,75,.35))}
-  .refine-titles{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .refine-titles{display:flex;flex-direction:column;gap:1px;min-width:0;text-align:center}
   .refine-title{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.15;color:var(--text)}
   .refine-sub{font-size:12px;font-weight:450;color:var(--text2);line-height:1.3}
   .refine-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:.95rem;position:relative}
@@ -559,8 +559,8 @@
     border:1px solid rgba(232,176,75,.18);white-space:nowrap}
   @supports not (background:color-mix(in srgb,red,blue)){.refine-chip{background:var(--bg3)}}
   .refine-chip svg{width:14px;height:14px;flex-shrink:0;color:var(--accent)}
-  .refine-adjust{display:flex;align-items:center;justify-content:flex-end;gap:5px;
-    margin-top:.95rem;font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--accent2);position:relative}
+  .refine-adjust{display:flex;align-items:center;justify-content:center;gap:5px;
+    margin-top:.8rem;font-size:12.5px;font-weight:600;letter-spacing:.01em;color:var(--accent2);position:relative}
   .refine-arrow{transition:transform .2s;display:inline-block}
   .refine-card:hover .refine-arrow{transform:translateX(3px)}
 
@@ -603,16 +603,16 @@
 
   /* --- Quick filters: 3 equal-width buttons that open full-screen sheets --- */
   .qfilters{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.85rem}
-  .qf-btn{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:9px;
+  .qf-btn{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;
     background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);
     padding:.8rem .8rem;cursor:pointer;font-family:var(--sans);color:var(--text);
-    transition:border-color .15s,background .15s,transform .12s;text-align:left;min-height:58px}
+    transition:border-color .15s,background .15s,transform .12s;text-align:center;min-height:58px}
   .qf-btn:hover{border-color:#4a4a52;transform:translateY(-1px)}
   .qf-btn:active{transform:scale(.98)}
   /* On touch devices, neutralize the lift-on-hover so a first tap never gets "stuck" on :hover */
   @media (hover:none){.qf-btn:hover{transform:none}}
   .qf-btn .qf-ic{width:18px;height:18px;flex:none;color:var(--accent);display:block}
-  .qf-btn .qf-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .qf-btn .qf-text{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;text-align:center}
   .qf-btn .qf-name{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
   .qf-btn .qf-val{font-size:11px;font-weight:500;color:var(--text3);line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* Active (some selection) state: gold accent */
@@ -740,7 +740,7 @@
 
   /* --- Compact stats: icon + number + short label, minimal height --- */
   .stats{gap:8px;margin:.85rem 0 .85rem}
-  .stat{display:flex;align-items:center;gap:9px;padding:.6rem .75rem;text-align:left}
+  .stat{display:flex;align-items:center;justify-content:center;gap:9px;padding:.6rem .75rem;text-align:center}
   .stat::before{display:none}
   .stat .stat-ico{line-height:1;flex:none;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
   .stat .stat-ico svg{width:18px;height:18px;display:block}
@@ -1350,7 +1350,6 @@
           <span class="refine-sub">Personalize your recommendations</span>
         </div>
       </div>
-      <div class="refine-chips" id="refine-chips" aria-hidden="true"></div>
       <span class="refine-adjust">Adjust <span class="refine-arrow" aria-hidden="true">→</span></span>
     </button>
 
@@ -1436,9 +1435,9 @@
     </section>
 
     <!-- ===== Trending Tonight row (lazy, read-only discovery) ===== -->
-    <section class="trend-row hidden" id="trend-row" aria-label="Trending Tonight">
+    <section class="trend-row hidden" id="trend-row" aria-label="Trending">
       <div class="trend-head">
-        <span class="trend-title"><span class="trend-spark">✦</span>Trending Tonight</span>
+        <span class="trend-title"><span class="trend-spark">✦</span>Trending</span>
         <button class="trend-seeall" type="button" onclick="openTrendingPage()" aria-label="See all trending movies">See all<span class="trend-seeall-chev">›</span></button>
       </div>
       <div class="trend-scroller" id="trend-scroller"></div>
@@ -2186,9 +2185,8 @@ function setFreeOnly(v){
   freeOnly=v;
   document.getElementById('cost-free').classList.toggle('on',v);
   document.getElementById('cost-any').classList.toggle('on',!v);
-  document.getElementById('svc-picker').classList.toggle('open',v);
   if(!v){ clearServices(); }   // returning to "Stream/Rent/Buy" wipes service selections so nothing filters silently
-  else { updatePoolCount(); updateSubsRow(); openSubscriptions(); }  // selecting "My Subscriptions" opens the picker modal
+  else { updatePoolCount(); updateSubsRow(); openSubscriptions(); }  // selecting "My Subscriptions" opens the full-screen picker modal only (no inline duplicate)
 }
 
 // Normalize a movie's streaming field into [{svc, tier, free}], for services we recognize.
@@ -4234,10 +4232,18 @@ async function loadTrendPool(){
 
 /* --- Build the ranked "Trending" list. Excludes hidden (niSet); prefers
    unseen by demoting seen films so unseen fill first when available. --- */
+/* Free on one of the 8 toggle subscription services (reuses the app's availability map). */
+function trendStreamable(m){
+  try{
+    if(typeof movieAvailability!=='function') return true;
+    return movieAvailability(m).some(function(a){ return a && a.free && a.svc && a.svc.toggle; });
+  }catch(e){ return false; }
+}
 function trendRanked(pool){
   const seen=m=>(typeof isSeen==='function' && isSeen(m));
   return pool
     .filter(m=>!(typeof isNotInterested==='function' && isNotInterested(m)))
+    .filter(trendStreamable)
     .map(m=>({m, s:trendingScore(m)+trendTasteBonus(m)-(seen(m)?1000:0)}))
     .sort((a,b)=>b.s-a.s)
     .map(x=>x.m);
@@ -4294,17 +4300,11 @@ function trendTabList(tab, pool){
   const notHidden=m=>!(typeof isNotInterested==='function' && isNotInterested(m));
   const qp=(a,b)=>(trendQuality(b)+trendPopularity(b))-(trendQuality(a)+trendPopularity(a));
   if(tab==='newer'){
-    // Prefer the last 3 years; if that yields fewer than 20, broaden to the 20 most-recent
-    // films. Sorted by quality+popularity. At least ~20 (when available), capped at 50.
+    // STRICT: only films released in the last 3 years. Sorted by quality+popularity, capped at 50.
     const nowY=new Date().getFullYear();
-    const base=pool.filter(notHidden);
-    let recent=base.filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(nowY-3); }).sort(qp);
-    if(recent.length<20){
-      recent=base.filter(m=>trendNum(m.year)!=null)
-        .sort((a,b)=>trendNum(b.year)-trendNum(a.year))   // newest first
-        .slice(0,20).sort(qp);                            // 20 newest, then by quality+popularity
-    }
-    return recent.slice(0,50);
+    return pool.filter(notHidden)
+      .filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(nowY-3); })
+      .sort(qp).slice(0,50);
   }
   // trending (default): highest trending_score, min IMDb ~7.0 when present (films without a
   // rating may still pass). Mix of classics + modern. Capped at 50.
