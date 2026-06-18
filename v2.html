@@ -3090,6 +3090,17 @@ function togglePill(btn,group,item,cls){
 function clearGroup(group){const cls=GROUPS[group].cls;selGroups[group].clear();document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>b.classList.remove(cls));if(group==='genre')kidOnly=false;if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
 function selectAllGroup(group){const cls=GROUPS[group].cls;GROUPS[group].items.forEach(item=>{if(group==='genre'&&item==='Kid-Friendly')return;selGroups[group].add(item);});document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>{if(group==='genre'&&b.textContent==='Kid-Friendly')return;b.classList.add(cls);});if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
 function buildQuery(selectCols,limit){const params=['select='+encodeURIComponent(selectCols)];const genres=[...selGroups.genre];if(genres.length){params.push('or='+encodeURIComponent('('+genres.map(g=>'genre.ilike.*'+g+'*').join(',')+')'));}const eras=[...selGroups.era];if(eras.length){const ranges={'Pre-1960':[0,1959],'1960s':[1960,1969],'1970s':[1970,1979],'1980s':[1980,1989],'1990s':[1990,1999],'2000s':[2000,2009],'2010s':[2010,2019],'2020s':[2020,2100]};params.push('or='+encodeURIComponent('('+eras.map(e=>{const[a,b]=ranges[e];return 'and(year.gte.'+a+',year.lte.'+b+')';}).join(',')+')'));}const lengths=[...selGroups.length];if(lengths.length){const lenRanges={'Under 90 min':[0,89],'90\u2013120 min':[90,120],'120\u2013150 min':[121,150],'Over 150 min':[151,999]};params.push('or='+encodeURIComponent('('+lengths.map(l=>{const[a,b]=lenRanges[l];return 'and(runtime_minutes.gte.'+a+',runtime_minutes.lte.'+b+')';}).join(',')+')'));}if(limit)params.push('limit='+limit);return params.join('&');}
+// Streaming availability as an ELIGIBILITY filter (server-side): an `&or=(...)` param matching films
+// that list ANY selected service (any tier — passesStreaming() does the precise free-tier check
+// client-side). Returns '' when no service is selected. Key-existence (streaming->>alias) avoids
+// the global top-rated cap so on-service films below the rating cutoff are still eligible.
+function streamingFilterParam(){
+  if(!(freeOnly && selServices.size>0)) return '';
+  const conds=[];
+  selServices.forEach(key=>{ const svc=SERVICES.find(s=>s.key===key); if(svc) svc.aliases.forEach(a=>conds.push('streaming->>'+a+'.not.is.null')); });
+  if(!conds.length) return '';
+  return '&or='+encodeURIComponent('('+conds.join(',')+')');
+}
 async function updatePoolCount(){
   const el=document.getElementById('s-pool');
   if(!sbKey){el.textContent='0';return;}
@@ -3100,16 +3111,18 @@ async function updatePoolCount(){
   if(!hasDbFilter && !hasClientFilter){el.textContent='0';return;}
   el.innerHTML='<span class="spin"></span>';
   try{
-    // Exact DB count for genre/era/length filters
-    const q=buildQuery('imdb_id',null);
+    // Exact DB count for genre/era/length (+ streaming eligibility, so a service filter counts the
+    // on-service pool instead of the whole catalog — otherwise the estimate reads ~0).
+    const q=buildQuery('imdb_id',null)+streamingFilterParam();
     const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{method:'HEAD',headers:sbHeaders('exact')});
     const cr=r.headers.get('content-range');
     const dbCount=cr?parseInt(cr.split('/')[1],10):0;
     if(!hasClientFilter){el.textContent=dbCount;return;}
-    // Client-side filters active: sample to estimate the proportion that passes
+    // Client-side filters active: sample (from the on-service pool when a service is selected) to
+    // estimate the proportion that passes the precise free-tier / language / rating checks.
     if(dbCount===0){el.textContent='0';return;}
     const sampleSize=Math.min(200,dbCount);
-    const sq=buildQuery('streaming,original_language,mpaa_rating',sampleSize);
+    const sq=buildQuery('streaming,original_language,mpaa_rating',sampleSize)+streamingFilterParam();
     const sr=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+sq,{headers:sbHeaders()});
     if(!sr.ok){el.textContent='~'+dbCount;return;}
     const sample=await sr.json();
@@ -3816,10 +3829,12 @@ async function getRandom(){
     const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     const streamingActive = freeOnly && selServices.size>0;
     // Fetch a generous matching pool — large enough that low-rated indies can also be drawn.
-    const RANDOM_FETCH_LIMIT = 1500;
-    let q = buildQuery(baseCols+',streaming', RANDOM_FETCH_LIMIT) + '&order=imdb_rating.desc.nullslast';
+    // When a service is selected it acts as an ELIGIBILITY filter (server-side), not a rating cap.
+    const RANDOM_FETCH_LIMIT = streamingActive ? 1000 : 1500;   // 1000 = PostgREST max page
+    let q = buildQuery(baseCols+',streaming', RANDOM_FETCH_LIMIT) + streamingFilterParam() + '&order=imdb_rating.desc.nullslast';
     let resp = await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q, {headers:sbHeaders()});
     if(!resp.ok){
+      // Streaming filter/column unsupported — fall back without it (free check still client-side).
       q = buildQuery(baseCols, RANDOM_FETCH_LIMIT) + '&order=imdb_rating.desc.nullslast';
       resp = await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q, {headers:sbHeaders()});
       if(!resp.ok) throw new Error('Supabase query failed: HTTP '+resp.status);
@@ -3863,40 +3878,58 @@ async function getRecs(){
     const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
-    // Pull a wider net when streaming filtering is active, since some films get dropped client-side.
-    const fetchLimit=streamingActive?Math.max(POOL_LIMIT,80):POOL_LIMIT;
-    let q=buildQuery(baseCols+',streaming',fetchLimit)+'&order=imdb_rating.desc.nullslast';
-    let resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
-    if(!resp.ok){
-      // `streaming` column may not exist yet — retry without it so the app still works.
-      q=buildQuery(baseCols,fetchLimit)+'&order=imdb_rating.desc.nullslast';
-      resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
-      if(!resp.ok)throw new Error('Supabase query failed: HTTP '+resp.status);
-    }
-    let pool=await resp.json();
-    if(!pool.length){out.innerHTML='<div class="status">No films matched your filters. Try loosening genre, era, or length.</div>';document.getElementById('go-btn').disabled=false;return;}
 
-    // ---- Mixed pool (discovery) ----
-    // Only when the primary rating-sorted fetch is FULL (i.e. more films matched than we pulled, so
-    // the obscure-but-good end was cut off). Pull a small batch of the least-popular quality films
-    // (lowest vote_count, rating >= 6.5) and merge them in, deduped. When the primary pool isn't full
-    // (narrow filters already contain everything) this is SKIPPED, leaving behavior identical.
-    // Best-effort: any failure is ignored and we proceed with the primary pool.
-    if(pool.length >= fetchLimit){
-      try{
-        let dq=buildQuery(baseCols+',streaming',DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
-        let dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
-        if(!dresp.ok){
-          dq=buildQuery(baseCols,DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
-          dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
-        }
-        if(dresp.ok){
-          const disc=await dresp.json();
-          const have=new Set(pool.map(m=>m.imdb_id));
-          disc.forEach(m=>{ if(!have.has(m.imdb_id)){ have.add(m.imdb_id); pool.push(m); } });
-        }
-      }catch(e){ /* discovery is best-effort; ignore and use the primary pool */ }
+    // ---- Build the candidate pool ----
+    // PRINCIPLE: a selected streaming service is an ELIGIBILITY filter, not a hidden quality cutoff.
+    // When a service is selected we fetch ALL on-service films matching the user's genre/era/length
+    // filters (server-side, no global top-rated cap), then rank them — so on-service movies rated
+    // below the global pool's cutoff are still eligible. With NO service selected we keep the original
+    // top-rated pool (500) + discovery merge, byte-for-byte unchanged.
+    let pool;
+    if(streamingActive){
+      // 1000 = PostgREST's max page; an on-service + filtered set is far smaller, so no paging needed.
+      // streaming->>alias key-existence narrows to on-service films (any tier); passesStreaming()
+      // below keeps only the free-tier ones. Order by rating so the cap (if ever hit) keeps the best.
+      let q=buildQuery(baseCols+',streaming',1000)+streamingFilterParam()+'&order=imdb_rating.desc.nullslast';
+      let resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
+      if(!resp.ok){
+        // Streaming column/filter unsupported — degrade to the rating pool (free check still client-side).
+        q=buildQuery(baseCols+',streaming',POOL_LIMIT)+'&order=imdb_rating.desc.nullslast';
+        resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
+        if(!resp.ok)throw new Error('Supabase query failed: HTTP '+resp.status);
+      }
+      pool=await resp.json();
+    } else {
+      const fetchLimit=POOL_LIMIT;
+      let q=buildQuery(baseCols+',streaming',fetchLimit)+'&order=imdb_rating.desc.nullslast';
+      let resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
+      if(!resp.ok){
+        // `streaming` column may not exist yet — retry without it so the app still works.
+        q=buildQuery(baseCols,fetchLimit)+'&order=imdb_rating.desc.nullslast';
+        resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+q,{headers:sbHeaders()});
+        if(!resp.ok)throw new Error('Supabase query failed: HTTP '+resp.status);
+      }
+      pool=await resp.json();
+      // ---- Mixed pool (discovery) — non-streaming path only ----
+      // When the rating-sorted fetch is FULL, merge a small batch of least-popular quality films so
+      // the adventurous slider has obscure picks. (Not needed when a service already scoped the pool.)
+      if(pool.length >= fetchLimit){
+        try{
+          let dq=buildQuery(baseCols+',streaming',DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
+          let dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
+          if(!dresp.ok){
+            dq=buildQuery(baseCols,DISCOVERY_LIMIT)+'&imdb_rating=gte.6.5&vote_count=not.is.null&order=vote_count.asc.nullslast';
+            dresp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?'+dq,{headers:sbHeaders()});
+          }
+          if(dresp.ok){
+            const disc=await dresp.json();
+            const have=new Set(pool.map(m=>m.imdb_id));
+            disc.forEach(m=>{ if(!have.has(m.imdb_id)){ have.add(m.imdb_id); pool.push(m); } });
+          }
+        }catch(e){ /* discovery is best-effort; ignore and use the primary pool */ }
+      }
     }
+    if(!pool.length){out.innerHTML='<div class="status">No films matched your filters. Try loosening genre, era, or length.</div>';document.getElementById('go-btn').disabled=false;return;}
 
     // ---- Language and audience filters (client-side) ----
     pool=pool.filter(m=>passesLang(m)&&passesKid(m)&&passesContentRating(m)&&!isNotInterested(m));

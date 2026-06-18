@@ -41,15 +41,24 @@ well-rated films include ~110 hidden gems.
 - If the `streaming` column is missing the request is retried *without* it
   (`streaming` column may not exist yet) so the app still works (1496–1501).
 
-**Streaming-active wider net (line 1493):**
+**Streaming = ELIGIBILITY, not a quality cutoff (Tier-3 fix, v2.html):**
 ```
 streamingActive = freeOnly && selServices.size > 0;
-fetchLimit = streamingActive ? Math.max(POOL_LIMIT, 80) : POOL_LIMIT;
 ```
-When the streaming filter is active some films get dropped client-side, so the fetch
-pulls a wider net (at least 80, but POOL_LIMIT=500 already exceeds that, so in
-practice fetchLimit stays 500). After client filtering the streaming branch
-re-slices to `MERGED_LIMIT` (= POOL_LIMIT + DISCOVERY_LIMIT; see **Mixed pool** below).
+A selected streaming service is an **availability filter, not a hidden rating cap**. When a service
+is selected, the candidate fetch is **streaming-aware**: it queries films that list any selected
+service (server-side, `&or=(streaming->>alias.not.is.null,…)` via `streamingFilterParam()`, limit
+1000) matching the genre/era/length filters — then ranks them. So on-service films rated below the
+global top-rated pool's cutoff are still eligible (e.g. Apple TV+ now returns CODA, Killers of the
+Flower Moon, The Lost Bus, Causeway…, not just the 1 that slipped through before). `passesStreaming`
+still applies client-side for the precise free-tier check; discovery merge is skipped on this path.
+
+When **no** service is selected, behavior is byte-for-byte unchanged: top-rated `POOL_LIMIT=500`
+fetch + the discovery merge. The MATCH count is likewise streaming-aware so it no longer reads ~0.
+
+> Earlier this fetched the global top-500-by-rating *then* filtered to on-service films, which
+> created an accidental ~7.9 IMDb cutoff and hid most on-service titles. Fixed: availability →
+> eligibility, rating → rank.
 
 **Mixed candidate pool — discovery (Tier-2 addition, see §13d):** when the primary
 rating-sorted fetch comes back FULL (`pool.length >= fetchLimit` — more films matched
