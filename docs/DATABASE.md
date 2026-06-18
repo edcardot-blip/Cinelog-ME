@@ -70,7 +70,7 @@ is marked **[frozen]**.
 | `actors` **[frozen]** | text | Top-billed cast, comma-separated. |
 | `plot` | text | Short synopsis (OMDb). Shown in the movie-detail modal. Not in the frozen contract but present live. |
 | `original_language` **[frozen]** | text | ISO code, e.g. `en`. Drives the English-only filter (`passesLang`). ~9.7% non-English. |
-| `mpaa_rating` **[frozen]** | text | MPAA/TV rating, e.g. `R`, `PG-13`. Drives the Kid-Friendly filter (`KID_RATINGS = {G, PG, TV-G, TV-PG}`). May be `N/A`/`Not Rated`/`Unrated`. |
+| `mpaa_rating` **[frozen]** | text | MPAA/TV rating, e.g. `R`, `PG-13`. Drives the **Content Rating** filter (G / PG / PG-13 / R, with legacy values bucketed) in Advanced Filters. May be `N/A`/`Not Rated`/`Unrated`. (The old Kid-Friendly genre pill + `passesKid` were retired; the kid code is kept inert.) |
 | `country` | text | Production country code (e.g. `US`, `GB`). Live column; not engine-critical. |
 | `type` | text | Media type, `movie`. Live column; reserved for future TV support. |
 | `franchise` **[frozen]** | text | Franchise/series name, e.g. `Dark Knight`. Powers the franchise penalty. Sparse (~148 rows). Null = standalone. |

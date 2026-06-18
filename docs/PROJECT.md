@@ -72,9 +72,10 @@ Elegant over flashy.**
 - **Streaming Services selector** on the homepage (under the Genre/Era/Length row) — opens the
   centered subscriptions picker; selecting any service auto-enables "My Subscriptions."
 - **Refine Results** (Advanced Filters) full-screen modal: Language (Subtitles OK / English
-  Only), Where to Watch (Stream/Rent/Buy vs. My Subscriptions), Ratings emphasis
-  (Audience / Balanced / Critics), and the **"How Adventurous?"** slider
-  (Hidden Gems ↔ Balanced ↔ Crowd Favorites).
+  Only), Ratings emphasis (Audience / Balanced / Critics), a **Content Rating** filter
+  (G / PG / PG-13 / R, multi-select; bucketed `mpaa_rating`), and the **"How Adventurous?"** slider
+  (Hidden Gems ↔ Balanced ↔ Crowd Favorites). *(The streaming/"Where to Watch" control moved out
+  to the dedicated homepage Streaming Services selector.)*
 - **My Subscriptions:** a **centered picker modal** (matches the Genre/Era/Length style — blurred
   backdrop, gold Done, All/None, services as chips) to choose streaming services (Netflix, Max,
   Disney+, Prime Video, Hulu, Paramount+, Apple TV+, Peacock) and filter to what's free to you;
@@ -84,9 +85,12 @@ Elegant over flashy.**
   Surprise Me (random, unseen-first). *(Fresh Picks was removed — it duplicated Smart Mix.)*
 - **Cinematic projector loading** animation between request and results.
 - **Results poster gallery** with a header showing the active mode and refine chips.
-- **Movie detail modal** (reusable `openMovieDetail(m)`): poster, ratings, metadata, where
-  to watch, and the per-film actions (Seen / Like / Watchlist / Hide).
-- **User lists:** Watchlist, Likes, Seen, Hidden — each a full-screen poster-grid collection.
+- **Movie detail modal** (reusable `openMovieDetail(m)`): **fixed-layout** card — title clamped to 2
+  lines, single-line metadata / director (`+N directors`) / genres (`+N`) with reserved heights so
+  ratings, where-to-watch, and actions never shift; poster, ratings, where to watch, and per-film
+  actions (Seen / Like / Watchlist / Hide).
+- **User lists:** Watchlist, Likes, Seen, Hidden — each a full-screen poster-grid collection with a
+  **native-style search pill** (16px to avoid iOS zoom, gold focus glow, clear ×) + sort control.
 - **Trending** discovery page (read-only) with **Trending** and **Newer** tabs.
 - **Google sign-in** (Supabase OAuth) via the top-right profile pill; lists sync per user.
 - A **favorites taste-nudge**: your Likes feed an additive genre bonus in the engine.
@@ -156,7 +160,7 @@ boolean column upserted on `(user_id, imdb_id)`:
 | **Hidden** | `not_interested` | `niSet`, hide handlers (`markFlag`/upsert) |
 
 Notes: **"Like" = `favorite`** and **"Hidden" = `not_interested`** in the DB. Seen films are
-excluded from Fresh Picks until marked unseen. Likes also build a **taste profile**
+split into Smart Mix's "Worth a rewatch" section (not the unseen picks) until marked unseen. Likes also build a **taste profile**
 (`{ genres:{...}, n }`) consumed only by the additive `favoriteBonus` in `getRecs`.
 
 ## 12. Recommendation Modes
