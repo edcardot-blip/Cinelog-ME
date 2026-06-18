@@ -399,11 +399,24 @@ Sticky `.modal-fs-head` and `.modal-fs-foot` use `rgba(10,10,11,.82–.88)` + `b
 all four edges use `max(<rem>,env(safe-area-inset-*))`. Footer holds the gold `.modal-fs-done`.
 
 **Centered card variants** — flex-centered with backdrop blur and scale+fade:
-- **Sheet picker** `.sheet` (Genre/Era/Length): `.sheet-host{display:flex;align-items:center;
-  justify-content:center}`, card at `border-radius:22px`, enters `scale(.96)→1` via
-  `cubic-bezier(.34,1.2,.4,1)`. Backdrop blur ramps `2px→10px`. **Hidden sheets must use
-  `display:none` (`.sheet[hidden]{display:none!important}`)** — a leftover gotcha noted in
-  `CLAUDE.md` (flex space from hidden siblings drifted the picker off-center).
+- **Selection pickers** `.sheet` — the **shared design system** for **Genre / Era / Length /
+  Streaming Services** (`#sheet-host` hosts the first three; `#subs-sheet-host` hosts Streaming).
+  Floating card `width:min(91vw,392px)`, `border-radius:26px`, sizes to its content; enters
+  `scale(.95) translateY(8px)→1` via `cubic-bezier(.22,.9,.3,1)`. Backdrop blur ramps `3px→22px`
+  with stronger dimming (`rgba(3,3,5,.82)`) so the modal is the focus.
+  - **Header:** centered `.sheet-titles` = gold `.sheet-ic` (24×24 stroke SVG) + large serif
+    `.sheet-title` (23px) + medium `.sheet-sub`. One action row `.sheet-head-acts` = subtle text
+    `All`/`Clear` (left) + gold `.sheet-done-sm` (right). No bottom Done bar.
+  - **Chips** `.sheet .pills .pill`: charcoal inactive (`--bg3` + `--border2`); **selected
+    `.on-amber` = filled gold gradient + `#1a1305` text + soft glow + 1.5px border**; `:active`
+    scale `.94`; a brief `.pop` class (added by `togglePill`/`toggleService`) plays `@keyframes
+    chipPop` for a satisfying tap.
+  - **Per-selector personality:** Genre = film icon + chips; **Era** = timeline icon + a dim→gold
+    rail (`#era-pills::before`); **Length** = stopwatch icon + larger 2×2 **cards**
+    (`#length-pills` grid); **Streaming** = TV icon + 2-col chips with **subtle brand-tinted
+    borders** (`color-mix` of each service's `--svc`) instead of colored dots, gold when selected.
+  - **Hidden sheets must use `display:none` (`.sheet[hidden]{display:none!important}`)** — flex
+    space from hidden siblings drifted the picker off-center (CLAUDE.md gotcha).
 - **Movie detail** `.md-overlay` (z 1300): flex-centered, `backdrop-filter:blur(7px)`, sheet at
   `460px`/`22px` enters `scale(.9) translateY(10px)→none` via `cubic-bezier(.2,1.25,.4,1)`.
 

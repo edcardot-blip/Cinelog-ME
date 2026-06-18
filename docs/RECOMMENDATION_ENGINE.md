@@ -35,11 +35,12 @@ User filters (genre / era / length / language / kid / streaming / rating-mode / 
   └──────────────────────────────────────────────────────────────────────┘
         │
         ▼
-  Poster gallery (Fresh Picks + optional "Worth a rewatch")
+  Poster gallery (Top picks + optional "Worth a rewatch")
 ```
 
 `getRandom()` ("Surprise Me") skips steps 2, 4, 5, 6 entirely — it fetches a big pool, applies
-the client filters, Fisher-Yates shuffles, and shows 20 unranked.
+the client filters, shuffles **unseen and seen separately**, and shows 20 unranked **unseen-first**
+(seen only backfills when fewer than 20 unseen match).
 
 ---
 
@@ -140,6 +141,19 @@ IMDb never fully disappears — it stays at 15% even in Critics mode as an audie
 - **No usable signal** (`totalW < 0.0001`) → returns a neutral **65**.
 - **Confidence penalty by source count** (`present`): 3 sources → `0`; 2 → `-2`; 1 → `-5`.
 - Result clamped to `[0, 100]`: `Math.max(0, Math.min(100, avg + conf))`.
+
+### Audience-driven genres (Tier-3 override)
+Genres where critics and crowds diverge most are judged on **IMDb + popularity (number of ratings)**,
+not RT/Meta. Keyed off the film's **primary genre** via an `AUDIENCE_GENRES` table:
+
+| Tier | Genres | IMDb / RT / Meta | Popularity share of quality |
+|---|---|---|---|
+| **strong** | Comedy, Horror | 0.80 / 0.10 / 0.10 | ~40% |
+| **moderate** | Action, Adventure, Romance | 0.65 / 0.175 / 0.175 | ~30% |
+
+For these, quality `= ratingPart*(1-pop) + popularityScore(m)*pop`, where `ratingPart` is the
+IMDb-weighted blend above. All other (critic-respected) genres are untouched and follow the global
+control. The popularity slice is intrinsic (not slider-scaled). **Full detail: SCORING.md §16.**
 
 ---
 
@@ -257,8 +271,7 @@ _gSecondary/_gPurity/_gMulti/_gTotal` are populated for the genre console.table.
 
 | Penalty | Where | Rule |
 |---|---|---|
-| **Animation** | ≈ 3841 | If Animation is NOT a selected genre and the film's genre contains "animation" → `-20`, else `0`. |
-| **Documentary** | ≈ 3842–3844 | Exempt if any selected genre ∈ `DOC_FRIENDLY_GENRES = {sport, music, comedy}`. Otherwise genre contains "documentary" → `-20`, else `0`. |
+| **Genre-impact repel** | ≈ 3837–3877 | Replaces the old flat Animation/Documentary penalties. A *defining* genre the user didn't select repels (position-scaled); *connective* genres never do. Asymmetric — pick Drama and a "Comedy, Drama" film is repelled; pick Comedy and "Comedy, Drama" is fine. Animation & Documentary repel even with no genre selected (opt-in formats); everything else only once a genre is chosen. Capped at −30. Not slider-scaled. Stored as `m._repelPen`. See **SCORING.md §14**. |
 | **Franchise** | ≈ 3848–3857 | `franchiseCounts` tallies pool members per franchise. `big = count >= 3`; `popular = vote_count >= 300000`. `big && popular` → `-25` (e.g. LOTR); `big` → `-20`; else `-15`. **Then scaled by `blockbusterWeight`** (≈ 3930), so it only bites left-of-center and fades to 0 at center/right. |
 | **Confidence** | ≈ 3862–3877 | Keeps ultra-obscure single-source critic-darlings from dominating. `v = vote_count\|\|0`; `strong` = how many of {IMDb≥7.5, RT≥80, Meta≥75} hold. `v>=25000` → `0`. `10000<=v<25000` → `strong>=2 ? 0 : -8`. `v<10000` → base `(v<5000? -25 : -15)`, softened `+20` if `strong>=3`, else `+12` if `strong>=2`; a lone strong source stays hard-hit. |
 | **Exposure** | ≈ 3907–3933 | `exposure` read from `localStorage['cinelog_exposure']` (no-op if unavailable). `expPen = -min(8, expCount * 1.5)` — a gentle demotion (cap −8) for films shown often, so the list rotates. |
@@ -302,8 +315,9 @@ quality/fit.
 ```
 qS   = stretch(quality)
 base = qS * ratingsWeight * qualityFactor + fit * (1 - ratingsWeight)
-raw  = base + popMod + genreBonus + animPen + docPen + fPen + confPen + expPen + favBon + recBon
+raw  = base + popMod + genreBonus + repelPen + fPen + confPen + expPen + favBon + recBon
 ```
+(`repelPen` is the genre-impact repel — §8 — which replaced the former `animPen + docPen`.)
 With `ratingsWeight = 0.55`: **quality contributes 55%** (after stretch & qualityFactor),
 **fit 45%**. All §8/§9 terms are additive.
 
@@ -349,10 +363,12 @@ them next time so the catalog rotates.
 
 | Mode (UI name) | `viewMode` | Behavior |
 |---|---|---|
-| **Smart Mix** | `hybrid` | Up to **10 unseen** ("Fresh Picks", diversified) + "Worth a rewatch" divider + up to **5 seen**. |
-| **Fresh Picks** | `fresh` | `diversifyOrder(allUnseen.slice(0, 15))`, no rewatch section. |
-| **Rewatches** | `rewatches` | `allSeen.slice(0, 15)`, no fresh section (not diversified — already shuffled). |
-| **Surprise Me** | `random` | `getRandom()` — 20 unranked, shuffled; all ranking math ignored. |
+| **Smart Mix** | `hybrid` | Up to **10 unseen** ("Top picks", diversified) + "Worth a rewatch" divider + up to **10 seen**, count rounded DOWN to even (5 → 4) for a clean 2-up grid. |
+| **Surprise Me** | `random` | `getRandom()` — 20 unranked, shuffled, **unseen-first**; all ranking math ignored. |
+| *(legacy)* **Rewatches** | `rewatches` | `allSeen.slice(0, 15)` — kept as a stub, no UI button. |
+
+> **Fresh Picks (`fresh`) was removed** — it duplicated the `hybrid` ranking with no real recency
+> bias. The two visible modes are now Smart Mix and Surprise Me. See **SCORING.md §15**.
 
 ### Seen / unseen split (≈ lines 4063–4064)
 ```
@@ -362,11 +378,11 @@ allSeen   = ranked.filter(m =>  isSeen(m));
 
 ### Exposure bump — mode-aware (≈ lines 4070–4076)
 Only the **UNSEEN films each mode actually renders** get `exposure[imdb_id] += 1`: **hybrid** bumps
-the top **10**, **fresh** the top **15**, **rewatches none** (it renders only seen films).
+the top **10**, **rewatches none** (it renders only seen films).
 
 ### `diversifyOrder(list)` — output diversity (≈ lines 4086–4098)
-Selection-preserving reorder of an already-selected, rank-sorted unseen list (hybrid top-10, fresh
-top-15) so the same **primary genre** doesn't stack consecutively. Same films, same count; **#1
+Selection-preserving reorder of an already-selected, rank-sorted unseen list (hybrid top-10)
+so the same **primary genre** doesn't stack consecutively. Same films, same count; **#1
 (top rank) anchored first**; each next slot takes the highest-ranked remaining film whose primary
 genre differs from the previous card (falls back to rank order when none differ). `list.length < 3`
 → unchanged. No score touched, no film added/dropped. **Not** applied to rewatch (shuffled) or
@@ -374,15 +390,17 @@ Surprise Me.
 
 ### Hybrid rewatch shuffle (≈ lines 4117–4126)
 The rewatch picks are **always Fisher-Yates shuffled** (not ranked) before slicing 5, so the same
-seen films don't keep surfacing. The "Fresh Picks" label only shows when there are seen films to
+seen films don't keep surfacing, then the count is rounded down to even. The "Top picks" label only shows when there are seen films to
 pair it with.
 
 Final render: `openResultsGallery(galleryGroups, viewMode)` opens the full-screen poster gallery.
 
 ### `getRandom()` — Surprise Me (≈ lines 3524–3567)
-Fetches up to 1500 matching films, applies the same client filters, Fisher-Yates shuffles, takes
-the first 20, and renders **without rank numbers**. The adventurous slider, rating-mode control,
-and ALL ranking math are intentionally ignored. Rating pills are mirrored from raw values
+Fetches up to 1500 matching films, applies the same client filters, then shuffles unseen and seen
+separately and concatenates **unseen-first** before taking the first 20 — so a "surprise" prefers
+films you haven't seen, and seen films only appear when fewer than 20 unseen match. Renders
+**without rank numbers**. The adventurous slider, rating-mode control, and ALL ranking math are
+intentionally ignored. Rating pills are mirrored from raw values
 (`m._imdb = m.imdb_rating` etc.) since the ranking math that normally sets them didn't run.
 
 ---
@@ -404,7 +422,7 @@ empty → engine reduces to the no-personalization baseline. See **[DATABASE.md]
 ## 14. Diagnostics
 
 Inside `getRecs`, two `console.table` breakdowns (top 40, each wrapped in `try/catch`):
-- **Scoring:** title, imdb_votes, fame, pop_mod, franchise_pen, genre_bonus, conf_pen, exp_pen,
+- **Scoring:** title, imdb_votes, fame, pop_mod, franchise_pen, genre_bonus, genre_repel, conf_pen, exp_pen,
   fav_bonus, recency, quality, raw, display.
 - **Genre:** title, selected_genres, movie_genres, genre_positions, primary/secondary match,
   purity bonus, multi-genre bonus, total genre score.
@@ -424,9 +442,9 @@ required.** It reuses `sbHeaders()`, `movieAvailability()`, `niSet/seenSet/favSe
 
 ### Constants
 ```
-TREND_POOL_SIZE     = 250    // candidate pool (top by imdb_rating desc)
-TREND_ROW_COUNT     = 3      // posters in the homepage preview
-TREND_SESSION_BOOST = random*100   // sampled ONCE per page load → lists rotate per app load
+TREND_POOL_SIZE = 250    // candidate pool (top by imdb_rating desc)
+TREND_ROW_COUNT = 3      // posters in the homepage preview (re-shuffled every app load)
+TREND_NOISE     = 6      // ±6 PER-FILM jitter applied in trendRanked → lists rotate each load
 ```
 
 ### Score components (each 0–100)
@@ -434,12 +452,17 @@ TREND_SESSION_BOOST = random*100   // sampled ONCE per page load → lists rotat
 - `trendPopularity(m)` = log-scaled `vote_count`: `(log10(v)-3)/3*100`, clamp [0,100]; 0 if no votes.
 - `trendRecency(m)` = newer scores higher: `(year-(now-30))/30*100`, clamp [0,100]; last ~30 years → 0–100.
 
-### `trendingScore(m)` (≈ lines 4195–4200)
+### `trendingScore(m)`
 ```
-trendingScore = quality*0.55 + popularity*0.30 + recency*0.10 + sessionBoost*0.05
+trendingScore = quality*0.55 + popularity*0.30 + recency*0.10
 ```
 This is "high-quality, broadly appealing films worth watching tonight" — **NOT** live/internet
 trending.
+
+> **Rotation fix:** the old `sessionBoost` was a single constant added to *every* film, so it
+> could not reorder anything — the full Trending page was byte-identical every load. It's replaced
+> by **per-film** `±TREND_NOISE` jitter applied inside `trendRanked` (the "light randomness"), so
+> the list genuinely rotates each load while quality still leads.
 
 ### Taste bias — `trendTasteBonus(m)` (≈ 4204–4210)
 Reuses `favProfile`; `min(25, hits/favProfile.n * 30)` — modest, capped; 0 when signed out / no
@@ -449,17 +472,19 @@ favorites.
 ```
 pool.filter(!isNotInterested)        // exclude hidden
     .filter(trendStreamable)         // FREE on one of the 8 toggle subscription services
-    .map(m => trendingScore + trendTasteBonus - (isSeen ? 1000 : 0))   // demote seen
+    .map(m => trendingScore + trendTasteBonus + ±TREND_NOISE - (isSeen ? 1000 : 0))   // light noise + demote seen
     .sort(desc)
 ```
 **`trendStreamable(m)`** (≈ 4236) requires availability on a **free tier** of one of the **8 toggle
 subscription services** (Netflix, Max, Disney+, Prime Video, Hulu, Paramount+, Apple TV+, Peacock)
-— rent/buy storefronts do not count.
+— it reads `a.svc.toggle`; rent/buy storefronts do not count.
 
 ### Tabs (≈ 4299–4314)
 - **Trending** (default): `trendRanked(pool)` filtered to `imdb_rating >= 7.0` (or null), capped 50.
 - **Newer**: **STRICT** — only films `year >= currentYear - 3` (last 3 years), sorted by
-  `quality + popularity`, capped 50.
+  **quality** (newer year breaks ties), **unseen-first** (seen demoted), capped 50. *Not* gated on
+  free-streaming — brand-new films are often still rental-only, so requiring a free tier would
+  wrongly empty the tab (this is the one intentional divergence from the Trending tab).
 
 The homepage row takes the top ~30 of `trendRanked`, shuffles, and shows 3.
 
