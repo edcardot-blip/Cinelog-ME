@@ -198,15 +198,20 @@
   /* 2x2 grid of equal-size card toggles: Seen / Favorite / Watchlist / Hide */
   .card-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
   .card-act{margin:0;font-size:13px;font-weight:600;padding:9px 10px;border-radius:10px;cursor:pointer;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--sans);transition:all .14s;white-space:nowrap;text-align:center;width:100%}
-  .card-act:hover{border-color:var(--border);color:var(--text)}
-  .act-seen:hover{border-color:var(--teal);color:var(--teal)}
-  .act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
-  .act-fav:hover{border-color:#c2557a;color:#f0a0bd}
-  .act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
-  .act-watch:hover{border-color:#5b8fd6;color:#a8c8f0}
-  .act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
-  .act-hide:hover{border-color:#a05a5a;color:#e09a9a}
-  .act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
+  /* Scoped to .card-act ONLY — these used to be unscoped (.act-fav:hover etc.) and leaked into the
+     detail .md-pill buttons: on touch, :hover sticks after a tap, so an un-selected pill kept showing
+     the hover/marked colour. Hovers also guarded with @media(hover:hover) so they never stick on touch. */
+  @media (hover:hover){
+    .card-act:hover{border-color:var(--border);color:var(--text)}
+    .card-act.act-seen:hover{border-color:var(--teal);color:var(--teal)}
+    .card-act.act-fav:hover{border-color:#c2557a;color:#f0a0bd}
+    .card-act.act-watch:hover{border-color:#5b8fd6;color:#a8c8f0}
+    .card-act.act-hide:hover{border-color:#a05a5a;color:#e09a9a}
+  }
+  .card-act.act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
+  .card-act.act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
+  .card-act.act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
+  .card-act.act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
   .lt-seen{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
   .lt-seen:hover{background:transparent;border-color:var(--text3);color:var(--text2)}
   .ltable-wrap{margin-top:6px;overflow-x:auto}

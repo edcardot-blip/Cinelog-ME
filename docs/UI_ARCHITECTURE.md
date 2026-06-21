@@ -137,7 +137,11 @@ streaming → why → library actions**, with generous section spacing.
   in-memory set synchronously before its network await), then **again after the await** to reconcile
   a rolled-back/failed save — so toggling on/off feels instant instead of waiting on the round-trip.
   The toggled pill plays a `pillpulse` bump.
-- Active state shows as `.marked` with each action's color tint (teal/pink/blue/red).
+- Selected pills show a **subtle glow/outline** (Seen = teal, Like = gold glow, Watchlist = gold
+  outline, Hide = muted), never a filled block. The `.act-*:hover` / `.act-*.marked` colour rules
+  are scoped to `.card-act` (and hovers wrapped in `@media (hover:hover)`) so they don't leak into
+  `.md-pill` — an earlier unscoped `:hover` was sticking on touch after a tap, leaving an un-selected
+  pill still coloured.
 - Backdrop click or `.md-close` closes; Esc closes the detail first (before any underlying overlay).
 
 **Navigation.** Opened via `openMovieDetailById(id)` from gallery/trending tiles and
