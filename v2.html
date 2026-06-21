@@ -2447,7 +2447,8 @@ const SERVICES=[
   // ---- Rent/buy storefronts (badges only, never toggles) ----
   {key:'appletv_store', label:'Apple TV', color:'#b8b8b8', toggle:false, aliases:['apple tv store'], searchUrl:'https://tv.apple.com/search?term={q}'},
   {key:'amazon_video',  label:'Amazon',   color:'#00a8e1', toggle:false, aliases:['amazon video'], searchUrl:'https://www.amazon.com/s?k={q}&i=instant-video'},
-  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home','fandango at home free'], searchUrl:'https://www.fandangoathome.com/search/{q}'},
+  // Fandango deliberately omitted — its links don't resolve well and it sees little use, so it's
+  // never shown as a "where to watch" provider (movieAvailability skips any unmapped provider).
   {key:'google',        label:'Google Play', color:'#34a853', toggle:false, aliases:['google play movies'], searchUrl:'https://play.google.com/store/search?q={q}&c=movies'},
   {key:'youtube_store', label:'YouTube', color:'#ff0000', toggle:false, aliases:['youtube'], searchUrl:'https://www.youtube.com/results?search_query={q}+movie'}
 ];
@@ -3815,7 +3816,7 @@ function openMovieDetail(m){
   let provs=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
   // Keep the 2-col grid EVEN: on an odd count, drop the single least-important PAID storefront so
   // there's no lonely card. Keep priority (high→low): free/streamable services, then Apple TV,
-  // then Amazon/Prime, then YouTube/Google Play; anything else (e.g. Fandango) is dropped first.
+  // then Amazon/Prime, then YouTube/Google Play; any other paid storefront is dropped first.
   // If every provider is free/streamable (nothing to spare), span the last card instead of dropping.
   let spanLast=false;
   if(provs.length%2===1){
