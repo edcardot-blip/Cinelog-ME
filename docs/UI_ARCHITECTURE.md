@@ -86,30 +86,42 @@ lifts on hover and presses on active; launching a recommendation cross-fades `#t
 why it was recommended, and the four personal-list actions. Opened from every poster everywhere
 (gallery, collections, trending) so it's the canonical detail surface.
 
-**Layout.** A centered, scrollable sheet (max `460px`, radius `22px`):
-- `.md-close` — circular close button (top-right of sheet).
-- `.md-hero` — 16/10 artwork (dimmed backdrop image, gradient fade to the body) with a floating
-  2/3 `.md-hero-poster` badge bottom-left.
+**Layout.** A centered, scrollable sheet (max `460px`, radius `22px`). The vertical order is the
+intended reading hierarchy: **backdrop → poster → title → meta → director → genres → ratings →
+streaming → why → library actions**, with generous section spacing.
+- `.md-close` — small **glass** close button (top-right): blurred translucent circle, gold-stroke
+  SVG ✕. Reusable style for close buttons app-wide.
+- `.md-hero` — 16/10 artwork (dimmed backdrop, gradient fade) with a floating 2/3 `.md-hero-poster`
+  (enlarged ~94px, soft shadow) that scales in on open.
 - `.md-body`:
-  - `.md-title` (serif), `.md-meta` (year · runtime · director, genres, MPAA badge).
-  - `.md-ratings` — matched rating badges: `.rating-badge.rb-imdb`, `.rb-rt`, `.rb-meta`. Each is
+  - `.md-title` (serif, prominent), `.md-meta` (year · runtime · MPAA — one line).
+  - `.md-credit.md-director` (secondary, one line) then **genres**: ≤3 → all inline; >3 → first
+    three + a `.md-genre-more` "Show all" toggle (`mdShowAllGenres()`) that reveals `.md-genre-chips`
+    (all genres as wrapped chips). **Never "+N".** Note: `.md-genre-chips[hidden]{display:none}` is
+    required — a CSS `display` rule overrides the UA `[hidden]` rule.
+  - `.md-ratings` — matched rating badges on **one uniform line** (`flex-wrap:nowrap`):
+    `.rating-badge.rb-imdb`, `.rb-rt`, `.rb-meta` (identical height/padding/border/font). Each is
     now a **clickable external link** (`a.rb-link`, opens in a new tab) to that film's page:
     IMDb is an exact deep-link (`/title/<imdb_id>/`); RT & Metacritic use each site's **search
     endpoint** keyed on the title (robust — no fragile per-title slugs, never 404s). URLs are
     generated on the fly by `ratingLinks(m)` — **no URLs are stored**. (Same links are wired on the
     `.card` rating pills, with `event.stopPropagation()` so a badge tap doesn't open the card.)
-  - `.md-avail` — streaming availability rows (`.av` with service dot + free/paid tier). Each badge
-    is now a **clickable link** (`a.av-link`, new tab) to that service. The URL comes from a
-    per-service `searchUrl` template defined **once** in the static `SERVICES` config (not per
-    movie, not a DB column) filled with the title by `streamingLink(svc, m)`. Both render sites
-    (card + detail) share one builder, `availBadgeHtml(a, m, useEsc)`. `streamingLink` already
-    prefers a per-movie `m.watch_link` if the catalog ever gains true deep links (e.g. TMDB/JustWatch).
-  - `.md-why` — gold-tinted panel with the recommendation explanation (only if `m.why` exists).
-  - `#md-acts` — four `.md-pill` action toggles built by `mdActionPills(m)`:
-    **Seen** (`act-seen`) · **Like** (`act-fav`) · **Watchlist** (`act-watch`) · **Hide** (`act-hide`).
+  - **Where to watch** — a responsive **2-column provider grid** (`.md-providers` → `.md-prov`
+    cards: colored `--svc` dot · provider name · `FREE`/`RENT`/`BUY` tag), built by
+    `mdProviderCard(a, m, spanFull)`. Identical card width/height/padding; free providers sort
+    first; an **odd final card spans both columns** (`.span2`) so there's never a lonely card. Each
+    card is a clickable link to the service via `streamingLink(svc, m)` (per-service `searchUrl`
+    template in the static `SERVICES` config — no per-movie URLs; prefers `m.watch_link` if ever
+    stored). *(The result-card list still uses the compact inline `.av` pills via `availBadgeHtml`.)*
+  - `.md-why` — gold-tinted panel: "✨ Why we picked this" + `mdWhyText(m)` (the engine's `m.why`
+    when present, else an honest line derived from the film's rating/primary genre).
+  - `#md-acts` — four **compact** `.md-pill` action cards (gold-stroke SVG icons) built by
+    `mdActionPills(m)`: **Seen** (`act-seen`) · **Like** (`act-fav`) · **Watchlist** (`act-watch`)
+    · **Hide** (`act-hide`). Selected = subtle glow/outline (Seen teal, Like gold glow, Watchlist
+    gold outline, Hide muted) — never a filled block.
 
-**Components.** Hero artwork, floating poster, rating-badge set, availability chips, why panel,
-4-up action pills.
+**Components.** Hero artwork, floating poster, uniform rating-badge set, provider grid, why panel,
+4-up compact action cards.
 
 **Interactions.**
 - Each pill: `onclick="mdAct(this,'<fn>','<id>')"` where `<fn>` is the engine handler from
@@ -127,9 +139,10 @@ the IMDb badge, **not** `m._imdb`. The engine sets `m._imdb = imdb_rating*10` in
 pill-presence signal); rendering `_imdb` would show "IMDb 74" instead of "7.4". (`_rt`/`_meta`
 already match their 0–100 columns, so only IMDb is affected.)
 
-**Animations.** Overlay backdrop blurs in (`blur(7px)`); the sheet enters
-`scale(.9) translateY(10px) → none` via overshoot `cubic-bezier(.2,1.25,.4,1)` over `.34s`; pills
-press to `scale(.93)` and pulse on toggle.
+**Animations** (~220–240 ms, premium). Backdrop fades + blurs in (`blur(8px)`, `.22s`); the sheet
+slides up + scales in (`scale(.96) translateY(14px) → none`, `.24s`); the poster scales in
+(`scale(.92) → none`) just after. Closing reverses. Pills press to `scale(.93)` and pulse on
+toggle. All transforms are disabled under `prefers-reduced-motion`.
 
 ---
 
