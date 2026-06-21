@@ -359,7 +359,7 @@
   .prefs-ico{font-size:13px;line-height:1}
 
   /* ===== Settings overlay ===== */
-  .set-overlay{position:fixed;inset:0;z-index:1000;background:rgba(6,6,8,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;overflow-y:auto;padding:max(2.5rem,env(safe-area-inset-top)) 1rem max(3rem,env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+  .set-overlay{position:fixed;inset:0;z-index:1000;background:rgba(6,6,8,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;overflow-y:auto;padding:max(2.5rem,env(safe-area-inset-top)) 1rem calc(82px + env(safe-area-inset-bottom)) 1rem;-webkit-overflow-scrolling:touch}
   .set-overlay.open{display:block}
   .set-panel{max-width:560px;margin:0 auto;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1.25rem 1.25rem 1rem;box-shadow:0 24px 80px rgba(0,0,0,.55)}
   .set-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
@@ -1059,7 +1059,8 @@
     padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(76px + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
   /* Keep the bottom nav visible & pinned on the collection pages (Watchlist/Likes/Seen/Hidden):
      raise it above the collection overlay (1200) while one is open. */
-  body.coll-open .bottom-nav{z-index:1250}
+  body.coll-open .bottom-nav,
+  body.set-open .bottom-nav{z-index:1250}
 
   /* Loading / empty / signed-out states */
   .cg-state{text-align:center;color:var(--text2);font-size:14.5px;padding:3.5rem 1.25rem;line-height:1.65;
@@ -1704,7 +1705,7 @@
       <div class="set-top">
         <button class="set-back" id="set-back" onclick="backToMenu()" aria-label="Back" hidden>←</button>
         <h2 class="set-title" id="set-title">Settings</h2>
-        <button class="set-close" onclick="closeSettings()" aria-label="Close settings">✕</button>
+        <span class="set-top-spacer" aria-hidden="true"></span>
       </div>
 
       <div id="set-menu">
@@ -2079,6 +2080,9 @@
     b.style.left='0';
     b.style.right='0';
     b.style.width='100%';
+    b.style.height='100dvh';   // fill the visible viewport so a fixed bottom:0 nav lands at the TRUE
+                               // bottom on iOS (matches Home); without it the locked body is content-
+                               // height and the nav floats up by ~the home-indicator gap.
     b.style.overflow='hidden';
     locked=true;
   };
@@ -2093,6 +2097,7 @@
     b.style.left='';
     b.style.right='';
     b.style.width='';
+    b.style.height='';
     b.style.overflow='';
     locked=false;
     window.scrollTo(0,savedY);
@@ -2383,6 +2388,7 @@ function navTo(tab){
     return;
   }
   // watchlist | favorites | seen -> open (or switch between) the full-screen collection page
+  if(typeof closeSettings==='function') closeSettings();   // don't leave Settings lurking behind it
   setNavActive(tab);
   if(typeof openCollection==='function') openCollection(tab);
 }
@@ -2399,7 +2405,9 @@ function setNavActive(tab){
     var ov=document.getElementById('set-overlay');
     if(!ov) return;
     var obs=new MutationObserver(function(){
-      if(!ov.classList.contains('open')) setNavActive('discover');
+      // Settings closed → snap nav back to Discover, UNLESS we navigated to a collection page
+      // (e.g. tapped Watchlist from Settings), which keeps its own tab highlighted.
+      if(!ov.classList.contains('open') && !(typeof collectionOpen!=='undefined' && collectionOpen)) setNavActive('discover');
     });
     obs.observe(ov,{attributes:true,attributeFilter:['class']});
   });
@@ -3501,10 +3509,13 @@ let settingsOpen=false;
 function openOverlay(){
   const o=document.getElementById('set-overlay');
   if(o && !settingsOpen){o.classList.add('open'); lockScroll(); settingsOpen=true;}
+  document.body.classList.add('set-open');     // keep the bottom nav visible & pinned on Settings
+  if(typeof setNavActive==='function') setNavActive('more');
 }
 function closeSettings(){
   const o=document.getElementById('set-overlay');
   if(o && settingsOpen){o.classList.remove('open'); unlockScroll(); settingsOpen=false;}
+  document.body.classList.remove('set-open');
   backToMenu();   // reset to the menu screen for next open
 }
 // Show the correct top-level menu (Settings or Lists), hiding the list-detail view.

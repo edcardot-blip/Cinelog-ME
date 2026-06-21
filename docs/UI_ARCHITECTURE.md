@@ -378,6 +378,13 @@ account row, and unlocks/locks the collection pages' content.
 **Container:** `#set-overlay` → `.set-panel` (z `1000`). `openSettings()` / `closeSettings()`;
 opened by the **More** bottom-nav tab (`navTo('more')`).
 
+**Pinned bottom nav, no close-X.** Like the collection pages, `openOverlay` adds `body.set-open`
+(raising `.bottom-nav` to z `1250`) and `setNavActive('more')`, so the tab bar stays visible/pinned
+here (no `.set-close` ✕ — you leave via the nav). Tapping Watchlist/Likes/Seen `closeSettings()`
+first; the close-observer only snaps back to Discover when no collection is open. Page padding clears
+the nav. The scroll-lock (`lockScroll`) sets the body to `height:100dvh` so the fixed nav lands at the
+true viewport bottom on iOS (matching Home).
+
 **Purpose.** A polished, iOS-style preferences page (Apple Settings / Letterboxd / Things 3 feel).
 Every row does something real — no "Planned"/placeholder rows. It re-homes the *user preferences*
 that used to live in Advanced Filters or were unimplemented, and surfaces the user's collections.
