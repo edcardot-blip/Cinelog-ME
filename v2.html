@@ -1055,7 +1055,11 @@
 
   /* Scrollable grid body (reuses .rg-grid + .rg-tile from the results gallery) */
   .cg-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-    padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
+    /* extra bottom padding so the last row clears the pinned bottom nav while scrolling */
+    padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(76px + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
+  /* Keep the bottom nav visible & pinned on the collection pages (Watchlist/Likes/Seen/Hidden):
+     raise it above the collection overlay (1200) while one is open. */
+  body.coll-open .bottom-nav{z-index:1250}
 
   /* Loading / empty / signed-out states */
   .cg-state{text-align:center;color:var(--text2);font-size:14.5px;padding:3.5rem 1.25rem;line-height:1.65;
@@ -2365,17 +2369,20 @@ document.addEventListener('DOMContentLoaded',function(){ try{ updateQuickFilterL
    The "active" highlight resets to Discover whenever the overlay closes. */
 function navTo(tab){
   if(tab==='discover'){
+    if(typeof closeCollection==='function') closeCollection();   // leave the collection page
+    if(typeof closeTrendingPage==='function') closeTrendingPage();
     if(typeof closeSettings==='function') closeSettings();
     setNavActive('discover');
     window.scrollTo({top:0,behavior:'smooth'});
     return;
   }
   if(tab==='more'){
+    if(typeof closeCollection==='function') closeCollection();   // settings would otherwise sit behind it
     setNavActive('more');
     if(typeof openSettings==='function') openSettings();
     return;
   }
-  // watchlist | favorites | seen -> open the full-screen poster-grid collection page
+  // watchlist | favorites | seen -> open (or switch between) the full-screen collection page
   setNavActive(tab);
   if(typeof openCollection==='function') openCollection(tab);
 }
@@ -4156,6 +4163,8 @@ async function openCollection(type){
   setTimeout(()=>ov.classList.add('open'),0);
   if(!collectionOpen) lockScroll();
   collectionOpen=true;
+  document.body.classList.add('coll-open');   // bottom nav stays visible & pinned on collection pages
+  setNavActive(type);   // reflect the active tab in the nav (no-op highlight for 'hidden')
   document.getElementById('cg-body').scrollTop=0;
 
   // Signed-out: sets are empty; prompt to sign in instead of an empty grid.
@@ -4212,6 +4221,7 @@ function closeCollection(){
   if(ov){ ov.classList.remove('open'); ov.setAttribute('aria-hidden','true'); }
   if(collectionOpen) unlockScroll();
   collectionOpen=false;
+  document.body.classList.remove('coll-open');
   if(typeof setNavActive==='function') setNavActive('discover');
 }
 

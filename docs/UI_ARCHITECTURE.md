@@ -279,6 +279,14 @@ hidden    {set:niSet,    title:'Hidden',    icon:'🙈'}
 **Purpose.** Browse and manage the user's saved films. Reuses the gallery's `.rg-grid`/`.rg-tile`
 visual language for consistency, with added count/search/sort.
 
+**Bottom nav stays visible & pinned here.** While a collection is open, `openCollection` adds
+`body.coll-open`, which raises `.bottom-nav` to z `1250` (above the overlay's `1200`) so the tab bar
+shows and stays pinned as `#cg-body` scrolls (which carries `padding-bottom: 76px + safe-area` to
+clear it). `setNavActive(type)` highlights the matching tab. The nav acts as a real tab bar:
+tapping Watchlist/Likes/Seen **switches** the collection in place; **Discover**/**More** call
+`closeCollection()` first (so they aren't stuck behind the overlay). Movie detail (z `1300`) still
+covers the nav when a poster is tapped.
+
 **Layout.**
 - `.cg-head`: `.rg-back`, centered `.cg-titles` (`#cg-title` + `#cg-count` "N films"), `.cg-head-spacer`.
 - `#cg-controls`: a `.cg-search` input (`#cg-search-input`, live `renderCollectionGrid()`) and a
