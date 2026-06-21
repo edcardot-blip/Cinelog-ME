@@ -1169,9 +1169,24 @@
   .md-pill.act-watch.marked{border-color:var(--accent);color:var(--accent2)}
   .md-pill.act-hide.marked{border-color:var(--border);color:var(--text2);background:var(--bg4)}
   @media (max-width:600px){
-    .md-pill{min-height:52px;padding:8px 4px}
-    .md-body{padding:1.15rem 1.1rem 1.3rem}
-    .md-title{font-size:24px}
+    /* Tighter vertical rhythm so the card fits an iPhone with little/no scrolling. */
+    .md-hero{aspect-ratio:16/9}
+    .md-hero-poster{width:82px;bottom:11px}
+    .md-body{padding:1rem 1.05rem 1.15rem}
+    .md-title{font-size:22px;margin-bottom:6px;min-height:0}
+    .md-meta,.md-credit{margin-bottom:4px}
+    .md-genres,.md-genre-chips{margin-bottom:.9rem}
+    .md-ratings{margin-bottom:1rem}
+    .md-section-lbl{margin-bottom:.45rem}
+    /* slightly smaller "Where to watch" buttons */
+    .md-providers{gap:7px;margin-bottom:1rem}
+    .md-prov{min-height:44px;padding:8px 11px;border-radius:11px}
+    .md-prov .mp-dot{width:10px;height:10px}
+    .md-prov .mp-name{font-size:12.5px}
+    .md-why{padding:.75rem .9rem;margin-bottom:1rem}
+    .md-why p{font-size:13px}
+    .md-pill{min-height:50px;padding:7px 4px}
+    .md-pill .md-pill-ic svg{width:16px;height:16px}
   }
   @media (prefers-reduced-motion:reduce){
     .md-sheet,.md-hero-poster{transition:opacity .2s ease}
@@ -3757,12 +3772,14 @@ function openMovieDetail(m){
   if(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated')
     metaLine += (metaLine?' <span class="md-dot">•</span> ':'') + '<span class="mpaa-badge">'+esc(m.mpaa_rating)+'</span>';
 
-  // ---- Director: first director only; "+N directors" if more — always one line ----
+  // ---- Director(s): show all names when there are just a few (≤3 — e.g. sibling duos); only
+  //      collapse to "+N more" for the rare "bunch of directors" case (anthologies). One line.
   const dirs=(m.director||'').split(',').map(s=>s.trim()).filter(d=>d && d!=='N/A');
   let directorLine='';
   if(dirs.length){
-    directorLine = esc(dirs[0]);
-    if(dirs.length>1) directorLine += ' <span class="md-more">+'+(dirs.length-1)+' director'+(dirs.length-1>1?'s':'')+'</span>';
+    directorLine = (dirs.length<=3)
+      ? dirs.map(esc).join(', ')
+      : dirs.slice(0,2).map(esc).join(', ')+' <span class="md-more">+'+(dirs.length-2)+' more</span>';
   }
 
   // ---- Genres: ≤3 → show all inline; >3 → first three + "Show all" toggle → full chips. Never "+N".
@@ -3791,10 +3808,26 @@ function openMovieDetail(m){
   let avail=movieAvailability(m);
   const seenSvc={}; avail.forEach(a=>{if(!seenSvc[a.svc.key]||(a.free&&!seenSvc[a.svc.key].free))seenSvc[a.svc.key]=a;});
   let provs=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
+  // Keep the 2-col grid EVEN: on an odd count, drop the single least-important PAID storefront so
+  // there's no lonely card. Keep priority (high→low): free/streamable services, then Apple TV,
+  // then Amazon/Prime, then YouTube/Google Play; anything else (e.g. Fandango) is dropped first.
+  // If every provider is free/streamable (nothing to spare), span the last card instead of dropping.
+  let spanLast=false;
+  if(provs.length%2===1){
+    const keepRank=a=>{ if(a.free) return 100; const k=a.svc.key;
+      if(k==='appletv_store'||k==='apple') return 5;
+      if(k==='amazon_video'||k==='prime') return 4;
+      if(k==='youtube_store'||k==='google') return 3;
+      return 1; };
+    let dropIdx=-1, dropRank=Infinity;
+    provs.forEach((a,i)=>{ if(!a.free){ const r=keepRank(a); if(r<=dropRank){ dropRank=r; dropIdx=i; } } });
+    if(dropIdx>=0) provs.splice(dropIdx,1);   // dropped one → even grid
+    else spanLast=true;                        // all free & odd → full-width last card
+  }
   const TV_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M10.5 9.2l3.5 2.3-3.5 2.3z"/></svg>';
   const availHtml = provs.length
     ? '<div class="md-section-lbl">'+TV_ICO+'Where to watch</div><div class="md-providers">'
-      + provs.map((a,i)=>mdProviderCard(a, m, (provs.length%2===1 && i===provs.length-1))).join('')
+      + provs.map((a,i)=>mdProviderCard(a, m, (spanLast && i===provs.length-1))).join('')
       + '</div>'
     : '';
 
@@ -3871,16 +3904,55 @@ function mdShowAllGenres(){
   if(line) line.hidden=true;
   if(chips) chips.hidden=false;
 }
-// "Why we picked this" text: the engine's reason if present, else an honest line from the film's own data.
+// "Why we picked this": an interesting, varied one-liner derived from the film's own attributes.
+// Collects every angle that fits the film, then picks one by a stable hash of the id — so the
+// catalog reads with variety (no repeated "Directed by X") while a given film stays consistent.
 function mdWhyText(m){
-  if(m && m.why && String(m.why).trim()) return String(m.why).trim();
   if(!m) return '';
-  const g=(m.genre||'').split(',')[0].trim().toLowerCase();
-  const imdb=m.imdb_rating;
-  if(imdb!=null && imdb>=8 && g) return 'One of the highest audience-rated '+g+' films in the catalog.';
-  if(imdb!=null && imdb>=7.5) return 'A standout pick critics and audiences agree on.';
-  if(g) return 'A memorable '+g+' worth your time.';
-  return 'Hand-picked from the CINELOG catalog.';
+  const num=v=>{ const n=(v==null||v==='')?NaN:+v; return isNaN(n)?null:n; };
+  const imdb=num(m.imdb_rating), rt=num(m.rotten_tomatoes_score), meta=num(m.metascore), votes=num(m.vote_count);
+  const genres=(m.genre||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const g=(genres[0]||'film').toLowerCase(), g2=genres[1]?genres[1].toLowerCase():'';
+  const year=num(m.year), runtime=num(m.runtime_minutes);
+  const actor=((m.actors||'').split(',')[0]||'').trim();
+  const validActor=actor && actor.length>2 && !/^N\/A$/i.test(actor);
+  const decade=year!=null ? (year<1960?'pre-60s':(Math.floor(year/10)*10)+'s') : '';
+  const C=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const out=[];
+  // critics
+  if(rt!=null && rt>=95) out.push('Almost universally loved by critics — '+rt+'% on the Tomatometer.');
+  else if(rt!=null && rt>=88) out.push('Critics are firmly on board: '+rt+'% on Rotten Tomatoes.');
+  if(meta!=null && meta>=85) out.push('A bona fide critical darling, with a '+meta+' Metascore.');
+  // audience / fame
+  if(imdb!=null && imdb>=8.3 && votes!=null && votes>=200000) out.push('A crowd favorite — '+imdb+' on IMDb from over '+Math.round(votes/1000)+'k viewers.');
+  else if(imdb!=null && imdb>=8) out.push('Audiences adore it — an '+imdb+' IMDb rating speaks for itself.');
+  else if(imdb!=null && imdb>=7.5) out.push('Highly rated by audiences ('+imdb+' on IMDb) and easy to recommend.');
+  // hidden gem
+  if(imdb!=null && imdb>=7.3 && votes!=null && votes<60000) out.push('A bit of a hidden gem — quietly one of the better '+g+' picks out there.');
+  // genre blend
+  if(g2) out.push(C(g)+' meets '+g2+' — the kind of mix that’s hard to put down.');
+  // era
+  if(year!=null && year<2000 && imdb!=null && imdb>=7.4) out.push('A '+decade+' '+g+' that more than holds up today.');
+  if(year!=null && year>=2022) out.push('One of the more talked-about '+g+' releases of recent years.');
+  // runtime
+  if(runtime!=null && runtime>0 && runtime<=98) out.push('Tight and rewatchable — a lean '+g+' that respects your time.');
+  if(runtime!=null && runtime>=150 && imdb!=null && imdb>=7.5) out.push('An epic that earns every one of its '+runtime+' minutes.');
+  // mood by genre family
+  if(['action','thriller','crime','adventure','mystery'].indexOf(g)>=0) out.push('Fast-paced '+g+' with serious replay value.');
+  if(['comedy','romance','family','animation','music','musical'].indexOf(g)>=0) out.push('An easy, feel-good '+g+' for when you just want to enjoy yourself.');
+  if(['drama','war','history','biography'].indexOf(g)>=0) out.push('A '+g+' with real staying power — the kind you keep thinking about.');
+  if(g==='horror') out.push('Genuinely effective horror that knows exactly what it’s doing.');
+  if(g==='documentary') out.push('A documentary that sticks with you long after the credits.');
+  if(g==='sci-fi') out.push('Smart sci-fi with ideas worth chewing on.');
+  // cast
+  if(validActor) out.push('Features '+actor+' in one of their most memorable '+g+' roles.');
+  // generic fallbacks — only used when no specific angle above fits
+  const fb=['A standout '+g+' that fits the mood you set.','Exactly the kind of '+g+' worth carving out an evening for.'];
+  const pool=out.length?out:fb;
+  // stable hash → consistent per film, varied across the catalog
+  let h=0; const key=String(m.imdb_id||m.title||'');
+  for(let i=0;i<key.length;i++){ h=(h*31+key.charCodeAt(i))>>>0; }
+  return pool[h % pool.length];
 }
 function mdActFn(act){
   return act==='act-seen'?'onSeenClick':act==='act-fav'?'onFavClick':act==='act-watch'?'onWatchClick':'onNiClick';
@@ -3888,22 +3960,26 @@ function mdActFn(act){
 // Wrapper: call the existing engine handler, then re-sync this pill's icon+label
 // (the handlers overwrite textContent, so we restore our markup after).
 async function mdAct(btn, fn, id){
-  btn.classList.add('pulse');
-  setTimeout(()=>btn.classList.remove('pulse'),360);
-  // Use a throwaway proxy element so the engine handler's textContent writes
-  // don't clobber our icon/label markup. The handler still updates the data store.
+  const act=(btn.className.match(/act-[a-z]+/)||[''])[0];
+  // Throwaway proxy so the engine handler's textContent/class writes don't clobber our markup.
   const proxy=document.createElement('button');
-  proxy.className=btn.className.replace(' pulse','');
-  if(fn==='onNiClick'){
-    // onNiClick reaches for btn.closest('.card'); none here, so it's a harmless no-op dim.
-  }
-  await window[fn](proxy, id);
-  // Re-derive marked state from the predicates and rebuild the pill row so all
-  // four pills reflect the current store (handlers are async + may roll back).
-  if(mdCurrent && mdCurrent.imdb_id===id){
-    const row=document.getElementById('md-acts');
-    if(row) row.innerHTML=mdActionPills(mdCurrent);
-  }
+  proxy.className=btn.className.replace(/\s*pulse/,'');
+  // The handler flips the in-memory set SYNCHRONOUSLY (before its network await), so repaint the
+  // pills IMMEDIATELY for an instant on/off response — matching the result cards. Without this, an
+  // un-clicked pill kept showing its colour until the save round-trip finished (or, on a slow/
+  // failed save, looked stuck).
+  const done=window[fn](proxy, id);
+  rebuildMdActs(id, act);     // optimistic repaint + pulse the toggled pill
+  await done;
+  rebuildMdActs(id);          // reconcile if the handler rolled back on a failed save
+}
+// Repaint the detail action row from the live store; optionally pulse one pill.
+function rebuildMdActs(id, pulseAct){
+  if(!(mdCurrent && mdCurrent.imdb_id===id)) return;
+  const row=document.getElementById('md-acts');
+  if(!row) return;
+  row.innerHTML=mdActionPills(mdCurrent);
+  if(pulseAct){ const b=row.querySelector('.'+pulseAct); if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'),360); } }
 }
 
 // Attr escaper for the presentation layer (esc() is already defined above and escapes &<>").
