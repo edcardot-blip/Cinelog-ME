@@ -1754,6 +1754,18 @@
         </div>
       </div>
 
+      <!-- Storage -->
+      <div class="set-group">
+        <div class="set-group-lbl">Storage</div>
+        <div class="set-list">
+          <button class="set-row tappable" onclick="clearCache()">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></span>
+            <span class="set-label">Clear Cache</span>
+            <span class="set-meta" id="set-cache-meta">Empty</span><span class="set-chev">›</span>
+          </button>
+        </div>
+      </div>
+
       <!-- About -->
       <div class="set-group">
         <div class="set-group-lbl">About</div>
@@ -3550,7 +3562,17 @@ function refreshSettings(){
   const sm=document.getElementById('set-subs-meta');
   if(sm){ const n=(typeof selServices!=='undefined')?selServices.size:0;
     sm.textContent = n===0 ? 'Any' : (n===1 ? (function(){ var s=SERVICES.find(x=>x.key===[...selServices][0]); return s?s.label:'1 service'; })() : (n+' services')); }
+  const cm=document.getElementById('set-cache-meta');
+  if(cm){ let n=0; try{ n=Object.keys(JSON.parse(localStorage.getItem('cinelog_exposure')||'{}')).length; }catch(e){} cm.textContent = n ? n+' tracked' : 'Empty'; }
   updateAboutStats();
+}
+
+// Clear the local "recently-shown" rotation so films can resurface. Account lists are untouched.
+function clearCache(){
+  if(!confirm('Clear local cache? This resets the recently-shown rotation so films can resurface. Your Seen, Likes, Watchlist and Hidden lists are saved to your account and are NOT affected.')) return;
+  try{ localStorage.removeItem('cinelog_exposure'); }catch(e){}
+  if(typeof refreshSettings==='function') refreshSettings();
+  if(typeof toast==='function') toast('Cache cleared — films will resurface.');
 }
 
 // Title-case a lowercased genre key for display.
