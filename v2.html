@@ -198,15 +198,20 @@
   /* 2x2 grid of equal-size card toggles: Seen / Favorite / Watchlist / Hide */
   .card-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
   .card-act{margin:0;font-size:13px;font-weight:600;padding:9px 10px;border-radius:10px;cursor:pointer;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--sans);transition:all .14s;white-space:nowrap;text-align:center;width:100%}
-  .card-act:hover{border-color:var(--border);color:var(--text)}
-  .act-seen:hover{border-color:var(--teal);color:var(--teal)}
-  .act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
-  .act-fav:hover{border-color:#c2557a;color:#f0a0bd}
-  .act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
-  .act-watch:hover{border-color:#5b8fd6;color:#a8c8f0}
-  .act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
-  .act-hide:hover{border-color:#a05a5a;color:#e09a9a}
-  .act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
+  /* Scoped to .card-act ONLY — these used to be unscoped (.act-fav:hover etc.) and leaked into the
+     detail .md-pill buttons: on touch, :hover sticks after a tap, so an un-selected pill kept showing
+     the hover/marked colour. Hovers also guarded with @media(hover:hover) so they never stick on touch. */
+  @media (hover:hover){
+    .card-act:hover{border-color:var(--border);color:var(--text)}
+    .card-act.act-seen:hover{border-color:var(--teal);color:var(--teal)}
+    .card-act.act-fav:hover{border-color:#c2557a;color:#f0a0bd}
+    .card-act.act-watch:hover{border-color:#5b8fd6;color:#a8c8f0}
+    .card-act.act-hide:hover{border-color:#a05a5a;color:#e09a9a}
+  }
+  .card-act.act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
+  .card-act.act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
+  .card-act.act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
+  .card-act.act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
   .lt-seen{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
   .lt-seen:hover{background:transparent;border-color:var(--text3);color:var(--text2)}
   .ltable-wrap{margin-top:6px;overflow-x:auto}
@@ -1354,9 +1359,26 @@
   .trend-tab.on{background:color-mix(in srgb,var(--accent) 14%,var(--bg3));border-color:var(--accent);color:var(--accent2)}
   @supports not (background:color-mix(in srgb,red,blue)){.trend-tab.on{background:var(--accent-dim)}}
 
+  /* Global catalog search bar (searches the whole movies table, not just the pool) */
+  .trend-search{flex:none;position:relative;display:flex;align-items:center;gap:9px;height:42px;padding:0 13px;
+    margin:.85rem max(1rem,env(safe-area-inset-right)) .1rem max(1rem,env(safe-area-inset-left));
+    border-radius:12px;background:var(--bg3);border:1px solid var(--border2);
+    transition:border-color .15s,box-shadow .15s}
+  .trend-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.18)}
+  .trend-search svg{width:17px;height:17px;color:var(--text3);flex:none}
+  .trend-search:focus-within svg{color:var(--accent2)}
+  .trend-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);
+    font-family:var(--sans);font-size:14.5px;padding:0;-webkit-appearance:none}
+  .trend-search input::placeholder{color:var(--text3)}
+  .trend-search input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+  .trend-search-clear{flex:none;width:22px;height:22px;border-radius:50%;border:none;background:var(--bg4);
+    color:var(--text2);font-size:11px;line-height:1;cursor:pointer;display:grid;place-items:center;
+    -webkit-tap-highlight-color:transparent;transition:color .14s,background .14s}
+  .trend-search-clear:hover{color:var(--text);background:var(--border2)}
+
   .trend-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
-  .trend-blurb{font-size:12.5px;color:var(--text3);line-height:1.5;margin:-.2rem 0 1rem;font-style:italic}
+  .trend-blurb{font-size:13.5px;color:var(--text2);line-height:1.55;margin:-.1rem 0 1.15rem;font-weight:450}
   @media (max-width:600px){
     .trend-tab{padding:11px 16px}
   }
@@ -1884,9 +1906,16 @@
     </div>
     <span class="cg-head-spacer" aria-hidden="true"></span>
   </header>
+  <div class="trend-search" id="trend-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="trend-search-input" type="search" placeholder="Search all movies…" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search all movies" oninput="onTrendSearchInput()">
+    <button class="trend-search-clear" id="trend-search-clear" type="button" onclick="clearTrendSearch()" aria-label="Clear search" hidden>✕</button>
+  </div>
   <div class="trend-tabs" id="trend-tabs" role="tablist">
     <button class="trend-tab on" type="button" role="tab" data-tab="trending" onclick="setTrendingTab('trending')">Trending</button>
-    <button class="trend-tab"    type="button" role="tab" data-tab="newer"    onclick="setTrendingTab('newer')">Newer</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="new"      onclick="setTrendingTab('new')">New Releases</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="crowd"    onclick="setTrendingTab('crowd')">Crowd-Pleasers</button>
+    <button class="trend-tab"    type="button" role="tab" data-tab="gems"     onclick="setTrendingTab('gems')">Hidden Gems</button>
   </div>
   <div class="trend-body" id="trend-page-body"></div>
 </div>
@@ -2442,7 +2471,8 @@ const SERVICES=[
   // ---- Rent/buy storefronts (badges only, never toggles) ----
   {key:'appletv_store', label:'Apple TV', color:'#b8b8b8', toggle:false, aliases:['apple tv store'], searchUrl:'https://tv.apple.com/search?term={q}'},
   {key:'amazon_video',  label:'Amazon',   color:'#00a8e1', toggle:false, aliases:['amazon video'], searchUrl:'https://www.amazon.com/s?k={q}&i=instant-video'},
-  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home','fandango at home free'], searchUrl:'https://www.fandangoathome.com/search/{q}'},
+  // Fandango deliberately omitted — its links don't resolve well and it sees little use, so it's
+  // never shown as a "where to watch" provider (movieAvailability skips any unmapped provider).
   {key:'google',        label:'Google Play', color:'#34a853', toggle:false, aliases:['google play movies'], searchUrl:'https://play.google.com/store/search?q={q}&c=movies'},
   {key:'youtube_store', label:'YouTube', color:'#ff0000', toggle:false, aliases:['youtube'], searchUrl:'https://www.youtube.com/results?search_query={q}+movie'}
 ];
@@ -3810,7 +3840,7 @@ function openMovieDetail(m){
   let provs=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
   // Keep the 2-col grid EVEN: on an odd count, drop the single least-important PAID storefront so
   // there's no lonely card. Keep priority (high→low): free/streamable services, then Apple TV,
-  // then Amazon/Prime, then YouTube/Google Play; anything else (e.g. Fandango) is dropped first.
+  // then Amazon/Prime, then YouTube/Google Play; any other paid storefront is dropped first.
   // If every provider is free/streamable (nothing to spare), span the last card instead of dropping.
   let spanLast=false;
   if(provs.length%2===1){
@@ -4955,34 +4985,37 @@ function trendQuality(m){
   if(!parts.length) return 0;
   return parts.reduce((a,b)=>a+b,0)/parts.length;
 }
+const TREND_NOW=new Date().getFullYear();
 // popularity_score (0–100): log-scaled IMDb vote_count → ~0–100 (0 if no votes).
 function trendPopularity(m){
   const v=trendNum(m.vote_count);
   if(v==null||v<=0) return 0;
   return Math.max(0,Math.min(100,(Math.log10(v)-3)/3*100));
 }
+// Recency-adjusted vote count (mirrors the engine's adjVotes): a film accumulating votes FAST
+// reads as popular, so recent buzzy films actually trend instead of just all-time classics.
+function trendAdjVotes(m){
+  const v=trendNum(m.vote_count); if(v==null||v<=0) return 0;
+  const age=Math.max(0, TREND_NOW-(trendNum(m.year)||TREND_NOW));
+  return v*(1+9/(1+age/1.5));   // age0 →10×, age3 →4×, → ~1× for the back catalog
+}
+function trendAdjPopularity(m){
+  const v=trendAdjVotes(m); if(v<=0) return 0;
+  return Math.max(0,Math.min(100,(Math.log10(v)-3)/3*100));
+}
 // recency_boost (0–100): newer films score higher (last ~30 years mapped to 0–100).
 function trendRecency(m){
   const y=trendNum(m.year);
   if(y==null) return 0;
-  const now=new Date().getFullYear();
-  return Math.max(0,Math.min(100,(y-(now-30))/30*100));
+  return Math.max(0,Math.min(100,(y-(TREND_NOW-30))/30*100));
 }
-function trendAvailable(m){
-  const a=movieAvailability(m);
-  return a.length>0;   // any recognized service (free or paid)
-}
-function trendFreeAvailable(m){
-  return movieAvailability(m).some(x=>x.free);
-}
-/* trending_score = high-quality, broadly appealing films worth watching tonight
-   — NOT live/internet trending. Weighted blend (quality dominates):
-   quality*0.55 + popularity*0.30 + recency*0.10. Light per-film randomness is added
-   in trendRanked (not here) so the list rotates each load. */
+/* trending_score — genuinely "what's hot": recency-adjusted popularity leads, quality keeps it
+   good, a recency boost favours newer films. (Reweighted from the old quality-dominant blend that
+   just surfaced all-time classics.) Per-film jitter is added in trendRanked so the list rotates. */
 function trendingScore(m){
-  return trendQuality(m)*0.55
-       + trendPopularity(m)*0.30
-       + trendRecency(m)*0.10;
+  return trendAdjPopularity(m)*0.45
+       + trendQuality(m)*0.35
+       + trendRecency(m)*0.20;
 }
 
 /* --- Cheap taste bias from favorited genres (For You). favProfile is built by
@@ -5000,36 +5033,36 @@ async function loadTrendPool(){
   if(trendPoolReady && trendPool) return trendPool;
   if(!sbKey) return null;
   const cols='imdb_id,title,year,runtime_minutes,genre,director,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,mpaa_rating,streaming';
-  const base='?select='+encodeURIComponent(cols)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
+  // Two pools, merged + deduped: (1) the top quality films by rating, and (2) the most-voted RECENT
+  // films (last ~5 yrs). Without (2), recency-aware Trending/New had no recent films to surface —
+  // the rating sort excludes them before scoring. Together they cover classics AND current titles.
+  const enc=encodeURIComponent;
+  const qQuality='?select='+enc(cols)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
+  const qRecent ='?select='+enc(cols)+'&year=gte.'+(TREND_NOW-5)+'&vote_count=not.is.null&order=vote_count.desc.nullslast&limit=180';
+  const getJSON=async (q)=>{ try{ const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+q,{headers:sbHeaders()}); return r.ok?await r.json():null; }catch(e){ return null; } };
   try{
-    let resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+base,{headers:sbHeaders()});
-    if(!resp.ok){
-      // streaming column may not exist — retry without it.
+    let [a,b]=await Promise.all([getJSON(qQuality), getJSON(qRecent)]);
+    if(!a){
+      // streaming column may not exist — retry the quality pool without it.
       const cols2=cols.replace(',streaming','');
-      const base2='?select='+encodeURIComponent(cols2)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
-      resp=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+base2,{headers:sbHeaders()});
-      if(!resp.ok) throw new Error('HTTP '+resp.status);
+      a=await getJSON('?select='+enc(cols2)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE);
     }
-    trendPool=await resp.json();
+    if(!a && !b) throw new Error('trend pool fetch failed');
+    const seen={}, merged=[];
+    (a||[]).concat(b||[]).forEach(m=>{ if(m && !seen[m.imdb_id]){ seen[m.imdb_id]=1; merged.push(m); } });
+    trendPool=merged;
     trendPoolReady=true;
     return trendPool;
   }catch(e){ return null; }
 }
 
-/* --- Build the ranked "Trending" list. Excludes hidden (niSet); prefers
-   unseen by demoting seen films so unseen fill first when available. --- */
-/* Free on one of the 8 toggle subscription services (reuses the app's availability map). */
-function trendStreamable(m){
-  try{
-    if(typeof movieAvailability!=='function') return true;
-    return movieAvailability(m).some(function(a){ return a && a.free && a.svc && a.svc.toggle; });
-  }catch(e){ return false; }
-}
+/* --- Build the ranked "Trending" list. Excludes hidden (niSet); demotes seen films so unseen
+   fill first. No streaming gate — that was filtering out most recent/buzzy films (and the detail
+   card shows where-to-watch anyway). --- */
 function trendRanked(pool){
   const seen=m=>(typeof isSeen==='function' && isSeen(m));
   return pool
     .filter(m=>!(typeof isNotInterested==='function' && isNotInterested(m)))
-    .filter(trendStreamable)
     .map(m=>({m, s:trendingScore(m)+trendTasteBonus(m)+(Math.random()*2-1)*TREND_NOISE-(seen(m)?1000:0)}))
     .sort((a,b)=>b.s-a.s)
     .map(x=>x.m);
@@ -5039,12 +5072,15 @@ function trendRanked(pool){
 function trendNoPoster(title){
   return '<div class="trend-noposter"><span class="tn-ic">🎞</span><span class="tn-title">'+esc(title||'Untitled')+'</span></div>';
 }
-function trendTileHTML(m, cls){
+function trendTileHTML(m, rank){
   trendFilmsById[m.imdb_id]=m;
   const art=m.poster_url
     ? '<img src="'+m.poster_url+'" alt="'+escAttr(m.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=trendNoPoster('+JSON.stringify(JSON.stringify(m.title))+')">'
     : trendNoPoster(m.title);
-  return '<button class="'+cls+'" type="button" onclick="openTrendDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'+art+'</button>';
+  const rankBadge = rank!=null ? '<span class="rg-rank">#'+rank+'</span>' : '';
+  const imdb=trendNum(m.imdb_rating);
+  const imdbBadge = imdb!=null ? '<span class="rg-imdb">IMDb '+imdb.toFixed(1)+'</span>' : '';
+  return '<button class="rg-tile" type="button" onclick="openTrendDetail(\''+m.imdb_id+'\')" aria-label="'+escAttr(m.title)+'">'+rankBadge+art+imdbBadge+'</button>';
 }
 /* Homepage preview cell: poster tile + full title below (3-up grid). */
 function trendCellHTML(m){
@@ -5079,27 +5115,39 @@ async function initTrendingRow(){
 
 /* --- Full Trending page + tabs --- */
 const TREND_TAB_BLURB={
-  trending:'High-quality, broadly appealing films worth watching tonight.',
-  newer   :'The best of the last few years.'
+  trending:'Buzzing right now — recent hits and the films people are actually watching.',
+  new     :'The best films of the last couple of years.',
+  crowd   :'Massively loved and broadly appealing — the safe-bet crowd-pleasers.',
+  gems    :'Underseen and quietly excellent — worth discovering.'
 };
 function trendTabList(tab, pool){
   const notHidden=m=>!(typeof isNotInterested==='function' && isNotInterested(m));
-  if(tab==='newer'){
-    // STRICT: only films from the last 3 years. RECENT YEAR + QUALITY — sorted by quality,
-    // newer year breaks ties; unseen first (seen demoted). Not gated on free-streaming: brand-new
-    // films are often still rental-only, so requiring a free tier would wrongly empty this tab. Cap 50.
-    const nowY=new Date().getFullYear();
-    const seen=m=>(typeof isSeen==='function' && isSeen(m));
+  const seen=m=>(typeof isSeen==='function' && isSeen(m));
+  if(tab==='new'){
+    // Last 3 years, ranked by current buzz (recency-adjusted popularity) then quality; unseen first.
+    // Not gated on free-streaming — brand-new films are often still rental-only.
     return pool.filter(notHidden)
-      .filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(nowY-3); })
-      .map(m=>({m, q:trendQuality(m)-(seen(m)?1000:0), y:trendNum(m.year)||0}))
-      .sort((a,b)=>(b.q-a.q)||(b.y-a.y))
-      .slice(0,50).map(x=>x.m);
+      .filter(m=>{ const y=trendNum(m.year); return y!=null && y>=(TREND_NOW-3); })
+      .map(m=>({m, s:trendAdjPopularity(m)*0.6 + trendQuality(m)*0.4 + (trendNum(m.year)||0)*0.001 - (seen(m)?1000:0)}))
+      .sort((a,b)=>b.s-a.s).slice(0,50).map(x=>x.m);
   }
-  // trending (default): highest trending_score, min IMDb ~7.0 when present (films without a
-  // rating may still pass). Mix of classics + modern. Capped at 50.
+  if(tab==='crowd'){
+    // Mass-loved: lots of votes AND a strong rating. Sorted by popularity×quality.
+    return pool.filter(notHidden)
+      .filter(m=>{ const v=trendNum(m.vote_count), q=trendNum(m.imdb_rating); return v!=null&&v>=150000 && (q==null||q>=7.2); })
+      .map(m=>({m, s:trendPopularity(m)*0.5 + trendQuality(m)*0.5 - (seen(m)?500:0)}))
+      .sort((a,b)=>b.s-a.s).slice(0,50).map(x=>x.m);
+  }
+  if(tab==='gems'){
+    // Underseen quality: strong rating but a modest audience. Sorted by quality; unseen first.
+    return pool.filter(notHidden)
+      .filter(m=>{ const v=trendNum(m.vote_count), q=trendNum(m.imdb_rating); return q!=null&&q>=7.4 && v!=null && v<80000; })
+      .map(m=>({m, s:trendQuality(m) - (seen(m)?1000:0)}))
+      .sort((a,b)=>b.s-a.s).slice(0,50).map(x=>x.m);
+  }
+  // trending (default): recency-aware trending_score, min IMDb ~6.8 when present. Capped at 50.
   return trendRanked(pool)
-    .filter(m=>{ const q=trendNum(m.imdb_rating); return q==null || q>=7.0; })
+    .filter(m=>{ const q=trendNum(m.imdb_rating); return q==null || q>=6.8; })
     .slice(0,50);
 }
 function renderTrendingPage(){
@@ -5120,22 +5168,80 @@ function renderTrendingPage(){
     if(cnt) cnt.innerHTML='&nbsp;';
     return;
   }
+  const showRank=(trendPageTab==='trending'||trendPageTab==='crowd');
   body.innerHTML=(blurb?'<p class="trend-blurb">'+esc(blurb)+'</p>':'')
-    +'<div class="rg-grid">'+list.map(m=>trendTileHTML(m,'rg-tile')).join('')+'</div>';
+    +'<div class="rg-grid">'+list.map((m,i)=>trendTileHTML(m, showRank?i+1:null)).join('')+'</div>';
   body.querySelectorAll('.rg-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*28,500)+'ms'; });
   if(cnt) cnt.textContent=list.length+(list.length===1?' film':' films');
   body.scrollTop=0;
 }
 function setTrendingTab(tab){
   trendPageTab=tab;
+  resetTrendSearchInput();            // switching tabs cancels any active search
   document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   renderTrendingPage();
+}
+
+/* --- Global catalog search (queries the whole movies table, not just trendPool) --- */
+let trendSearchQuery='';
+let trendSearchTimer=null;
+function resetTrendSearchInput(){
+  const inp=document.getElementById('trend-search-input'); if(inp) inp.value='';
+  const clr=document.getElementById('trend-search-clear'); if(clr) clr.hidden=true;
+  clearTimeout(trendSearchTimer); trendSearchQuery='';
+}
+function onTrendSearchInput(){
+  const inp=document.getElementById('trend-search-input');
+  const q=(inp?inp.value:'').trim();
+  const clr=document.getElementById('trend-search-clear'); if(clr) clr.hidden=!q;
+  clearTimeout(trendSearchTimer);
+  if(!q){ trendSearchQuery=''; renderTrendingPage(); return; }   // empty → back to the active tab
+  trendSearchTimer=setTimeout(()=>runTrendSearch(q),280);        // debounce
+}
+function clearTrendSearch(){
+  resetTrendSearchInput();
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===trendPageTab));
+  renderTrendingPage();
+  const inp=document.getElementById('trend-search-input'); if(inp) inp.focus();
+}
+async function runTrendSearch(q){
+  trendSearchQuery=q;
+  const body=document.getElementById('trend-page-body');
+  const cnt=document.getElementById('trend-count');
+  if(!body || !sbKey) return;
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.remove('on'));   // search ≠ a tab
+  body.innerHTML='<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Searching…</div></div>';
+  // ilike pattern across the WHOLE catalog: words joined by * → fuzzy substring match, popular first.
+  const pattern='*'+q.split(/\s+/).filter(Boolean).map(w=>encodeURIComponent(w)).join('*')+'*';
+  const cols='imdb_id,title,year,runtime_minutes,genre,director,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,mpaa_rating,streaming';
+  const url=SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+encodeURIComponent(cols)+'&title=ilike.'+pattern+'&order=vote_count.desc.nullslast&limit=60';
+  try{
+    const r=await fetch(url,{headers:sbHeaders()});
+    if(trendSearchQuery!==q) return;                 // a newer query superseded this one
+    const list = r.ok ? await r.json() : [];
+    if(trendSearchQuery!==q) return;
+    trendFilmsById={};
+    if(!list.length){
+      body.innerHTML='<div class="cg-state"><div class="cg-state-ic">🔍</div>No movies match “'+esc(q)+'”.<div class="cg-state-sub">Try a different title.</div></div>';
+      if(cnt) cnt.textContent='No results';
+      return;
+    }
+    body.innerHTML='<p class="trend-blurb">'+list.length+' result'+(list.length===1?'':'s')+' for “'+esc(q)+'”</p>'
+      +'<div class="rg-grid">'+list.map(m=>trendTileHTML(m,null)).join('')+'</div>';
+    body.querySelectorAll('.rg-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*22,400)+'ms'; });
+    if(cnt) cnt.textContent=list.length+(list.length===1?' result':' results');
+    body.scrollTop=0;
+  }catch(e){
+    if(trendSearchQuery!==q) return;
+    body.innerHTML='<div class="cg-state"><div class="cg-state-ic">⚠</div>Search failed.<div class="cg-state-sub">Check your connection and try again.</div></div>';
+  }
 }
 let trendPageOpen=false;
 async function openTrendingPage(){
   const ov=document.getElementById('trend-overlay');
   if(!ov) return;
   trendPageTab='trending';
+  resetTrendSearchInput();
   document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab==='trending'));
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;

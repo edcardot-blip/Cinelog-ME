@@ -175,8 +175,10 @@ A flat object mapping a **lowercased provider name** → its **best (free-est) t
 buttons and count toward "Free to me" and Trending's `trendStreamable`.
 
 ### Rent/buy storefronts — badge-only (never filters)
-`appletv_store` (Apple TV), `amazon_video` (Amazon), `fandango` (Fandango at Home), `google`
-(Google Play), `youtube_store` (YouTube). Shown as availability badges; never filterable.
+`appletv_store` (Apple TV), `amazon_video` (Amazon), `google` (Google Play), `youtube_store`
+(YouTube). Shown as availability badges; never filterable. (The `streaming` JSONB may still contain
+`fandango at home`, but **Fandango is intentionally not in the app's `SERVICES` config**, so
+`movieAvailability` skips it and it is never shown — its links resolved poorly and it sees little use.)
 
 ---
 
