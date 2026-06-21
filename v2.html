@@ -1169,9 +1169,24 @@
   .md-pill.act-watch.marked{border-color:var(--accent);color:var(--accent2)}
   .md-pill.act-hide.marked{border-color:var(--border);color:var(--text2);background:var(--bg4)}
   @media (max-width:600px){
-    .md-pill{min-height:52px;padding:8px 4px}
-    .md-body{padding:1.15rem 1.1rem 1.3rem}
-    .md-title{font-size:24px}
+    /* Tighter vertical rhythm so the card fits an iPhone with little/no scrolling. */
+    .md-hero{aspect-ratio:16/9}
+    .md-hero-poster{width:82px;bottom:11px}
+    .md-body{padding:1rem 1.05rem 1.15rem}
+    .md-title{font-size:22px;margin-bottom:6px;min-height:0}
+    .md-meta,.md-credit{margin-bottom:4px}
+    .md-genres,.md-genre-chips{margin-bottom:.9rem}
+    .md-ratings{margin-bottom:1rem}
+    .md-section-lbl{margin-bottom:.45rem}
+    /* slightly smaller "Where to watch" buttons */
+    .md-providers{gap:7px;margin-bottom:1rem}
+    .md-prov{min-height:44px;padding:8px 11px;border-radius:11px}
+    .md-prov .mp-dot{width:10px;height:10px}
+    .md-prov .mp-name{font-size:12.5px}
+    .md-why{padding:.75rem .9rem;margin-bottom:1rem}
+    .md-why p{font-size:13px}
+    .md-pill{min-height:50px;padding:7px 4px}
+    .md-pill .md-pill-ic svg{width:16px;height:16px}
   }
   @media (prefers-reduced-motion:reduce){
     .md-sheet,.md-hero-poster{transition:opacity .2s ease}
@@ -3757,12 +3772,14 @@ function openMovieDetail(m){
   if(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated')
     metaLine += (metaLine?' <span class="md-dot">•</span> ':'') + '<span class="mpaa-badge">'+esc(m.mpaa_rating)+'</span>';
 
-  // ---- Director: first director only; "+N directors" if more — always one line ----
+  // ---- Director(s): show all names when there are just a few (≤3 — e.g. sibling duos); only
+  //      collapse to "+N more" for the rare "bunch of directors" case (anthologies). One line.
   const dirs=(m.director||'').split(',').map(s=>s.trim()).filter(d=>d && d!=='N/A');
   let directorLine='';
   if(dirs.length){
-    directorLine = esc(dirs[0]);
-    if(dirs.length>1) directorLine += ' <span class="md-more">+'+(dirs.length-1)+' director'+(dirs.length-1>1?'s':'')+'</span>';
+    directorLine = (dirs.length<=3)
+      ? dirs.map(esc).join(', ')
+      : dirs.slice(0,2).map(esc).join(', ')+' <span class="md-more">+'+(dirs.length-2)+' more</span>';
   }
 
   // ---- Genres: ≤3 → show all inline; >3 → first three + "Show all" toggle → full chips. Never "+N".

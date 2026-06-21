@@ -95,7 +95,9 @@ streaming → why → library actions**, with generous section spacing.
   (enlarged ~94px, soft shadow) that scales in on open.
 - `.md-body`:
   - `.md-title` (serif, prominent), `.md-meta` (year · runtime · MPAA — one line).
-  - `.md-credit.md-director` (secondary, one line) then **genres**: ≤3 → all inline; >3 → first
+  - `.md-credit.md-director` (secondary, one line) — shows **all** director names inline when there
+    are ≤3 (e.g. sibling duos); collapses to "+N more" only for the rare 4+ "bunch" case. Then
+    **genres**: ≤3 → all inline; >3 → first
     three + a `.md-genre-more` "Show all" toggle (`mdShowAllGenres()`) that reveals `.md-genre-chips`
     (all genres as wrapped chips). **Never "+N".** Note: `.md-genre-chips[hidden]{display:none}` is
     required — a CSS `display` rule overrides the UA `[hidden]` rule.
