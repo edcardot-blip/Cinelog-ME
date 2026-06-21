@@ -1359,6 +1359,23 @@
   .trend-tab.on{background:color-mix(in srgb,var(--accent) 14%,var(--bg3));border-color:var(--accent);color:var(--accent2)}
   @supports not (background:color-mix(in srgb,red,blue)){.trend-tab.on{background:var(--accent-dim)}}
 
+  /* Global catalog search bar (searches the whole movies table, not just the pool) */
+  .trend-search{flex:none;position:relative;display:flex;align-items:center;gap:9px;height:42px;padding:0 13px;
+    margin:.85rem max(1rem,env(safe-area-inset-right)) .1rem max(1rem,env(safe-area-inset-left));
+    border-radius:12px;background:var(--bg3);border:1px solid var(--border2);
+    transition:border-color .15s,box-shadow .15s}
+  .trend-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,176,75,.18)}
+  .trend-search svg{width:17px;height:17px;color:var(--text3);flex:none}
+  .trend-search:focus-within svg{color:var(--accent2)}
+  .trend-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);
+    font-family:var(--sans);font-size:14.5px;padding:0;-webkit-appearance:none}
+  .trend-search input::placeholder{color:var(--text3)}
+  .trend-search input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+  .trend-search-clear{flex:none;width:22px;height:22px;border-radius:50%;border:none;background:var(--bg4);
+    color:var(--text2);font-size:11px;line-height:1;cursor:pointer;display:grid;place-items:center;
+    -webkit-tap-highlight-color:transparent;transition:color .14s,background .14s}
+  .trend-search-clear:hover{color:var(--text);background:var(--border2)}
+
   .trend-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:1.1rem max(1rem,env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
   .trend-blurb{font-size:13.5px;color:var(--text2);line-height:1.55;margin:-.1rem 0 1.15rem;font-weight:450}
@@ -1889,6 +1906,11 @@
     </div>
     <span class="cg-head-spacer" aria-hidden="true"></span>
   </header>
+  <div class="trend-search" id="trend-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="trend-search-input" type="search" placeholder="Search all movies…" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search all movies" oninput="onTrendSearchInput()">
+    <button class="trend-search-clear" id="trend-search-clear" type="button" onclick="clearTrendSearch()" aria-label="Clear search" hidden>✕</button>
+  </div>
   <div class="trend-tabs" id="trend-tabs" role="tablist">
     <button class="trend-tab on" type="button" role="tab" data-tab="trending" onclick="setTrendingTab('trending')">Trending</button>
     <button class="trend-tab"    type="button" role="tab" data-tab="new"      onclick="setTrendingTab('new')">New Releases</button>
@@ -5155,14 +5177,71 @@ function renderTrendingPage(){
 }
 function setTrendingTab(tab){
   trendPageTab=tab;
+  resetTrendSearchInput();            // switching tabs cancels any active search
   document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   renderTrendingPage();
+}
+
+/* --- Global catalog search (queries the whole movies table, not just trendPool) --- */
+let trendSearchQuery='';
+let trendSearchTimer=null;
+function resetTrendSearchInput(){
+  const inp=document.getElementById('trend-search-input'); if(inp) inp.value='';
+  const clr=document.getElementById('trend-search-clear'); if(clr) clr.hidden=true;
+  clearTimeout(trendSearchTimer); trendSearchQuery='';
+}
+function onTrendSearchInput(){
+  const inp=document.getElementById('trend-search-input');
+  const q=(inp?inp.value:'').trim();
+  const clr=document.getElementById('trend-search-clear'); if(clr) clr.hidden=!q;
+  clearTimeout(trendSearchTimer);
+  if(!q){ trendSearchQuery=''; renderTrendingPage(); return; }   // empty → back to the active tab
+  trendSearchTimer=setTimeout(()=>runTrendSearch(q),280);        // debounce
+}
+function clearTrendSearch(){
+  resetTrendSearchInput();
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===trendPageTab));
+  renderTrendingPage();
+  const inp=document.getElementById('trend-search-input'); if(inp) inp.focus();
+}
+async function runTrendSearch(q){
+  trendSearchQuery=q;
+  const body=document.getElementById('trend-page-body');
+  const cnt=document.getElementById('trend-count');
+  if(!body || !sbKey) return;
+  document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.remove('on'));   // search ≠ a tab
+  body.innerHTML='<div class="cg-state"><div class="cg-state-load"><span class="spin"></span>Searching…</div></div>';
+  // ilike pattern across the WHOLE catalog: words joined by * → fuzzy substring match, popular first.
+  const pattern='*'+q.split(/\s+/).filter(Boolean).map(w=>encodeURIComponent(w)).join('*')+'*';
+  const cols='imdb_id,title,year,runtime_minutes,genre,director,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,mpaa_rating,streaming';
+  const url=SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+encodeURIComponent(cols)+'&title=ilike.'+pattern+'&order=vote_count.desc.nullslast&limit=60';
+  try{
+    const r=await fetch(url,{headers:sbHeaders()});
+    if(trendSearchQuery!==q) return;                 // a newer query superseded this one
+    const list = r.ok ? await r.json() : [];
+    if(trendSearchQuery!==q) return;
+    trendFilmsById={};
+    if(!list.length){
+      body.innerHTML='<div class="cg-state"><div class="cg-state-ic">🔍</div>No movies match “'+esc(q)+'”.<div class="cg-state-sub">Try a different title.</div></div>';
+      if(cnt) cnt.textContent='No results';
+      return;
+    }
+    body.innerHTML='<p class="trend-blurb">'+list.length+' result'+(list.length===1?'':'s')+' for “'+esc(q)+'”</p>'
+      +'<div class="rg-grid">'+list.map(m=>trendTileHTML(m,null)).join('')+'</div>';
+    body.querySelectorAll('.rg-tile').forEach((t,i)=>{ t.style.animationDelay=Math.min(i*22,400)+'ms'; });
+    if(cnt) cnt.textContent=list.length+(list.length===1?' result':' results');
+    body.scrollTop=0;
+  }catch(e){
+    if(trendSearchQuery!==q) return;
+    body.innerHTML='<div class="cg-state"><div class="cg-state-ic">⚠</div>Search failed.<div class="cg-state-sub">Check your connection and try again.</div></div>';
+  }
 }
 let trendPageOpen=false;
 async function openTrendingPage(){
   const ov=document.getElementById('trend-overlay');
   if(!ov) return;
   trendPageTab='trending';
+  resetTrendSearchInput();
   document.querySelectorAll('#trend-tabs .trend-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab==='trending'));
   ov.setAttribute('aria-hidden','false');
   void ov.offsetWidth;

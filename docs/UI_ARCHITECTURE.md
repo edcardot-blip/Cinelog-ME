@@ -316,6 +316,11 @@ titles actually qualify (the old single rating-sorted pool excluded them). No fr
 
 **Layout.**
 - `.cg-head` (reuses collection header styling): `.rg-back`, `.cg-title` "Trending", `#trend-count`.
+- `.trend-search` (`#trend-search-input`): a **global catalog search** bar that queries the *entire*
+  `movies` table (`title=ilike.*word*…`, popular-first, limit 60) — not just the trend pool.
+  Debounced (`onTrendSearchInput` → `runTrendSearch`, race-guarded by `trendSearchQuery`); results
+  render in `#trend-page-body` (tabs deactivate). Clearing (`clearTrendSearch`) or switching tabs
+  restores the active tab.
 - `#trend-tabs` (`role="tablist"`): **four** `.trend-tab`s — **Trending** (`trending`, recency-aware
   buzz), **New Releases** (`new`, last 3 yrs by buzz), **Crowd-Pleasers** (`crowd`, ≥150k votes +
   strong rating), **Hidden Gems** (`gems`, high rating + <80k votes). `setTrendingTab(tab)` →
