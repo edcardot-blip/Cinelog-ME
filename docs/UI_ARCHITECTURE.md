@@ -92,8 +92,18 @@ why it was recommended, and the four personal-list actions. Opened from every po
   2/3 `.md-hero-poster` badge bottom-left.
 - `.md-body`:
   - `.md-title` (serif), `.md-meta` (year · runtime · director, genres, MPAA badge).
-  - `.md-ratings` — matched rating badges: `.rating-badge.rb-imdb`, `.rb-rt`, `.rb-meta`.
-  - `.md-avail` — streaming availability rows (`.av` with service dot + free/paid tier).
+  - `.md-ratings` — matched rating badges: `.rating-badge.rb-imdb`, `.rb-rt`, `.rb-meta`. Each is
+    now a **clickable external link** (`a.rb-link`, opens in a new tab) to that film's page:
+    IMDb is an exact deep-link (`/title/<imdb_id>/`); RT & Metacritic use each site's **search
+    endpoint** keyed on the title (robust — no fragile per-title slugs, never 404s). URLs are
+    generated on the fly by `ratingLinks(m)` — **no URLs are stored**. (Same links are wired on the
+    `.card` rating pills, with `event.stopPropagation()` so a badge tap doesn't open the card.)
+  - `.md-avail` — streaming availability rows (`.av` with service dot + free/paid tier). Each badge
+    is now a **clickable link** (`a.av-link`, new tab) to that service. The URL comes from a
+    per-service `searchUrl` template defined **once** in the static `SERVICES` config (not per
+    movie, not a DB column) filled with the title by `streamingLink(svc, m)`. Both render sites
+    (card + detail) share one builder, `availBadgeHtml(a, m, useEsc)`. `streamingLink` already
+    prefers a per-movie `m.watch_link` if the catalog ever gains true deep links (e.g. TMDB/JustWatch).
   - `.md-why` — gold-tinted panel with the recommendation explanation (only if `m.why` exists).
   - `#md-acts` — four `.md-pill` action toggles built by `mdActionPills(m)`:
     **Seen** (`act-seen`) · **Like** (`act-fav`) · **Watchlist** (`act-watch`) · **Hide** (`act-hide`).
@@ -111,6 +121,11 @@ why it was recommended, and the four personal-list actions. Opened from every po
 **Navigation.** Opened via `openMovieDetailById(id)` from gallery/trending tiles and
 `openCollectionDetail(id)` from collection tiles. `closeMovieDetail()` calls
 `refreshOpenCollection()` so toggling Like/Watchlist updates the underlying collection grid live.
+
+**Gotcha — display the RAW rating values.** The detail modal reads `m.imdb_rating` directly for
+the IMDb badge, **not** `m._imdb`. The engine sets `m._imdb = imdb_rating*10` internally (a 0–100
+pill-presence signal); rendering `_imdb` would show "IMDb 74" instead of "7.4". (`_rt`/`_meta`
+already match their 0–100 columns, so only IMDb is affected.)
 
 **Animations.** Overlay backdrop blurs in (`blur(7px)`); the sheet enters
 `scale(.9) translateY(10px) → none` via overshoot `cubic-bezier(.2,1.25,.4,1)` over `.34s`; pills
@@ -310,30 +325,45 @@ account row, and unlocks/locks the collection pages' content.
 
 ---
 
-## 9. Settings ("More") + Lists
+## 9. Settings ("More") — premium redesign (2026-06-21)
 
 **Container:** `#set-overlay` → `.set-panel` (z `1000`). `openSettings()` / `closeSettings()`;
 opened by the **More** bottom-nav tab (`navTo('more')`).
 
-**Purpose.** App settings, the Account/auth row, and shortcuts into the four Lists. Many rows are
-forward-looking ("Planned").
+**Purpose.** A polished, iOS-style preferences page (Apple Settings / Letterboxd / Things 3 feel).
+Every row does something real — no "Planned"/placeholder rows. It re-homes the *user preferences*
+that used to live in Advanced Filters or were unimplemented, and surfaces the user's collections.
 
-**Layout.** `.set-panel` with `.set-top` (back arrow `#set-back`, `#set-title`, close-X) and three
-mode views toggled by `overlayMode`:
-- `#set-menu` — grouped `.set-list` rows (Recommendations / Filters / App) + account.
-- `#set-lists` — tappable rows for Watchlist / Likes / Seen / Hidden with live counts
-  (e.g. `#set-watch-count`).
-- `#set-listview` — a detail list view populated by `openList(which)`.
+**Layout — `#set-menu`** (gold-stroke SVG icons throughout, grouped `.set-list` cards):
+- **Profile header** `#set-profile` (`renderSettingsProfile()`): gold avatar (initials or Google
+  `avatar_url`), name, "N Movies Seen", favourite genres (from `favProfile.genres`), "Joined …"
+  (`currentUser.created_at`). Signed-out → Welcome + **Sign in** button.
+- **Recommendations:** **Default Mode** segmented control (`setDefaultMode('hybrid'|'random')` →
+  persisted `cinelog_default_mode`, calls `setMode` so the homepage cards + go-button stay in sync);
+  **Streaming Services** row → `openSubscriptions()` (the existing picker; prefs already persist via
+  `saveSubscriptionPrefs`), summary in `#set-subs-meta`; **Language** segmented
+  (`setLangPref('en'|'all')` → persisted `cinelog_lang`, calls `setLangFilter`).
+- **Discovery Level:** the **adventurous slider** (`#adv-slider`/`advPos`) — *moved here from the
+  Advanced Filters modal*; it binds by `id`, so the engine driver is unchanged.
+- **My Collection:** Seen / Likes / Watchlist / Hidden rows with live counts (`#set-seen-count`
+  etc.) → `openCollection(which)`.
+- **Appearance:** Theme — Dark (Default).
+- **About:** live Movies-in-Catalog (`totalFilms`) + Last Updated (fetched once into `_lastDbUpdate`)
+  + Version (`APP_VERSION`) + Build (`APP_BUILD`); then tappable rows → `openInfo(key)` info modal
+  (`#info-ov`, z `1400`): What's New / Send Feedback / Contact Support / Rate / Privacy / Terms
+  (`INFO_CONTENT`; feedback/support use `mailto:`).
+- **Footer** `.set-foot2`: CINELOG · Version 1.0 · "Built for people who love movies."
 
-**Interactions.** `showOverlayMenu()` switches between menu/lists/listview; `refreshSettings()`
-updates counts + DB/cache status; `openList(which)` drills into a list; `backToMenu()` returns.
-List shortcuts route into the collection pages.
+Persisted prefs (`cinelog_default_mode`, `cinelog_lang`) are re-applied on load via a small IIFE.
+`refreshSettings()` repaints the profile, counts, segmented states, streaming summary and About
+stats on every open. `#set-lists` / `#set-listview` / `openList()` remain for the legacy in-overlay
+list path but are no longer the primary route (collections open full-screen via `openCollection`).
 
 **Navigation.** Reached via More; closing resets the bottom nav to `discover`. Esc closes
-subscriptions → advanced → sheet → settings in order.
+info-modal → subscriptions → advanced → sheet → settings in order.
 
-**Animations.** `.set-overlay.open` reveals the panel (radial-glow background, blur backdrop); the
-panel carries a soft dark elevation shadow.
+**Animations.** `.set-overlay.open` reveals the panel (blur backdrop, elevation shadow); rows press
+on tap, segmented buttons scale on `:active`; all motion respects `prefers-reduced-motion`.
 
 ---
 

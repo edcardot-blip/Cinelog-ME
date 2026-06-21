@@ -145,15 +145,43 @@ Returns `Math.max(0, score)`. So a film failing both length and era can reach 0.
 
 ---
 
-## 5. `popularityScore(m)` — log-scale fame (lines 1571–1575)
+## 5. `popularityScore(m)` — log-scale fame (age-adjusted)
 
 ```
-if (m.vote_count == null || m.vote_count <= 0) return 50;   // unknown → neutral
-lv = log10(vote_count);
+v  = adjVotes(m);                          // age-adjusted vote count (see below)
+if (v <= 0) return 50;                      // unknown → neutral
+lv = log10(v);
 return clamp01_100( ((lv - 3) / 3) * 100 );
 ```
 Maps **1k votes → 0**, **1M votes → 100**, interpolated linearly on log10 between,
 clamped to [0, 100]. This is the "fame" score (stored as `m._fame`).
+
+### 5a. `adjVotes(m)` — recency bias on the popularity signal (added 2026-06-21)
+
+```
+v   = m.vote_count || 0;  if (v <= 0) return v;
+age = max(0, NOW_YEAR - (m.year || NOW_YEAR));
+return v * (1 + 9 / (1 + age/1.5));         // age0 →10×, age3 →4×, age7.5 →2.5×, old →~1×
+```
+
+A film accumulating votes **fast** is as popular as an older film with far more lifetime votes
+(50k votes in months ≈ 500k over decades). `adjVotes` multiplies `vote_count` by a recency factor
+that is ~10× for a brand-new release and decays toward ~1× for the back catalog. It uses only
+`vote_count` + `year` — **no new data**.
+
+**Scope (the "whole popularity signal" — one coherent lever):** `adjVotes` feeds
+(1) `popularityScore` / fame, (2) the adventurous slider's `lerpAnchors` (`leftMod`/`rightMod`),
+and (3) the **confidence floor** (`confidencePenalty`'s 25k credibility gate — a fast-rising new
+film is no longer treated as "obscure"). It deliberately does **NOT** feed the franchise
+`popular ≥ 300k` check — that is a blockbuster-*suppression* flag, and age-adjusting it would
+penalise new franchise films harder, against intent. The raw `vote_count` is still shown in
+diagnostics.
+
+**Verified effect (live, NOW_YEAR = 2026):** fame moves only where a film hasn't hit the ceiling —
+*Obsession* (2026, 50k votes) 57 → **90**; *Before Midnight* (2013, 183k) 75 → **85**; *Top Gun:
+Maverick* (2022, 855k) 98 → 100; already-famous classics (*Oppenheimer*, *The Godfather*, ~1M+
+votes) stay pinned at 100, **unchanged**. Bounded by the existing 0–100 clamp and the slider's
+anchor caps, so a fast-rising film can read as a crowd favorite but can't exceed a genuine one.
 
 ---
 
@@ -278,10 +306,28 @@ critic-darlings from dominating. `v = vote_count || 0`. `strong` = how many of
   `strong >= 3` → `pen += 20`; else `strong >= 2` → `pen += 12`. A lone strong
   source stays hard-hit.
 
-**Exposure / rotation memory (`expPen`, lines 1771–1799):** `exposure` is read from
+**Exposure / rotation memory (`expPen`):** `exposure` is read from
 `localStorage['cinelog_exposure']` (no-op if unavailable). For each film:
-`expCount = exposure[imdb_id] || 0; expPen = -Math.min(8, expCount * 1.5)` — a gentle
-demotion (capped at -8) for films shown often, so the list rotates.
+`expCount = exposure[imdb_id] || 0; expPen = -Math.min(14, expCount * 3)` — a demotion
+(capped at -14) for films shown recently, so the list rotates.
+
+**Recency decay (anti-repetition lever, updated 2026-06-21).** The exposure model is now
+*recency-decaying*, not monotonic. At the exposure-bump step each search, every stored count is
+first faded — `exposure[id] *= 0.85` (entries `< 0.15` are pruned) — *then* the surfaced films are
+bumped `+1`. Two consequences:
+- **Films recover.** A film not re-surfaced fades back toward 0 over ~10 searches and becomes
+  eligible again, so the catalog keeps cycling instead of permanently burning through its best films.
+- **The penalty stays meaningful.** An always-shown film's count converges to a steady state of
+  `1/(1-0.85) ≈ 6.7` (→ `expPen` pinned near the -14 cap) instead of growing without bound; counts
+  no longer saturate and flatten out, which is what used to kill rotation for repeat users.
+
+*Why the change:* the previous `-Math.min(8, expCount*1.5)` with **no decay** was too weak and
+saturated — the top-raw films exceeded the -8 cap's reach and appeared in *every* search, while
+counts only ever grew. Deterministic before/after (30-film clustered pool, 15 repeat searches,
+no noise): turnover **4.2 → 7.9** of 10 per search, distinct films shown **23 → 26** of 30, and the
+top-7 films went from *stuck in every result* to rotating in and out (even #1 rests). Bounded by
+design — the -14 cap still can't lift a worse film over a clearly better one. One lever; `NOISE`
+(±6) and the top-45 candidate jitter are unchanged.
 
 ---
 
