@@ -109,12 +109,17 @@ streaming → why → library actions**, with generous section spacing.
   - **Where to watch** — a responsive **2-column provider grid** (`.md-providers` → `.md-prov`
     cards: colored `--svc` dot · provider name · `FREE`/`RENT`/`BUY` tag), built by
     `mdProviderCard(a, m, spanFull)`. Identical card width/height/padding; free providers sort
-    first; an **odd final card spans both columns** (`.span2`) so there's never a lonely card. Each
-    card is a clickable link to the service via `streamingLink(svc, m)` (per-service `searchUrl`
-    template in the static `SERVICES` config — no per-movie URLs; prefers `m.watch_link` if ever
-    stored). *(The result-card list still uses the compact inline `.av` pills via `availBadgeHtml`.)*
-  - `.md-why` — gold-tinted panel: "✨ Why we picked this" + `mdWhyText(m)` (the engine's `m.why`
-    when present, else an honest line derived from the film's rating/primary genre).
+    first. **Even-grid rule:** on an odd count, the single least-important *paid* storefront is
+    dropped so there's no lonely card — keep priority is free/streamable > Apple TV > Amazon/Prime >
+    YouTube/Google Play, with anything else (e.g. Fandango) dropped first; if every provider is free
+    (nothing to spare) the last card spans both columns instead. Each card links to the service via
+    `streamingLink(svc, m)` (per-service `searchUrl` in the static `SERVICES` config — no per-movie
+    URLs; prefers `m.watch_link` if ever stored). *(Result cards still use inline `.av` pills.)*
+  - `.md-why` — gold-tinted panel: "✨ Why we picked this" + `mdWhyText(m)`, which builds an
+    **interesting, varied** one-liner from the film's own attributes (critics/audience scores,
+    hidden-gem status, genre blend, era, runtime, genre-family mood, lead actor) and picks one by a
+    **stable hash of the id** — so the catalog reads with variety while a film stays consistent.
+    Deliberately avoids the flat "Directed by X" line.
   - `#md-acts` — four **compact** `.md-pill` action cards (gold-stroke SVG icons) built by
     `mdActionPills(m)`: **Seen** (`act-seen`) · **Like** (`act-fav`) · **Watchlist** (`act-watch`)
     · **Hide** (`act-hide`). Selected = subtle glow/outline (Seen teal, Like gold glow, Watchlist

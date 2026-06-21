@@ -3791,10 +3791,26 @@ function openMovieDetail(m){
   let avail=movieAvailability(m);
   const seenSvc={}; avail.forEach(a=>{if(!seenSvc[a.svc.key]||(a.free&&!seenSvc[a.svc.key].free))seenSvc[a.svc.key]=a;});
   let provs=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
+  // Keep the 2-col grid EVEN: on an odd count, drop the single least-important PAID storefront so
+  // there's no lonely card. Keep priority (high→low): free/streamable services, then Apple TV,
+  // then Amazon/Prime, then YouTube/Google Play; anything else (e.g. Fandango) is dropped first.
+  // If every provider is free/streamable (nothing to spare), span the last card instead of dropping.
+  let spanLast=false;
+  if(provs.length%2===1){
+    const keepRank=a=>{ if(a.free) return 100; const k=a.svc.key;
+      if(k==='appletv_store'||k==='apple') return 5;
+      if(k==='amazon_video'||k==='prime') return 4;
+      if(k==='youtube_store'||k==='google') return 3;
+      return 1; };
+    let dropIdx=-1, dropRank=Infinity;
+    provs.forEach((a,i)=>{ if(!a.free){ const r=keepRank(a); if(r<=dropRank){ dropRank=r; dropIdx=i; } } });
+    if(dropIdx>=0) provs.splice(dropIdx,1);   // dropped one → even grid
+    else spanLast=true;                        // all free & odd → full-width last card
+  }
   const TV_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M10.5 9.2l3.5 2.3-3.5 2.3z"/></svg>';
   const availHtml = provs.length
     ? '<div class="md-section-lbl">'+TV_ICO+'Where to watch</div><div class="md-providers">'
-      + provs.map((a,i)=>mdProviderCard(a, m, (provs.length%2===1 && i===provs.length-1))).join('')
+      + provs.map((a,i)=>mdProviderCard(a, m, (spanLast && i===provs.length-1))).join('')
       + '</div>'
     : '';
 
@@ -3871,16 +3887,55 @@ function mdShowAllGenres(){
   if(line) line.hidden=true;
   if(chips) chips.hidden=false;
 }
-// "Why we picked this" text: the engine's reason if present, else an honest line from the film's own data.
+// "Why we picked this": an interesting, varied one-liner derived from the film's own attributes.
+// Collects every angle that fits the film, then picks one by a stable hash of the id — so the
+// catalog reads with variety (no repeated "Directed by X") while a given film stays consistent.
 function mdWhyText(m){
-  if(m && m.why && String(m.why).trim()) return String(m.why).trim();
   if(!m) return '';
-  const g=(m.genre||'').split(',')[0].trim().toLowerCase();
-  const imdb=m.imdb_rating;
-  if(imdb!=null && imdb>=8 && g) return 'One of the highest audience-rated '+g+' films in the catalog.';
-  if(imdb!=null && imdb>=7.5) return 'A standout pick critics and audiences agree on.';
-  if(g) return 'A memorable '+g+' worth your time.';
-  return 'Hand-picked from the CINELOG catalog.';
+  const num=v=>{ const n=(v==null||v==='')?NaN:+v; return isNaN(n)?null:n; };
+  const imdb=num(m.imdb_rating), rt=num(m.rotten_tomatoes_score), meta=num(m.metascore), votes=num(m.vote_count);
+  const genres=(m.genre||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const g=(genres[0]||'film').toLowerCase(), g2=genres[1]?genres[1].toLowerCase():'';
+  const year=num(m.year), runtime=num(m.runtime_minutes);
+  const actor=((m.actors||'').split(',')[0]||'').trim();
+  const validActor=actor && actor.length>2 && !/^N\/A$/i.test(actor);
+  const decade=year!=null ? (year<1960?'pre-60s':(Math.floor(year/10)*10)+'s') : '';
+  const C=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  const out=[];
+  // critics
+  if(rt!=null && rt>=95) out.push('Almost universally loved by critics — '+rt+'% on the Tomatometer.');
+  else if(rt!=null && rt>=88) out.push('Critics are firmly on board: '+rt+'% on Rotten Tomatoes.');
+  if(meta!=null && meta>=85) out.push('A bona fide critical darling, with a '+meta+' Metascore.');
+  // audience / fame
+  if(imdb!=null && imdb>=8.3 && votes!=null && votes>=200000) out.push('A crowd favorite — '+imdb+' on IMDb from over '+Math.round(votes/1000)+'k viewers.');
+  else if(imdb!=null && imdb>=8) out.push('Audiences adore it — an '+imdb+' IMDb rating speaks for itself.');
+  else if(imdb!=null && imdb>=7.5) out.push('Highly rated by audiences ('+imdb+' on IMDb) and easy to recommend.');
+  // hidden gem
+  if(imdb!=null && imdb>=7.3 && votes!=null && votes<60000) out.push('A bit of a hidden gem — quietly one of the better '+g+' picks out there.');
+  // genre blend
+  if(g2) out.push(C(g)+' meets '+g2+' — the kind of mix that’s hard to put down.');
+  // era
+  if(year!=null && year<2000 && imdb!=null && imdb>=7.4) out.push('A '+decade+' '+g+' that more than holds up today.');
+  if(year!=null && year>=2022) out.push('One of the more talked-about '+g+' releases of recent years.');
+  // runtime
+  if(runtime!=null && runtime>0 && runtime<=98) out.push('Tight and rewatchable — a lean '+g+' that respects your time.');
+  if(runtime!=null && runtime>=150 && imdb!=null && imdb>=7.5) out.push('An epic that earns every one of its '+runtime+' minutes.');
+  // mood by genre family
+  if(['action','thriller','crime','adventure','mystery'].indexOf(g)>=0) out.push('Fast-paced '+g+' with serious replay value.');
+  if(['comedy','romance','family','animation','music','musical'].indexOf(g)>=0) out.push('An easy, feel-good '+g+' for when you just want to enjoy yourself.');
+  if(['drama','war','history','biography'].indexOf(g)>=0) out.push('A '+g+' with real staying power — the kind you keep thinking about.');
+  if(g==='horror') out.push('Genuinely effective horror that knows exactly what it’s doing.');
+  if(g==='documentary') out.push('A documentary that sticks with you long after the credits.');
+  if(g==='sci-fi') out.push('Smart sci-fi with ideas worth chewing on.');
+  // cast
+  if(validActor) out.push('Features '+actor+' in one of their most memorable '+g+' roles.');
+  // generic fallbacks — only used when no specific angle above fits
+  const fb=['A standout '+g+' that fits the mood you set.','Exactly the kind of '+g+' worth carving out an evening for.'];
+  const pool=out.length?out:fb;
+  // stable hash → consistent per film, varied across the catalog
+  let h=0; const key=String(m.imdb_id||m.title||'');
+  for(let i=0;i<key.length;i++){ h=(h*31+key.charCodeAt(i))>>>0; }
+  return pool[h % pool.length];
 }
 function mdActFn(act){
   return act==='act-seen'?'onSeenClick':act==='act-fav'?'onFavClick':act==='act-watch'?'onWatchClick':'onNiClick';
