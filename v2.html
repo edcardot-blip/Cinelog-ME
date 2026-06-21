@@ -1071,89 +1071,112 @@
   /* --- Movie detail modal --- */
   .md-overlay{position:fixed;inset:0;z-index:1300;display:flex;align-items:center;justify-content:center;
     padding:max(1.5rem,env(safe-area-inset-top)) 1rem max(1.5rem,env(safe-area-inset-bottom));
-    background:rgba(5,5,7,.62);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
-    opacity:0;visibility:hidden;transition:opacity .26s ease,visibility 0s linear .26s}
-  .md-overlay.open{opacity:1;visibility:visible;transition:opacity .26s ease,visibility 0s}
+    background:rgba(5,5,7,.64);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s linear .22s}
+  .md-overlay.open{opacity:1;visibility:visible;transition:opacity .22s ease,visibility 0s}
   .md-sheet{position:relative;width:min(460px,100%);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
     background:var(--bg2);border:1px solid var(--border2);border-radius:22px;
     box-shadow:0 30px 90px rgba(0,0,0,.66),0 0 0 1px rgba(0,0,0,.3);
-    transform:scale(.9) translateY(10px);opacity:0;
-    transition:transform .34s cubic-bezier(.2,1.25,.4,1),opacity .26s ease}
+    transform:scale(.96) translateY(14px);opacity:0;
+    transition:transform .24s cubic-bezier(.2,1,.3,1),opacity .2s ease}
   .md-overlay.open .md-sheet{transform:none;opacity:1}
-  .md-close{position:absolute;top:13px;right:13px;z-index:5;width:34px;height:34px;border-radius:50%;
-    border:none;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-    color:#fff;font-size:16px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;
-    transition:background .14s,transform .12s;display:grid;place-items:center}
-  .md-close:hover{background:rgba(0,0,0,.7)}
-  .md-close:active{transform:scale(.92)}
+  /* glass close button (shared style) */
+  .md-close{position:absolute;top:14px;right:14px;z-index:5;width:30px;height:30px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.14);background:rgba(18,18,22,.42);
+    -webkit-backdrop-filter:blur(10px) saturate(1.3);backdrop-filter:blur(10px) saturate(1.3);
+    color:rgba(255,255,255,.92);cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background .14s,border-color .14s,transform .12s;display:grid;place-items:center}
+  .md-close svg{width:13px;height:13px;display:block}
+  .md-close:hover{background:rgba(30,30,36,.62);border-color:rgba(255,255,255,.24)}
+  .md-close:active{transform:scale(.9)}
   /* hero artwork */
   .md-hero{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;background:var(--bg3);
     border-radius:22px 22px 0 0}
-  .md-hero img{width:100%;height:100%;object-fit:cover;object-position:center 28%;filter:brightness(.62)}
+  .md-hero img{width:100%;height:100%;object-fit:cover;object-position:center 28%;filter:brightness(.6)}
   .md-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--bg2) 2%,rgba(20,20,22,.2) 55%,transparent)}
-  .md-hero-poster{position:absolute;left:18px;bottom:14px;z-index:2;width:84px;aspect-ratio:2/3;
-    border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.08)}
+  .md-hero-poster{position:absolute;left:18px;bottom:13px;z-index:2;width:94px;aspect-ratio:2/3;
+    border-radius:10px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.07);
+    transform:scale(.92);opacity:0;transition:transform .26s cubic-bezier(.2,1.1,.35,1) .04s,opacity .22s ease .04s}
+  .md-overlay.open .md-hero-poster{transform:none;opacity:1}
   .md-hero-poster img{width:100%;height:100%;object-fit:cover;filter:none}
   .md-hero-fallback{width:100%;height:100%;display:grid;place-items:center;font-size:38px;opacity:.4;
     background:linear-gradient(160deg,var(--bg3),var(--bg2))}
-  .md-body{padding:1.1rem 1.3rem 1.4rem}
-  /* Title = top priority: wraps naturally, max 2 lines w/ ellipsis, and RESERVES exactly 2
-     lines of height so a short title ("Up") and a long one ("Spider-Man: Across the
-     Spider-Verse") leave everything below at the same position. */
-  .md-title{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:-.012em;line-height:1.18;margin:0 0 7px;
+  .md-body{padding:1.25rem 1.3rem 1.45rem}
+  /* Title = top priority: larger, max 2 lines, reserves 2 lines so layout below is stable. */
+  .md-title{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.014em;line-height:1.16;margin:0 0 9px;
     display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
-    overflow-wrap:break-word;min-height:2.36em}
-  /* Metadata: Year • Runtime • Rating — always exactly one line. */
-  .md-meta{font-size:13px;color:var(--text2);line-height:1.4;min-height:1.4em;margin:0 0 5px;
+    overflow-wrap:break-word;min-height:2.32em}
+  /* Metadata: Year • Runtime • Rating — always one line. */
+  .md-meta{font-size:13px;color:var(--text2);line-height:1.4;min-height:1.4em;margin:0 0 6px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .md-meta .md-dot{color:var(--text3);margin:0 2px}
+  .md-meta .md-dot{color:var(--text3);margin:0 3px}
   .md-meta .mpaa-badge{vertical-align:0}
-  /* Director + Genres: secondary info, lighter weight, each EXACTLY one fixed-height line. */
-  .md-credit{font-size:12.5px;font-weight:500;line-height:1.4;min-height:1.4em;margin:0 0 5px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Director + Genres: secondary, lighter weight. */
+  .md-credit{font-size:12.5px;font-weight:500;line-height:1.4;min-height:1.4em;margin:0 0 6px}
+  .md-credit.one-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .md-director{color:var(--text2)}
-  .md-genres{color:var(--text3);margin-bottom:1rem}
-  .md-credit .md-dot{color:var(--text3);margin:0 4px}
+  .md-genres{color:var(--text3);margin-bottom:1.25rem}
+  .md-credit .md-dot{color:var(--text3);margin:0 5px}
   .md-credit .md-more{color:var(--text3);font-weight:500}
-  .md-ratings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;align-items:center}
+  .md-genre-more{background:none;border:none;color:var(--accent2);font-family:var(--sans);
+    font-size:12px;font-weight:600;cursor:pointer;padding:2px 2px 2px 6px;-webkit-tap-highlight-color:transparent}
+  .md-genre-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+  .md-genre-chips[hidden]{display:none}  /* a CSS display rule overrides the UA [hidden] rule — restore it */
+  .md-gchip{font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:var(--rpill);
+    background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}
+  /* Ratings: one uniform line (IMDb / RT / Meta = identical via .rating-badge). */
+  .md-ratings{display:flex;flex-wrap:nowrap;gap:7px;margin:0 0 1.5rem;align-items:center}
   .md-ratings:empty{display:none}
-  /* Matched-set: IMDb / RT / Meta identical height, padding, font, alignment.
-     Fixed line-height + height neutralises the differing leading-glyph metrics
-     (★ vs 🍅 vs Ⓜ) so all three read as one consistent set. */
-  .md-rb{font-size:11.5px;line-height:1;font-weight:600;height:26px;padding:0 11px;
-    border-radius:var(--rpill);border:1px solid;display:inline-flex;align-items:center;gap:5px;
-    white-space:nowrap;font-variant-numeric:tabular-nums}
-  .md-rb .md-rb-ic{font-size:11.5px;line-height:1;display:inline-flex;align-items:center}
-  .md-rb.imdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}
-  .md-rb.rt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}
-  .md-rb.meta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
-  .md-section-lbl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:0 0 .5rem}
-  .md-avail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.05rem}
-  .md-avail .av{font-size:11px}
-  .md-why{background:linear-gradient(180deg,rgba(232,176,75,.06),transparent),var(--bg3);
-    border:1px solid var(--border2);border-radius:13px;padding:.85rem 1rem;margin-bottom:1.15rem}
-  .md-why .md-section-lbl{color:var(--accent2);margin-bottom:.4rem}
+  .md-section-lbl{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);
+    margin:0 0 .6rem;display:flex;align-items:center;gap:6px}
+  .md-section-lbl svg{width:13px;height:13px}
+  /* Where to watch — responsive 2-col provider grid (Apple TV / Plex feel). */
+  .md-providers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 1.6rem}
+  .md-prov{display:flex;align-items:center;gap:9px;min-height:50px;padding:10px 12px;border-radius:13px;
+    border:1px solid var(--border2);background:var(--bg3);color:var(--text);text-decoration:none;
+    -webkit-tap-highlight-color:transparent;transition:border-color .16s,box-shadow .16s,transform .12s}
+  .md-prov .mp-dot{width:11px;height:11px;border-radius:50%;background:var(--svc,#888);flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+  .md-prov .mp-name{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+  .md-prov .mp-tier{flex:none;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:3px 7px;border-radius:6px;background:var(--bg2);color:var(--text3)}
+  .md-prov .mp-tier.free{color:#5fd0a8;background:rgba(95,208,168,.12)}
+  .md-prov .mp-tier.paid{color:var(--accent2);background:rgba(232,176,75,.12)}
+  .md-prov.span2{grid-column:1 / -1}
+  @media (hover:hover){.md-prov:hover{border-color:var(--accent2);box-shadow:0 4px 16px rgba(0,0,0,.32)}}
+  .md-prov:active{transform:scale(.98)}
+  .md-prov:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+  /* Why we picked this */
+  .md-why{background:linear-gradient(180deg,rgba(232,176,75,.07),transparent),var(--bg3);
+    border:1px solid var(--border2);border-radius:14px;padding:.9rem 1.05rem;margin:0 0 1.5rem}
+  .md-why .md-section-lbl{color:var(--accent2);margin-bottom:.45rem}
   .md-why p{font-size:13.5px;color:#d4d3cf;line-height:1.6;margin:0}
-  /* action pills row (Apple Music style icon pills) */
+  /* compact library action cards */
   .md-acts{display:flex;gap:8px}
-  .md-pill{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-    padding:11px 4px;border-radius:14px;cursor:pointer;
+  .md-pill{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    min-height:54px;padding:9px 4px;border-radius:13px;cursor:pointer;
     background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
-    font-family:var(--sans);font-size:11px;font-weight:600;
+    font-family:var(--sans);font-size:10.5px;font-weight:600;letter-spacing:.01em;
     -webkit-tap-highlight-color:transparent;
-    transition:transform .14s cubic-bezier(.2,1.3,.4,1),background .15s,border-color .15s,color .15s}
-  .md-pill .md-pill-ic{font-size:18px;line-height:1;transition:transform .18s cubic-bezier(.2,1.4,.4,1)}
+    transition:transform .14s cubic-bezier(.2,1.3,.4,1),background .15s,border-color .15s,color .15s,box-shadow .15s}
+  .md-pill .md-pill-ic{line-height:0;transition:transform .18s cubic-bezier(.2,1.4,.4,1)}
+  .md-pill .md-pill-ic svg{width:17px;height:17px;display:block}
   .md-pill:active{transform:scale(.93)}
   .md-pill.pulse .md-pill-ic{animation:pillpulse .34s cubic-bezier(.2,1.4,.4,1)}
-  @keyframes pillpulse{0%{transform:scale(1)}45%{transform:scale(1.32)}100%{transform:scale(1)}}
-  .md-pill.act-seen.marked{background:var(--teal-dim);border-color:#1c4a45;color:#7fe3d8}
-  .md-pill.act-fav.marked{background:rgba(194,85,122,.16);border-color:#c2557a;color:#f0a0bd}
-  .md-pill.act-watch.marked{background:rgba(91,143,214,.16);border-color:#5b8fd6;color:#a8c8f0}
-  .md-pill.act-hide.marked{background:rgba(160,90,90,.16);border-color:#a05a5a;color:#e09a9a}
+  @keyframes pillpulse{0%{transform:scale(1)}45%{transform:scale(1.3)}100%{transform:scale(1)}}
+  /* selected = subtle glow/outline, never a filled block */
+  .md-pill.act-seen.marked{border-color:#2c6b62;color:#7fe3d8;box-shadow:0 0 0 1px #2c6b62,0 0 16px rgba(95,208,168,.16)}
+  .md-pill.act-fav.marked{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 0 1px var(--accent),0 0 16px rgba(232,176,75,.18)}
+  .md-pill.act-watch.marked{border-color:var(--accent);color:var(--accent2)}
+  .md-pill.act-hide.marked{border-color:var(--border);color:var(--text2);background:var(--bg4)}
   @media (max-width:600px){
-    .md-pill{min-height:60px;padding:10px 4px}
-    .md-body{padding:1.05rem 1.1rem 1.3rem}
-    .md-title{font-size:23px}
+    .md-pill{min-height:52px;padding:8px 4px}
+    .md-body{padding:1.15rem 1.1rem 1.3rem}
+    .md-title{font-size:24px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .md-sheet,.md-hero-poster{transition:opacity .2s ease}
+    .md-overlay.open .md-sheet,.md-overlay.open .md-hero-poster{transform:none}
+    .md-prov,.md-pill{transition:none}
   }
 
   /* ====================================================================== */
@@ -1702,7 +1725,6 @@
           <button class="set-row tappable" onclick="openInfo('support')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4.5 4.5M14.5 14.5L19 19M19 5l-4.5 4.5M9.5 14.5L5 19"/></svg></span><span class="set-label">Contact Support</span><span class="set-chev">›</span></button>
           <button class="set-row tappable" onclick="openInfo('rate')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span class="set-label">Rate the App</span><span class="set-chev">›</span></button>
           <button class="set-row tappable" onclick="openInfo('privacy')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg></span><span class="set-label">Privacy Policy</span><span class="set-chev">›</span></button>
-          <button class="set-row tappable" onclick="openInfo('terms')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12.5h5M9.5 16h5"/></svg></span><span class="set-label">Terms</span><span class="set-chev">›</span></button>
         </div>
       </div>
 
@@ -3538,9 +3560,6 @@ const INFO_CONTENT={
   privacy:{title:'Privacy',html:
     '<p>CINELOG stores only what you choose to save — your Seen, Liked, Watchlist and Hidden films — tied to your Google sign-in, so your lists follow you across devices.</p>'
     +'<p>We don’t sell or share your data and we don’t track you across other sites. Your preferences stay on your device and in your private account.</p>'},
-  terms:{title:'Terms',html:
-    '<p>CINELOG is a personal movie-recommendation app provided as-is for your own use. Film data and artwork come from TMDB and OMDb and remain the property of their owners.</p>'
-    +'<p>Be excellent to each other, and enjoy the movies.</p>'},
   rate:{title:'Enjoying CINELOG?',html:
     '<p>CINELOG is a free web app — there’s no App Store page to rate just yet. The best way to support it is to share it with a friend who loves movies.</p>'
     +'<p>Thanks for watching with us.</p>'},
@@ -3746,11 +3765,20 @@ function openMovieDetail(m){
     if(dirs.length>1) directorLine += ' <span class="md-more">+'+(dirs.length-1)+' director'+(dirs.length-1>1?'s':'')+'</span>';
   }
 
-  // ---- Genres: max two; "+N" if more — always one line ----
+  // ---- Genres: ≤3 → show all inline; >3 → first three + "Show all" toggle → full chips. Never "+N".
   const genres=(m.genre||'').split(',').map(g=>g.trim()).filter(Boolean).map(g=>g==='Sport'?'Sports':g);
-  let genreParts=genres.slice(0,2).map(esc);
-  if(genres.length>2) genreParts.push('<span class="md-more">+'+(genres.length-2)+'</span>');
-  let genreLine=genreParts.join(' <span class="md-dot">•</span> ');
+  const dotJoin = arr => arr.map(esc).join(' <span class="md-dot">•</span> ');
+  let genresHtml='';
+  if(genres.length){
+    if(genres.length<=3){
+      genresHtml='<div class="md-credit md-genres one-line">'+dotJoin(genres)+'</div>';
+    } else {
+      genresHtml='<div class="md-credit md-genres one-line" id="md-genres-line">'+dotJoin(genres.slice(0,3))
+        +' <button type="button" class="md-genre-more" onclick="mdShowAllGenres()">Show all</button></div>'
+        +'<div class="md-genre-chips" id="md-genre-chips" hidden>'
+        +genres.map(g=>'<span class="md-gchip">'+esc(g)+'</span>').join('')+'</div>';
+    }
+  }
 
   // rating badges (only present ones) — each links out to that site for THIS film (new tab).
   const rl = ratingLinks(m);
@@ -3759,28 +3787,32 @@ function openMovieDetail(m){
   if(rl.rt)   ratings+='<a class="rating-badge rb-rt rb-link" href="'+escAttr(rl.rt)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Rotten Tomatoes">RT '+esc(''+rt)+'%</a>';
   if(rl.meta) ratings+='<a class="rating-badge rb-meta rb-link" href="'+escAttr(rl.meta)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Metacritic">Meta '+esc(''+meta)+'</a>';
 
-  // streaming availability
+  // streaming availability — 2-col provider grid (odd count → last card spans both columns)
   let avail=movieAvailability(m);
   const seenSvc={}; avail.forEach(a=>{if(!seenSvc[a.svc.key]||(a.free&&!seenSvc[a.svc.key].free))seenSvc[a.svc.key]=a;});
-  let badges=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
-  const availHtml = badges.length
-    ? '<div class="md-section-lbl">Where to watch</div><div class="md-avail">'
-      + badges.map(a=>availBadgeHtml(a, m, true)).join('')
+  let provs=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
+  const TV_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M10.5 9.2l3.5 2.3-3.5 2.3z"/></svg>';
+  const availHtml = provs.length
+    ? '<div class="md-section-lbl">'+TV_ICO+'Where to watch</div><div class="md-providers">'
+      + provs.map((a,i)=>mdProviderCard(a, m, (provs.length%2===1 && i===provs.length-1))).join('')
       + '</div>'
     : '';
 
-  // "Why we recommended this" hidden for now (m.why is still computed by the engine, so
-  // this section can be restored later by reinstating the markup below).
-  const whyHtml = '';
+  // "Why we picked this" — engine reason (m.why) when present, else an honest data-derived line.
+  const whyText = mdWhyText(m);
+  const SPARK_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14l.7 1.9 1.8.6-1.8.6-.7 1.9-.7-1.9-1.8-.6 1.8-.6z"/></svg>';
+  const whyHtml = whyText
+    ? '<div class="md-why"><div class="md-section-lbl">'+SPARK_ICO+'Why we picked this</div><p>'+esc(whyText)+'</p></div>'
+    : '';
 
   sheet.innerHTML =
-    '<button class="md-close" onclick="closeMovieDetail()" aria-label="Close">✕</button>'
+    '<button class="md-close" onclick="closeMovieDetail()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
     + '<div class="md-hero">'+hero+heroPoster+'</div>'
     + '<div class="md-body">'
     +   '<h2 class="md-title">'+esc(m.title)+'</h2>'
     +   '<div class="md-meta">'+metaLine+'</div>'
-    +   '<div class="md-credit md-director">'+directorLine+'</div>'
-    +   '<div class="md-credit md-genres">'+genreLine+'</div>'
+    +   (directorLine?'<div class="md-credit md-director one-line">'+directorLine+'</div>':'')
+    +   genresHtml
     +   (ratings?'<div class="md-ratings">'+ratings+'</div>':'')
     +   availHtml
     +   whyHtml
@@ -3807,15 +3839,48 @@ function closeMovieDetail(){
   if(wasOpen) unlockScroll();
 }
 
-// The four action pills, reflecting current state.
+// The four action pills, reflecting current state. Gold-stroke SVG icons (per design system).
+const MD_PILL_ICONS={
+  'act-seen':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.3 12.3l2.5 2.5 4.6-5.2"/></svg>',
+  'act-fav':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-9.2-9.1C1.4 8.2 2.7 5.3 5.5 4.8c1.9-.3 3.6.7 4.5 2.2.2.3.6.3.8 0 .9-1.5 2.6-2.5 4.5-2.2 2.8.5 4.1 3.4 2.7 6.1C19 15.4 12 20 12 20z"/></svg>',
+  'act-watch':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4.2L5.5 20V5a1 1 0 0 1 1-1z"/></svg>',
+  'act-hide':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.4 5.2A9 9 0 0 1 21 12a13 13 0 0 1-2.2 2.9M6.1 6.1A13 13 0 0 0 3 12a9 9 0 0 0 11.9 4.6"/></svg>'
+};
 function mdActionPills(m){
   const id=m.imdb_id;
-  const pill=(act,ic,lbl,on)=>'<button class="md-pill '+act+(on?' marked':'')+'" data-id="'+id+'" '
-    + 'onclick="mdAct(this,\''+mdActFn(act)+'\',\''+id+'\')"><span class="md-pill-ic">'+ic+'</span><span>'+lbl+'</span></button>';
-  return pill('act-seen','✓','Seen',isSeen(m))
-       + pill('act-fav','❤️','Like',isFavorite(m))
-       + pill('act-watch','➕','Watchlist',isWatchlisted(m))
-       + pill('act-hide','🙈','Hide',isNotInterested(m));
+  const pill=(act,lbl,on)=>'<button class="md-pill '+act+(on?' marked':'')+'" data-id="'+id+'" '
+    + 'onclick="mdAct(this,\''+mdActFn(act)+'\',\''+id+'\')"><span class="md-pill-ic">'+MD_PILL_ICONS[act]+'</span><span>'+lbl+'</span></button>';
+  return pill('act-seen','Seen',isSeen(m))
+       + pill('act-fav','Like',isFavorite(m))
+       + pill('act-watch','Watchlist',isWatchlisted(m))
+       + pill('act-hide','Hide',isNotInterested(m));
+}
+// One streaming-provider card for the detail grid (colored dot · name · FREE/RENT/BUY).
+function mdProviderCard(a, m, spanFull){
+  const tier = a.free ? 'Free' : (a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'Paid');
+  const inner='<span class="mp-dot"></span><span class="mp-name">'+esc(a.svc.label)+'</span>'
+    + '<span class="mp-tier '+(a.free?'free':'paid')+'">'+tier+'</span>';
+  const cls='md-prov'+(spanFull?' span2':'');
+  const href=streamingLink(a.svc, m);
+  if(!href) return '<div class="'+cls+'" style="--svc:'+a.svc.color+'">'+inner+'</div>';
+  return '<a class="'+cls+'" style="--svc:'+a.svc.color+'" href="'+escAttr(href)+'" target="_blank" rel="noopener noreferrer" aria-label="Watch '+escAttr((m&&m.title)||'')+' on '+escAttr(a.svc.label)+'">'+inner+'</a>';
+}
+// Expand the genre line into full chips (only present when a film has >3 genres).
+function mdShowAllGenres(){
+  const line=document.getElementById('md-genres-line'), chips=document.getElementById('md-genre-chips');
+  if(line) line.hidden=true;
+  if(chips) chips.hidden=false;
+}
+// "Why we picked this" text: the engine's reason if present, else an honest line from the film's own data.
+function mdWhyText(m){
+  if(m && m.why && String(m.why).trim()) return String(m.why).trim();
+  if(!m) return '';
+  const g=(m.genre||'').split(',')[0].trim().toLowerCase();
+  const imdb=m.imdb_rating;
+  if(imdb!=null && imdb>=8 && g) return 'One of the highest audience-rated '+g+' films in the catalog.';
+  if(imdb!=null && imdb>=7.5) return 'A standout pick critics and audiences agree on.';
+  if(g) return 'A memorable '+g+' worth your time.';
+  return 'Hand-picked from the CINELOG catalog.';
 }
 function mdActFn(act){
   return act==='act-seen'?'onSeenClick':act==='act-fav'?'onFavClick':act==='act-watch'?'onWatchClick':'onNiClick';
