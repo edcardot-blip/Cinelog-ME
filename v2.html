@@ -1347,14 +1347,15 @@
     transition:opacity .3s ease,transform .3s cubic-bezier(.22,.9,.3,1),visibility 0s}
 
   /* Tab strip */
-  .trend-tabs{flex:none;display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  .trend-tabs{flex:none;display:flex;flex-wrap:wrap;gap:7px;
     padding:.8rem max(1rem,env(safe-area-inset-right)) .85rem max(1rem,env(safe-area-inset-left));
     border-bottom:1px solid var(--border)}
-  .trend-tabs::-webkit-scrollbar{display:none}
-  .trend-tab{flex:0 0 auto;font-size:13px;font-weight:600;font-family:var(--sans);letter-spacing:.01em;
-    padding:9px 16px;border-radius:var(--rpill);cursor:pointer;white-space:nowrap;
+  /* 2-up grid so all four tabs are visible at once (no horizontal scroll); one row when there's room. */
+  .trend-tab{flex:1 1 calc(50% - 3.5px);text-align:center;font-size:13px;font-weight:600;font-family:var(--sans);letter-spacing:.01em;
+    padding:10px 12px;border-radius:var(--rpill);cursor:pointer;white-space:nowrap;
     background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
-    -webkit-tap-highlight-color:transparent;transition:all .14s}
+    -webkit-tap-highlight-color:transparent;transition:background .14s,border-color .14s,color .14s}
+  @media (min-width:560px){ .trend-tab{flex:0 0 auto} }
   .trend-tab:hover{border-color:#4a4a52;color:var(--text)}
   .trend-tab.on{background:color-mix(in srgb,var(--accent) 14%,var(--bg3));border-color:var(--accent);color:var(--accent2)}
   @supports not (background:color-mix(in srgb,red,blue)){.trend-tab.on{background:var(--accent-dim)}}
@@ -1368,7 +1369,7 @@
   .trend-search svg{width:17px;height:17px;color:var(--text3);flex:none}
   .trend-search:focus-within svg{color:var(--accent2)}
   .trend-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);
-    font-family:var(--sans);font-size:14.5px;padding:0;-webkit-appearance:none}
+    font-family:var(--sans);font-size:16px;padding:0;-webkit-appearance:none}  /* 16px = iOS no-zoom-on-focus fix */
   .trend-search input::placeholder{color:var(--text3)}
   .trend-search input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
   .trend-search-clear{flex:none;width:22px;height:22px;border-radius:50%;border:none;background:var(--bg4);
