@@ -2076,7 +2076,10 @@
     savedY=window.scrollY||window.pageYOffset||0;
     var b=document.body;
     b.style.position='fixed';
-    b.style.top=(-savedY)+'px';
+    // top:0 (NOT -savedY): on iOS a fixed bottom:0 nav anchors to the position:fixed body, so a
+    // -savedY shift made the nav float up by however far Home was scrolled. With top:0 + 100dvh the
+    // body box fills the viewport and the nav lands at the true bottom. Scroll is restored on unlock.
+    b.style.top='0px';
     b.style.left='0';
     b.style.right='0';
     b.style.width='100%';
