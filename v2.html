@@ -412,9 +412,6 @@
   .set-check{color:var(--accent);margin-left:auto;display:flex}
   .set-check svg{width:18px;height:18px}
   /* discovery slider housed in settings */
-  .set-disc{padding:15px 16px 16px;border-top:1px solid var(--border2)}
-  .set-disc:first-child{border-top:none}
-  .set-disc .adv-card{background:transparent;border:none;padding:0;margin:0}
   /* footer v2 */
   .set-foot2{text-align:center;margin-top:1.9rem;padding-top:1.3rem;border-top:1px solid var(--border2)}
   .set-foot2 .sf-brand{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.2em;color:var(--text2)}
@@ -1653,16 +1650,6 @@
       <div class="set-group">
         <div class="set-group-lbl">Recommendations</div>
         <div class="set-list">
-          <div class="set-segrow">
-            <div class="set-seg-top">
-              <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14l.7 1.9 1.8.6-1.8.6-.7 1.9-.7-1.9-1.8-.6 1.8-.6z"/></svg></span>
-              <span class="set-label">Default Mode</span>
-            </div>
-            <div class="set-seg" id="seg-defmode">
-              <button type="button" id="defmode-hybrid" onclick="setDefaultMode('hybrid')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg>Smart Mix</button>
-              <button type="button" id="defmode-random" onclick="setDefaultMode('random')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.1" fill="currentColor" stroke="none"/></svg>Surprise Me</button>
-            </div>
-          </div>
           <button class="set-row tappable" onclick="openSubscriptions()">
             <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M10.5 9.2l3.5 2.3-3.5 2.3z"/></svg></span>
             <span class="set-label">Streaming Services</span>
@@ -1681,44 +1668,10 @@
         </div>
       </div>
 
-      <!-- Discovery Level (the adventurous slider, now a preference) -->
-      <div class="set-group">
-        <div class="set-group-lbl">Discovery Level</div>
-        <div class="set-list">
-          <div class="set-disc">
-            <div class="af-sec af-sec-adv adv-card">
-              <div class="adv-head">
-                <div class="af-title slider-lbl">How Adventurous?</div>
-                <span class="adv-badge band-2" id="adv-badge">Balanced</span>
-              </div>
-              <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
-              <div class="adv-ticks" id="adv-ticks">
-                <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 7 4h10l4 5.5L12 21z"/><path d="M3 9.5h18"/></svg></span><span class="adv-tlabel">Hidden Gems</span></span>
-                <span class="adv-tick on"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="adv-tlabel">Balanced</span></span>
-                <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.47 5.16 5.53.66-4.1 3.78 1.08 5.5L12 16.9l-4.95 2.7 1.08-5.5-4.1-3.78 5.53-.66z"/></svg></span><span class="adv-tlabel">Crowd Favorites</span></span>
-              </div>
-              <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- My Collection -->
       <div class="set-group">
         <div class="set-group-lbl">My Collection</div>
         <div class="set-list">
-          <button class="set-row tappable" onclick="closeSettings();openCollection('seen')">
-            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.3 12.3l2.5 2.5 4.6-5.2"/></svg></span>
-            <span class="set-label">Seen</span><span class="set-count" id="set-seen-count">0</span><span class="set-chev">›</span>
-          </button>
-          <button class="set-row tappable" onclick="closeSettings();openCollection('favorites')">
-            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-9.2-9.1C1.4 8.2 2.7 5.3 5.5 4.8c1.9-.3 3.6.7 4.5 2.2.2.3.6.3.8 0 .9-1.5 2.6-2.5 4.5-2.2 2.8.5 4.1 3.4 2.7 6.1C19 15.4 12 20 12 20z"/></svg></span>
-            <span class="set-label">Likes</span><span class="set-count" id="set-fav-count">0</span><span class="set-chev">›</span>
-          </button>
-          <button class="set-row tappable" onclick="closeSettings();openCollection('watchlist')">
-            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4.2L5.5 20V5a1 1 0 0 1 1-1z"/></svg></span>
-            <span class="set-label">Watchlist</span><span class="set-count" id="set-watch-count">0</span><span class="set-chev">›</span>
-          </button>
           <button class="set-row tappable" onclick="closeSettings();openCollection('hidden')">
             <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.4 5.2A9 9 0 0 1 21 12a13 13 0 0 1-2.2 2.9M6.1 6.1A13 13 0 0 0 3 12a9 9 0 0 0 11.9 4.6"/></svg></span>
             <span class="set-label">Hidden</span><span class="set-count" id="set-hidden-count">0</span><span class="set-chev">›</span>
@@ -1959,6 +1912,21 @@
           <button type="button" class="pill" onclick="toggleRating(this,'R')">R</button>
         </div>
         <p class="af-note">Leave all off to include every rating.</p>
+      </div>
+
+      <!-- ===== Adventurous slider ===== -->
+      <div class="af-sec af-sec-adv adv-card">
+        <div class="adv-head">
+          <div class="af-title slider-lbl">How Adventurous?</div>
+          <span class="adv-badge band-2" id="adv-badge">Balanced</span>
+        </div>
+        <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
+        <div class="adv-ticks" id="adv-ticks">
+          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 7 4h10l4 5.5L12 21z"/><path d="M3 9.5h18"/></svg></span><span class="adv-tlabel">Hidden Gems</span></span>
+          <span class="adv-tick on"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="adv-tlabel">Balanced</span></span>
+          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.47 5.16 5.53.66-4.1 3.78 1.08 5.5L12 16.9l-4.95 2.7 1.08-5.5-4.1-3.78 5.53-.66z"/></svg></span><span class="adv-tlabel">Crowd Favorites</span></span>
+        </div>
+        <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
       </div>
 
     </div>
@@ -3484,7 +3452,7 @@ function refreshSettings(){
   const hc=document.getElementById('set-hidden-count'); if(hc) hc.textContent=niSet.size;
   const fc=document.getElementById('set-fav-count'); if(fc) fc.textContent=favSet.size;
   const wc=document.getElementById('set-watch-count'); if(wc) wc.textContent=watchSet.size;
-  syncDefModeSeg(); syncLangSeg();
+  syncLangSeg();
   const sm=document.getElementById('set-subs-meta');
   if(sm){ const n=(typeof selServices!=='undefined')?selServices.size:0;
     sm.textContent = n===0 ? 'Any' : (n===1 ? (function(){ var s=SERVICES.find(x=>x.key===[...selServices][0]); return s?s.label:'1 service'; })() : (n+' services')); }
@@ -3530,19 +3498,6 @@ function renderSettingsProfile(){
       +   '<div class="set-prof-sub">Sign in to sync your lists across devices.</div></div>'
       + '<button class="set-prof-signin" onclick="signInGoogle()">Sign in</button>';
   }
-}
-
-// Default Recommendation Mode (persisted) — Smart Mix (hybrid) / Surprise Me (random).
-function setDefaultMode(m){
-  if(m!=='hybrid' && m!=='random') return;
-  try{ localStorage.setItem('cinelog_default_mode', m); }catch(e){}
-  if(typeof setMode==='function') setMode(m);   // also syncs the homepage mode cards + go button
-  syncDefModeSeg();
-}
-function syncDefModeSeg(){
-  let d='hybrid'; try{ d=localStorage.getItem('cinelog_default_mode')||'hybrid'; }catch(e){}
-  if(d!=='random') d='hybrid';
-  ['hybrid','random'].forEach(k=>{ const b=document.getElementById('defmode-'+k); if(b) b.classList.toggle('on', k===d); });
 }
 
 // Language preference (persisted) — English Only ('en') / Subtitles OK ('all').
@@ -3603,11 +3558,9 @@ function openInfo(key){
 }
 function closeInfo(){ const ov=document.getElementById('info-ov'); if(ov) ov.classList.remove('open'); }
 
-// Apply persisted preferences on load (default mode + language).
+// Apply persisted language preference on load.
 (function(){
   try{
-    var dm=localStorage.getItem('cinelog_default_mode');
-    if((dm==='hybrid'||dm==='random') && typeof setMode==='function') setMode(dm);
     var lg=localStorage.getItem('cinelog_lang');
     if((lg==='en'||lg==='all') && typeof setLangFilter==='function') setLangFilter(lg);
   }catch(e){}

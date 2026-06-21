@@ -338,15 +338,14 @@ that used to live in Advanced Filters or were unimplemented, and surfaces the us
 - **Profile header** `#set-profile` (`renderSettingsProfile()`): gold avatar (initials or Google
   `avatar_url`), name, "N Movies Seen", favourite genres (from `favProfile.genres`), "Joined …"
   (`currentUser.created_at`). Signed-out → Welcome + **Sign in** button.
-- **Recommendations:** **Default Mode** segmented control (`setDefaultMode('hybrid'|'random')` →
-  persisted `cinelog_default_mode`, calls `setMode` so the homepage cards + go-button stay in sync);
-  **Streaming Services** row → `openSubscriptions()` (the existing picker; prefs already persist via
-  `saveSubscriptionPrefs`), summary in `#set-subs-meta`; **Language** segmented
-  (`setLangPref('en'|'all')` → persisted `cinelog_lang`, calls `setLangFilter`).
-- **Discovery Level:** the **adventurous slider** (`#adv-slider`/`advPos`) — *moved here from the
-  Advanced Filters modal*; it binds by `id`, so the engine driver is unchanged.
-- **My Collection:** Seen / Likes / Watchlist / Hidden rows with live counts (`#set-seen-count`
-  etc.) → `openCollection(which)`.
+- **Recommendations:** **Streaming Services** row → `openSubscriptions()` (the existing picker;
+  prefs already persist via `saveSubscriptionPrefs`), summary in `#set-subs-meta`; **Language**
+  segmented (`setLangPref('en'|'all')` → persisted `cinelog_lang`, calls `setLangFilter`).
+  *(Recommendation mode lives on the home screen's mode cards — not duplicated here. The
+  adventurous slider lives in the Advanced Filters / "Refine Results" modal — see §4 — not here.)*
+- **My Collection:** a single **Hidden** row with live count (`#set-hidden-count`) →
+  `openCollection('hidden')`. Seen / Likes / Watchlist are reached from the **bottom nav**, so only
+  Hidden (which has no nav tab) lives here.
 - **Appearance:** Theme — Dark (Default).
 - **About:** live Movies-in-Catalog (`totalFilms`) + Last Updated (fetched once into `_lastDbUpdate`)
   + Version (`APP_VERSION`) + Build (`APP_BUILD`); then tappable rows → `openInfo(key)` info modal
@@ -354,10 +353,11 @@ that used to live in Advanced Filters or were unimplemented, and surfaces the us
   (`INFO_CONTENT`; feedback/support use `mailto:`).
 - **Footer** `.set-foot2`: CINELOG · Version 1.0 · "Built for people who love movies."
 
-Persisted prefs (`cinelog_default_mode`, `cinelog_lang`) are re-applied on load via a small IIFE.
-`refreshSettings()` repaints the profile, counts, segmented states, streaming summary and About
-stats on every open. `#set-lists` / `#set-listview` / `openList()` remain for the legacy in-overlay
-list path but are no longer the primary route (collections open full-screen via `openCollection`).
+The persisted language pref (`cinelog_lang`) is re-applied on load via a small IIFE.
+`refreshSettings()` repaints the profile, the Hidden count, the language segmented state, the
+streaming summary and About stats on every open. `#set-lists` / `#set-listview` / `openList()`
+remain for the legacy in-overlay list path but are no longer the primary route (collections open
+full-screen via `openCollection`).
 
 **Navigation.** Reached via More; closing resets the bottom nav to `discover`. Esc closes
 info-modal → subscriptions → advanced → sheet → settings in order.
