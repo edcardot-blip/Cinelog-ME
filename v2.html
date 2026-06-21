@@ -2074,19 +2074,22 @@
     lockCount++;
     if(locked) return;
     savedY=window.scrollY||window.pageYOffset||0;
-    var b=document.body;
-    b.style.position='fixed';
-    // top:0 (NOT -savedY): on iOS a fixed bottom:0 nav anchors to the position:fixed body, so a
-    // -savedY shift made the nav float up by however far Home was scrolled. With top:0 + 100dvh the
-    // body box fills the viewport and the nav lands at the true bottom. Scroll is restored on unlock.
-    b.style.top='0px';
-    b.style.left='0';
-    b.style.right='0';
-    b.style.width='100%';
-    b.style.height='100dvh';   // fill the visible viewport so a fixed bottom:0 nav lands at the TRUE
-                               // bottom on iOS (matches Home); without it the locked body is content-
-                               // height and the nav floats up by ~the home-indicator gap.
-    b.style.overflow='hidden';
+    var b=document.body, h=document.documentElement;
+    if(window.navigator.standalone){
+      // Installed iOS PWA: `position:fixed` on the body re-anchors the fixed bottom nav to the body
+      // (shifted by the scroll), so it floats UP by however far Home was scrolled. Safari anchors to
+      // the viewport, so it's fine there. In standalone we therefore lock with overflow only — the
+      // body stays in normal flow, so the fixed nav stays at the TRUE viewport bottom.
+      h.style.overflow='hidden';
+      b.style.overflow='hidden';
+    } else {
+      b.style.position='fixed';
+      b.style.top=(-savedY)+'px';
+      b.style.left='0';
+      b.style.right='0';
+      b.style.width='100%';
+      b.style.overflow='hidden';
+    }
     locked=true;
   };
   // Release one lock. Only when the LAST modal closes do we restore the page
@@ -2094,7 +2097,7 @@
   window.unlockScroll=function(){
     lockCount=Math.max(0,lockCount-1);
     if(lockCount>0 || !locked) return;
-    var b=document.body;
+    var b=document.body, h=document.documentElement;
     b.style.position='';
     b.style.top='';
     b.style.left='';
@@ -2102,6 +2105,7 @@
     b.style.width='';
     b.style.height='';
     b.style.overflow='';
+    h.style.overflow='';
     locked=false;
     window.scrollTo(0,savedY);
   };
