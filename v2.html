@@ -3960,22 +3960,26 @@ function mdActFn(act){
 // Wrapper: call the existing engine handler, then re-sync this pill's icon+label
 // (the handlers overwrite textContent, so we restore our markup after).
 async function mdAct(btn, fn, id){
-  btn.classList.add('pulse');
-  setTimeout(()=>btn.classList.remove('pulse'),360);
-  // Use a throwaway proxy element so the engine handler's textContent writes
-  // don't clobber our icon/label markup. The handler still updates the data store.
+  const act=(btn.className.match(/act-[a-z]+/)||[''])[0];
+  // Throwaway proxy so the engine handler's textContent/class writes don't clobber our markup.
   const proxy=document.createElement('button');
-  proxy.className=btn.className.replace(' pulse','');
-  if(fn==='onNiClick'){
-    // onNiClick reaches for btn.closest('.card'); none here, so it's a harmless no-op dim.
-  }
-  await window[fn](proxy, id);
-  // Re-derive marked state from the predicates and rebuild the pill row so all
-  // four pills reflect the current store (handlers are async + may roll back).
-  if(mdCurrent && mdCurrent.imdb_id===id){
-    const row=document.getElementById('md-acts');
-    if(row) row.innerHTML=mdActionPills(mdCurrent);
-  }
+  proxy.className=btn.className.replace(/\s*pulse/,'');
+  // The handler flips the in-memory set SYNCHRONOUSLY (before its network await), so repaint the
+  // pills IMMEDIATELY for an instant on/off response — matching the result cards. Without this, an
+  // un-clicked pill kept showing its colour until the save round-trip finished (or, on a slow/
+  // failed save, looked stuck).
+  const done=window[fn](proxy, id);
+  rebuildMdActs(id, act);     // optimistic repaint + pulse the toggled pill
+  await done;
+  rebuildMdActs(id);          // reconcile if the handler rolled back on a failed save
+}
+// Repaint the detail action row from the live store; optionally pulse one pill.
+function rebuildMdActs(id, pulseAct){
+  if(!(mdCurrent && mdCurrent.imdb_id===id)) return;
+  const row=document.getElementById('md-acts');
+  if(!row) return;
+  row.innerHTML=mdActionPills(mdCurrent);
+  if(pulseAct){ const b=row.querySelector('.'+pulseAct); if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'),360); } }
 }
 
 // Attr escaper for the presentation layer (esc() is already defined above and escapes &<>").

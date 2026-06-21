@@ -132,8 +132,11 @@ streaming → why → library actions**, with generous section spacing.
 
 **Interactions.**
 - Each pill: `onclick="mdAct(this,'<fn>','<id>')"` where `<fn>` is the engine handler from
-  `mdActFn(act)` — `onSeenClick` / `onFavClick` / `onWatchClick` / `onNiClick`. `mdAct` awaits the
-  global handler, re-syncs the pills, and the icon plays a `pillpulse` bump.
+  `mdActFn(act)` — `onSeenClick` / `onFavClick` / `onWatchClick` / `onNiClick`. `mdAct` calls the
+  handler and repaints the pills via `rebuildMdActs()` **immediately** (the handler flips the
+  in-memory set synchronously before its network await), then **again after the await** to reconcile
+  a rolled-back/failed save — so toggling on/off feels instant instead of waiting on the round-trip.
+  The toggled pill plays a `pillpulse` bump.
 - Active state shows as `.marked` with each action's color tint (teal/pink/blue/red).
 - Backdrop click or `.md-close` closes; Esc closes the detail first (before any underlying overlay).
 
