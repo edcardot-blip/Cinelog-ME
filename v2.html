@@ -173,6 +173,18 @@
   .rb-imdb{border-color:#78350f;color:#fbbf24;background:#2d1f00}
   .rb-rt{border-color:#7f1d1d;color:#f87171;background:#2d0a0a}
   .rb-meta{border-color:#1e3a5f;color:#7db0ff;background:#0c1a2e}
+  /* Clickable rating badges (open the film's page on IMDb / RT / Metacritic, new tab).
+     Base colours/shape inherited from .rating-badge + rb-*; we only add the affordance. */
+  a.rating-badge.rb-link{position:relative;text-decoration:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+    transition:transform .14s cubic-bezier(.2,1,.4,1),box-shadow .14s ease,filter .14s ease}
+  a.rating-badge.rb-link::after{content:"";position:absolute;inset:-7px}  /* roomy tap target, no visual change */
+  @media (hover:hover){a.rating-badge.rb-link:hover{transform:translateY(-1px);filter:brightness(1.12);
+    box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 1px var(--accent) inset}}
+  a.rating-badge.rb-link:active{transform:scale(.95);filter:brightness(1.05)}
+  a.rating-badge.rb-link:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
+  @media (prefers-reduced-motion:reduce){a.rating-badge.rb-link{transition:none}
+    a.rating-badge.rb-link:hover,a.rating-badge.rb-link:active{transform:none}}
   .why{font-size:13px;color:#c8c7c3;line-height:1.6;margin-bottom:10px}
   .tags{display:flex;flex-wrap:wrap;gap:5px}
   .tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:var(--rpill)}
@@ -265,6 +277,14 @@
   .av .dot{width:8px;height:8px;border-radius:50%;background:var(--svc,#666);flex-shrink:0}
   .av .tier{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
   .av .free{color:#4ade80}.av .paid{color:#fbbf24}
+  /* Clickable availability badges (open the title on that service, new tab) — subtle,
+     brand-tinted affordance. Base sizing/shape inherited from .av; we only add interaction. */
+  a.av-link{cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:24px;
+    transition:border-color .18s ease,box-shadow .18s ease,transform .12s ease}
+  @media (hover:hover){a.av-link:hover{border-color:var(--svc,var(--accent2));box-shadow:0 2px 10px rgba(0,0,0,.28);transform:translateY(-1px)}}
+  a.av-link:active{transform:scale(.97)}
+  a.av-link:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+  @media (prefers-reduced-motion:reduce){a.av-link{transition:none}a.av-link:hover,a.av-link:active{transform:none}}
 
   .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -363,6 +383,54 @@
   .set-detail b{color:var(--text)}
   .set-detail .sd-pad{padding-top:11px}
   .set-foot{text-align:center;font-size:11.5px;color:var(--text3);margin-top:.5rem;letter-spacing:.02em}
+
+  /* ===== Settings v2 — premium iOS-style ===== */
+  .set-profile{display:flex;align-items:center;gap:14px;padding:16px 17px;margin-bottom:1.5rem;background:linear-gradient(155deg,var(--bg3),var(--bg2));border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 6px 22px rgba(0,0,0,.28)}
+  .set-avatar{width:56px;height:56px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:22px;font-weight:600;color:#1a1407;background:linear-gradient(150deg,var(--accent2),var(--accent));box-shadow:0 4px 16px rgba(232,176,75,.22);overflow:hidden}
+  .set-avatar img{width:100%;height:100%;object-fit:cover}
+  .set-prof-main{flex:1;min-width:0}
+  .set-prof-name{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--text);line-height:1.15;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .set-prof-line{font-size:12.5px;color:var(--text2);line-height:1.45;display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px}
+  .set-prof-line .sp-dot{color:var(--text3);font-size:10px}
+  .set-prof-sub{font-size:11.5px;color:var(--text3);margin-top:4px}
+  .set-prof-signin{margin-left:auto;align-self:center;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:99px;background:var(--accent);border:none;color:#1a1407;cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:filter .15s}
+  .set-prof-signin:active{filter:brightness(1.08)}
+  /* segmented control row (Default Mode / Language) */
+  .set-segrow{display:block;padding:14px 15px;border-top:1px solid var(--border2)}
+  .set-segrow:first-child{border-top:none}
+  .set-seg-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .set-seg-top .set-label{flex:1;font-weight:500;font-size:14.5px}
+  .set-seg{display:flex;gap:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:4px}
+  .set-seg button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;border-radius:9px;border:none;background:transparent;color:var(--text2);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:background .16s,color .16s,transform .12s;white-space:nowrap}
+  .set-seg button svg{width:15px;height:15px;flex:none}
+  .set-seg button.on{background:var(--accent);color:#1a1407}
+  .set-seg button:not(.on):hover{background:var(--bg4);color:var(--text)}
+  .set-seg button:active{transform:scale(.96)}
+  /* collection stat rows + tappable feedback */
+  .set-row.tappable:active{background:var(--bg4)}
+  .set-count{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums;margin-left:auto}
+  .set-check{color:var(--accent);margin-left:auto;display:flex}
+  .set-check svg{width:18px;height:18px}
+  /* discovery slider housed in settings */
+  .set-disc{padding:15px 16px 16px;border-top:1px solid var(--border2)}
+  .set-disc:first-child{border-top:none}
+  .set-disc .adv-card{background:transparent;border:none;padding:0;margin:0}
+  /* footer v2 */
+  .set-foot2{text-align:center;margin-top:1.9rem;padding-top:1.3rem;border-top:1px solid var(--border2)}
+  .set-foot2 .sf-brand{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.2em;color:var(--text2)}
+  .set-foot2 .sf-ver{font-size:11.5px;color:var(--text3);margin-top:5px;letter-spacing:.02em}
+  .set-foot2 .sf-tag{font-size:11.5px;color:var(--text3);margin-top:7px;font-style:italic;opacity:.85}
+  /* About info modal */
+  .info-ov{position:fixed;inset:0;z-index:1400;background:rgba(6,6,8,.8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1.25rem}
+  .info-ov.open{display:flex}
+  .info-card{max-width:420px;width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:1.5rem 1.5rem 1.35rem;box-shadow:0 26px 80px rgba(0,0,0,.62);max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .info-card h3{font-family:var(--serif);font-size:20px;font-weight:600;margin:0 0 .85rem;color:var(--text)}
+  .info-card p{font-size:13.5px;color:var(--text2);line-height:1.65;margin:0 0 .8rem}
+  .info-card p:last-of-type{margin-bottom:1.1rem}
+  .info-card a{color:var(--accent2)}
+  .info-card .info-close{width:100%;padding:12px;border-radius:11px;border:none;background:var(--accent);color:#1a1407;font-family:var(--sans);font-weight:700;font-size:14px;cursor:pointer}
+  .info-card .info-close:active{filter:brightness(1.08)}
+  @media (prefers-reduced-motion:reduce){.set-seg button:active{transform:none}}
 
   /* ===== Settings: Seen / Hidden list view ===== */
   .set-back{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:18px;cursor:pointer;transition:color .15s,border-color .15s;line-height:1;flex:none}
@@ -1577,41 +1645,119 @@
       </div>
 
       <div id="set-menu">
+
+      <!-- Profile header (populated by renderSettingsProfile) -->
+      <div id="set-profile" class="set-profile"></div>
+
+      <!-- Recommendations -->
       <div class="set-group">
         <div class="set-group-lbl">Recommendations</div>
         <div class="set-list">
-          <div class="set-row soon"><span class="set-ico">🎯</span><span class="set-label">Default Mode</span><span class="set-soon">Planned</span></div>
-          <div class="set-row soon"><span class="set-ico">🎲</span><span class="set-label">Variety</span><span class="set-soon">Planned</span></div>
-          <div class="set-row soon"><span class="set-ico">🔁</span><span class="set-label">Repeat Frequency</span><span class="set-soon">Planned</span></div>
-        </div>
-      </div>
-
-      <div class="set-group">
-        <div class="set-group-lbl">Filters</div>
-        <div class="set-list">
-          <div class="set-row soon"><span class="set-ico">🌍</span><span class="set-label">Foreign Films</span><span class="set-soon">Planned</span></div>
-          <div class="set-row soon"><span class="set-ico">🎨</span><span class="set-label">Animation</span><span class="set-soon">Planned</span></div>
-          <div class="set-row soon"><span class="set-ico">🎥</span><span class="set-label">Documentary</span><span class="set-soon">Planned</span></div>
-        </div>
-      </div>
-
-      <div class="set-group">
-        <div class="set-group-lbl">App</div>
-        <div class="set-list">
-          <div class="set-row"><span class="set-ico">🌙</span><span class="set-label">Appearance</span><span class="set-meta">Dark</span><span class="set-soon">More soon</span></div>
-          <button class="set-row tappable" id="set-db-row" onclick="toggleDbDetail()">
-            <span class="set-ico">🗄</span><span class="set-label">Database Status</span>
-            <span class="set-meta" id="set-db-meta">—</span><span class="set-chev" id="set-db-chev">›</span>
+          <div class="set-segrow">
+            <div class="set-seg-top">
+              <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14l.7 1.9 1.8.6-1.8.6-.7 1.9-.7-1.9-1.8-.6 1.8-.6z"/></svg></span>
+              <span class="set-label">Default Mode</span>
+            </div>
+            <div class="set-seg" id="seg-defmode">
+              <button type="button" id="defmode-hybrid" onclick="setDefaultMode('hybrid')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg>Smart Mix</button>
+              <button type="button" id="defmode-random" onclick="setDefaultMode('random')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.1" fill="currentColor" stroke="none"/></svg>Surprise Me</button>
+            </div>
+          </div>
+          <button class="set-row tappable" onclick="openSubscriptions()">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 21h8"/><path d="M10.5 9.2l3.5 2.3-3.5 2.3z"/></svg></span>
+            <span class="set-label">Streaming Services</span>
+            <span class="set-meta" id="set-subs-meta">Any</span><span class="set-chev">›</span>
           </button>
-          <div class="set-detail" id="set-db-detail" hidden></div>
-          <button class="set-row tappable" onclick="clearCache()">
-            <span class="set-ico">🧹</span><span class="set-label">Cache</span>
-            <span class="set-meta" id="set-cache-meta">Clear</span><span class="set-chev">›</span>
+          <div class="set-segrow">
+            <div class="set-seg-top">
+              <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg></span>
+              <span class="set-label">Language</span>
+            </div>
+            <div class="set-seg" id="seg-lang">
+              <button type="button" id="lang-en" onclick="setLangPref('en')">English Only</button>
+              <button type="button" id="lang-all" onclick="setLangPref('all')">Subtitles OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Discovery Level (the adventurous slider, now a preference) -->
+      <div class="set-group">
+        <div class="set-group-lbl">Discovery Level</div>
+        <div class="set-list">
+          <div class="set-disc">
+            <div class="af-sec af-sec-adv adv-card">
+              <div class="adv-head">
+                <div class="af-title slider-lbl">How Adventurous?</div>
+                <span class="adv-badge band-2" id="adv-badge">Balanced</span>
+              </div>
+              <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
+              <div class="adv-ticks" id="adv-ticks">
+                <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 7 4h10l4 5.5L12 21z"/><path d="M3 9.5h18"/></svg></span><span class="adv-tlabel">Hidden Gems</span></span>
+                <span class="adv-tick on"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="adv-tlabel">Balanced</span></span>
+                <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.47 5.16 5.53.66-4.1 3.78 1.08 5.5L12 16.9l-4.95 2.7 1.08-5.5-4.1-3.78 5.53-.66z"/></svg></span><span class="adv-tlabel">Crowd Favorites</span></span>
+              </div>
+              <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Collection -->
+      <div class="set-group">
+        <div class="set-group-lbl">My Collection</div>
+        <div class="set-list">
+          <button class="set-row tappable" onclick="closeSettings();openCollection('seen')">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.3 12.3l2.5 2.5 4.6-5.2"/></svg></span>
+            <span class="set-label">Seen</span><span class="set-count" id="set-seen-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="closeSettings();openCollection('favorites')">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-9.2-9.1C1.4 8.2 2.7 5.3 5.5 4.8c1.9-.3 3.6.7 4.5 2.2.2.3.6.3.8 0 .9-1.5 2.6-2.5 4.5-2.2 2.8.5 4.1 3.4 2.7 6.1C19 15.4 12 20 12 20z"/></svg></span>
+            <span class="set-label">Likes</span><span class="set-count" id="set-fav-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="closeSettings();openCollection('watchlist')">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4.2L5.5 20V5a1 1 0 0 1 1-1z"/></svg></span>
+            <span class="set-label">Watchlist</span><span class="set-count" id="set-watch-count">0</span><span class="set-chev">›</span>
+          </button>
+          <button class="set-row tappable" onclick="closeSettings();openCollection('hidden')">
+            <span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.4 5.2A9 9 0 0 1 21 12a13 13 0 0 1-2.2 2.9M6.1 6.1A13 13 0 0 0 3 12a9 9 0 0 0 11.9 4.6"/></svg></span>
+            <span class="set-label">Hidden</span><span class="set-count" id="set-hidden-count">0</span><span class="set-chev">›</span>
           </button>
         </div>
       </div>
 
-      <div class="set-foot">CINELOG · personal movie picker</div>
+      <!-- Appearance -->
+      <div class="set-group">
+        <div class="set-group-lbl">Appearance</div>
+        <div class="set-list">
+          <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8z"/></svg></span><span class="set-label">Theme</span><span class="set-meta">Dark (Default)</span></div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="set-group">
+        <div class="set-group-lbl">About</div>
+        <div class="set-list">
+          <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 14h4M17 9h4M17 14h4"/></svg></span><span class="set-label">Movies in Catalog</span><span class="set-meta" id="set-about-count">—</span></div>
+          <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v3.6h-3.6"/></svg></span><span class="set-label">Last Updated</span><span class="set-meta" id="set-about-updated">—</span></div>
+          <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5V5a2 2 0 0 1 2-2h6.5L21 12.5 12.5 21z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg></span><span class="set-label">Version</span><span class="set-meta">1.0</span></div>
+          <div class="set-row"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L7 20M17 4l-2 16M5 9h14M4 15h14"/></svg></span><span class="set-label">Build</span><span class="set-meta" id="set-about-build">—</span></div>
+        </div>
+        <div class="set-list" style="margin-top:.6rem">
+          <button class="set-row tappable" onclick="openInfo('whatsnew')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg></span><span class="set-label">What's New</span><span class="set-chev">›</span></button>
+          <button class="set-row tappable" onclick="openInfo('feedback')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span><span class="set-label">Send Feedback</span><span class="set-chev">›</span></button>
+          <button class="set-row tappable" onclick="openInfo('support')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4.5 4.5M14.5 14.5L19 19M19 5l-4.5 4.5M9.5 14.5L5 19"/></svg></span><span class="set-label">Contact Support</span><span class="set-chev">›</span></button>
+          <button class="set-row tappable" onclick="openInfo('rate')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span class="set-label">Rate the App</span><span class="set-chev">›</span></button>
+          <button class="set-row tappable" onclick="openInfo('privacy')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg></span><span class="set-label">Privacy Policy</span><span class="set-chev">›</span></button>
+          <button class="set-row tappable" onclick="openInfo('terms')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12.5h5M9.5 16h5"/></svg></span><span class="set-label">Terms</span><span class="set-chev">›</span></button>
+        </div>
+      </div>
+
+      <div class="set-foot2">
+        <div class="sf-brand">CINELOG</div>
+        <div class="sf-ver">Version 1.0</div>
+        <div class="sf-tag">Built for people who love movies.</div>
+      </div>
       </div><!-- /#set-menu -->
 
       <div id="set-lists" hidden>
@@ -1644,6 +1790,15 @@
 </div>
 
 <!-- ===== Bottom navigation (mobile-first, fixed) ===== -->
+<!-- About info modal (What's New / Privacy / Terms / Rate / Feedback / Support) -->
+<div class="info-ov" id="info-ov" onclick="if(event.target===this)closeInfo()">
+  <div class="info-card" role="dialog" aria-modal="true" aria-label="Information">
+    <h3 id="info-title">—</h3>
+    <div id="info-body"></div>
+    <button class="info-close" onclick="closeInfo()">Done</button>
+  </div>
+</div>
+
 <nav class="bottom-nav" id="bottom-nav" aria-label="Primary">
   <button class="bnav-item active" id="nav-discover" onclick="navTo('discover')" aria-label="Discover">
     <span class="bnav-act" aria-hidden="true"></span>
@@ -1806,20 +1961,6 @@
         <p class="af-note">Leave all off to include every rating.</p>
       </div>
 
-      <!-- ===== Adventurous slider ===== -->
-      <div class="af-sec af-sec-adv adv-card">
-        <div class="adv-head">
-          <div class="af-title slider-lbl">How Adventurous?</div>
-          <span class="adv-badge band-2" id="adv-badge">Balanced</span>
-        </div>
-        <input type="range" id="adv-slider" class="adv-slider" min="0" max="100" step="1" value="50" aria-label="How adventurous tonight" />
-        <div class="adv-ticks" id="adv-ticks">
-          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 7 4h10l4 5.5L12 21z"/><path d="M3 9.5h18"/></svg></span><span class="adv-tlabel">Hidden Gems</span></span>
-          <span class="adv-tick on"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v15M7 19h10M4 8h16M4 8l-2 5h4zM20 8l2 5h-4zM12 4l-8 4M12 4l8 4"/></svg></span><span class="adv-tlabel">Balanced</span></span>
-          <span class="adv-tick"><span class="adv-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.47 5.16 5.53.66-4.1 3.78 1.08 5.5L12 16.9l-4.95 2.7 1.08-5.5-4.1-3.78 5.53-.66z"/></svg></span><span class="adv-tlabel">Crowd Favorites</span></span>
-        </div>
-        <p class="adv-help" id="adv-desc">A mix of discovery and familiar favorites.</p>
-      </div>
     </div>
     <footer class="modal-fs-foot">
       <button type="button" class="modal-fs-done" onclick="closeAdvanced()">Done</button>
@@ -2279,22 +2420,26 @@ Object.entries(GROUPS).forEach(([group,{items,cls}])=>{
 // Aliases are deliberately precise to avoid traps: "youtube" (rent store) ≠ "youtube tv";
 // "amazon video" (rent store) ≠ "amazon prime video" (subscription);
 // "apple tv store" (rent store) ≠ "apple tv+" (subscription).
+// `searchUrl` is a per-service template ({q} = url-encoded title). Defined ONCE per service
+// (not per movie) — the helper streamingLink() fills in the title at click time, so a clickable
+// "watch here" link scales to every film with zero stored URLs. If the catalog ever gains a true
+// per-movie deep link (e.g. TMDB/JustWatch), streamingLink() prefers it automatically.
 const SERVICES=[
   // ---- Subscription services (toggle buttons) ----
-  {key:'netflix',  label:'Netflix',    color:'#e50914', toggle:true,  aliases:['netflix','netflix standard with ads']},
-  {key:'hbo',      label:'Max',        color:'#9d34da', toggle:true,  aliases:['hbo max','max','hbo max amazon channel']},
-  {key:'disney',   label:'Disney+',    color:'#1f6fed', toggle:true,  aliases:['disney plus','disney+']},
-  {key:'prime',    label:'Prime Video',color:'#00a8e1', toggle:true,  aliases:['amazon prime video','amazon prime video with ads','amazon prime video free with ads']},
-  {key:'hulu',     label:'Hulu',       color:'#1ce783', toggle:true,  aliases:['hulu']},
-  {key:'paramount',label:'Paramount+', color:'#0064ff', toggle:true,  aliases:['paramount plus','paramount+','paramount plus premium','paramount plus essential','paramount+ amazon channel']},
-  {key:'apple',    label:'Apple TV+',  color:'#cfcfcf', toggle:true,  aliases:['apple tv+','apple tv plus','apple tv']},
-  {key:'peacock',  label:'Peacock',    color:'#fbc700', toggle:true,  aliases:['peacock','peacock premium','peacock premium plus']},
+  {key:'netflix',  label:'Netflix',    color:'#e50914', toggle:true,  aliases:['netflix','netflix standard with ads'], searchUrl:'https://www.netflix.com/search?q={q}'},
+  {key:'hbo',      label:'Max',        color:'#9d34da', toggle:true,  aliases:['hbo max','max','hbo max amazon channel'], searchUrl:'https://play.max.com/search?q={q}'},
+  {key:'disney',   label:'Disney+',    color:'#1f6fed', toggle:true,  aliases:['disney plus','disney+'], searchUrl:'https://www.disneyplus.com/search?q={q}'},
+  {key:'prime',    label:'Prime Video',color:'#00a8e1', toggle:true,  aliases:['amazon prime video','amazon prime video with ads','amazon prime video free with ads'], searchUrl:'https://www.amazon.com/s?k={q}&i=instant-video'},
+  {key:'hulu',     label:'Hulu',       color:'#1ce783', toggle:true,  aliases:['hulu'], searchUrl:'https://www.hulu.com/search?q={q}'},
+  {key:'paramount',label:'Paramount+', color:'#0064ff', toggle:true,  aliases:['paramount plus','paramount+','paramount plus premium','paramount plus essential','paramount+ amazon channel'], searchUrl:'https://www.paramountplus.com/search/?query={q}'},
+  {key:'apple',    label:'Apple TV+',  color:'#cfcfcf', toggle:true,  aliases:['apple tv+','apple tv plus','apple tv'], searchUrl:'https://tv.apple.com/search?term={q}'},
+  {key:'peacock',  label:'Peacock',    color:'#fbc700', toggle:true,  aliases:['peacock','peacock premium','peacock premium plus'], searchUrl:'https://www.peacocktv.com/search?q={q}'},
   // ---- Rent/buy storefronts (badges only, never toggles) ----
-  {key:'appletv_store', label:'Apple TV', color:'#b8b8b8', toggle:false, aliases:['apple tv store']},
-  {key:'amazon_video',  label:'Amazon',   color:'#00a8e1', toggle:false, aliases:['amazon video']},
-  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home','fandango at home free']},
-  {key:'google',        label:'Google Play', color:'#34a853', toggle:false, aliases:['google play movies']},
-  {key:'youtube_store', label:'YouTube', color:'#ff0000', toggle:false, aliases:['youtube']}
+  {key:'appletv_store', label:'Apple TV', color:'#b8b8b8', toggle:false, aliases:['apple tv store'], searchUrl:'https://tv.apple.com/search?term={q}'},
+  {key:'amazon_video',  label:'Amazon',   color:'#00a8e1', toggle:false, aliases:['amazon video'], searchUrl:'https://www.amazon.com/s?k={q}&i=instant-video'},
+  {key:'fandango',      label:'Fandango', color:'#ff7300', toggle:false, aliases:['fandango at home','fandango at home free'], searchUrl:'https://www.fandangoathome.com/search/{q}'},
+  {key:'google',        label:'Google Play', color:'#34a853', toggle:false, aliases:['google play movies'], searchUrl:'https://play.google.com/store/search?q={q}&c=movies'},
+  {key:'youtube_store', label:'YouTube', color:'#ff0000', toggle:false, aliases:['youtube'], searchUrl:'https://www.youtube.com/results?search_query={q}+movie'}
 ];
 // Tiers that count as "free to me" (no extra cost); rent/buy do not.
 const FREE_TIERS=new Set(['flatrate','free','sub','ads','subscription']);
@@ -2432,6 +2577,35 @@ function movieAvailability(m){
     out.push({svc, tier, free:FREE_TIERS.has(tier)});
   }
   return out;
+}
+// Best "watch on this service" URL for a film. Scalable: one searchUrl template per static
+// SERVICES entry + the movie title — no per-movie URLs stored. Prefers a true per-movie deep
+// link if the catalog ever gains one (m.watch_link), then the service search template, then the
+// service's own origin as a last resort. Accepts a service key, a SERVICES entry, or an
+// availability object {svc,...}.
+function streamingLink(svcOrKey, m){
+  const svc = (typeof svcOrKey==='string')
+    ? SERVICES.find(s=>s.key===svcOrKey)
+    : (svcOrKey && svcOrKey.svc ? svcOrKey.svc : svcOrKey);
+  if(!svc) return '';
+  if(m && m.watch_link) return m.watch_link;                 // future-proof: real per-movie deep link
+  const title=(m && m.title) ? m.title : '';
+  if(svc.searchUrl && title) return svc.searchUrl.replace('{q}', encodeURIComponent(title));
+  if(svc.searchUrl){ try{ return new URL(svc.searchUrl).origin; }catch(e){} }
+  return '';
+}
+// Render ONE availability badge. When a link is available the badge is an <a> (new tab); otherwise
+// a plain <span>. `useEsc` escapes the static label (the detail modal does; the card historically
+// didn't). Shared by the card renderer and the detail modal so both stay in sync.
+function availBadgeHtml(a, m, useEsc){
+  const label = useEsc ? esc(a.svc.label) : a.svc.label;
+  const tierTxt = a.free ? 'Free' : (a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'$');
+  const inner = '<span class="dot"></span>'+label+'<span class="tier '+(a.free?'free':'paid')+'">'+tierTxt+'</span>';
+  const href = streamingLink(a.svc, m);
+  if(!href) return '<span class="av" style="--svc:'+a.svc.color+'">'+inner+'</span>';
+  return '<a class="av av-link" style="--svc:'+a.svc.color+'" href="'+escAttr(href)+'" target="_blank" rel="noopener noreferrer"'
+    + ' aria-label="Watch '+escAttr((m&&m.title)||'')+' on '+escAttr(a.svc.label)+'" onclick="event.stopPropagation()">'
+    + inner + '</a>';
 }
 // Does this film pass the current streaming filter? (true when no services selected)
 // Only subscription toggles can be selected, so this naturally ignores rent stores.
@@ -2928,23 +3102,9 @@ function updateAuthPill(){
     el.setAttribute('aria-label','Sign in with Google');
   }
 }
-// Render the Account row in Settings based on login state.
-function updateAccountUI(){
-  const box=document.getElementById('set-account'); if(!box) return;
-  if(currentUser){
-    const email=esc(currentUser.email||'Signed in');
-    const meta=currentUser.user_metadata||{};
-    const name=esc(meta.full_name||meta.name||email);
-    box.innerHTML='<div class="set-row acct-row"><span class="set-ico">👤</span>'
-      +'<span class="set-label acct-label">'+name+'<span class="acct-sub">'+email+'</span></span>'
-      +'<button class="acct-btn" onclick="signOut()">Sign out</button></div>';
-  } else {
-    box.innerHTML='<button class="set-row tappable acct-row" onclick="signInGoogle()">'
-      +'<span class="set-ico">'+AUTH_PERSON_SVG+'</span><span class="set-label acct-label">Sign in with Google'
-      +'<span class="acct-sub">Save your Seen &amp; Hidden lists to your account</span></span>'
-      +'<span class="set-chev">›</span></button>';
-  }
-}
+// Account state in Settings now lives in the profile header (renderSettingsProfile).
+// Kept as a delegating shim so existing sign-in/out call sites refresh the header.
+function updateAccountUI(){ if(typeof renderSettingsProfile==='function') renderSettingsProfile(); }
 
 
 // --- Kid-friendly toggle ---
@@ -3314,16 +3474,144 @@ function showOverlayMenu(){
   if(back) back.setAttribute('hidden','');
   if(title) title.textContent = overlayMode==='lists' ? 'Lists' : 'Settings';
 }
+// ---- Settings v2 ----
+const APP_VERSION='1.0', APP_BUILD='2026.06.21';
+let _lastDbUpdate=null;
+
 function refreshSettings(){
-  updateAccountUI();
+  renderSettingsProfile();
   const sc=document.getElementById('set-seen-count'); if(sc) sc.textContent=seenSet.size;
   const hc=document.getElementById('set-hidden-count'); if(hc) hc.textContent=niSet.size;
   const fc=document.getElementById('set-fav-count'); if(fc) fc.textContent=favSet.size;
   const wc=document.getElementById('set-watch-count'); if(wc) wc.textContent=watchSet.size;
-  const dm=document.getElementById('set-db-meta'); if(dm) dm.textContent = sbKey ? (totalFilms!=null? totalFilms+' films' : 'Connected') : 'Offline';
-  let count=0; try{ count=Object.keys(JSON.parse(localStorage.getItem('cinelog_exposure')||'{}')).length; }catch(e){}
-  const cm=document.getElementById('set-cache-meta'); if(cm) cm.textContent = count? count+' tracked' : 'Empty';
+  syncDefModeSeg(); syncLangSeg();
+  const sm=document.getElementById('set-subs-meta');
+  if(sm){ const n=(typeof selServices!=='undefined')?selServices.size:0;
+    sm.textContent = n===0 ? 'Any' : (n===1 ? (function(){ var s=SERVICES.find(x=>x.key===[...selServices][0]); return s?s.label:'1 service'; })() : (n+' services')); }
+  updateAboutStats();
 }
+
+// Title-case a lowercased genre key for display.
+function titleGenre(g){ if(!g) return ''; if(g==='sci-fi') return 'Sci-Fi'; if(g==='film-noir') return 'Film-Noir'; return g.charAt(0).toUpperCase()+g.slice(1); }
+
+// Profile header — initials/avatar, name, seen count, favourite genres, member-since.
+function renderSettingsProfile(){
+  const box=document.getElementById('set-profile'); if(!box) return;
+  if(currentUser){
+    const meta=currentUser.user_metadata||{};
+    const email=(currentUser.email||'').toString();
+    const fullName=(meta.full_name||meta.name||'').toString();
+    const avatarUrl=meta.avatar_url||meta.picture||'';
+    const parts=(fullName||email.replace(/@.*/,'')).trim().split(/[\s._-]+/).filter(Boolean);
+    let initials = parts.length>=2 ? (parts[0][0]+parts[1][0]) : (parts[0]?parts[0].slice(0,2):(email[0]||'?'));
+    initials=initials.toUpperCase();
+    const displayName=esc(fullName||email.split('@')[0]||'You');
+    let since=''; try{ if(currentUser.created_at){ const d=new Date(currentUser.created_at); since='Joined '+d.toLocaleDateString(undefined,{month:'long',year:'numeric'}); } }catch(e){}
+    let favLine='';
+    if(favProfile && favProfile.genres){
+      const top=Object.entries(favProfile.genres).sort((a,b)=>b[1]-a[1]).slice(0,2).map(g=>titleGenre(g[0]));
+      if(top.length) favLine=top.join(' • ');
+    }
+    const avatar = avatarUrl
+      ? '<div class="set-avatar"><img src="'+escAttr(avatarUrl)+'" alt="" onerror="this.parentNode.textContent=\''+esc(initials)+'\'"></div>'
+      : '<div class="set-avatar">'+esc(initials)+'</div>';
+    box.innerHTML = avatar
+      + '<div class="set-prof-main">'
+      +   '<div class="set-prof-name">'+displayName+'</div>'
+      +   '<div class="set-prof-line"><span>'+seenSet.size+' Movies Seen</span>'
+      +     (favLine?'<span class="sp-dot">•</span><span>'+esc(favLine)+'</span>':'')
+      +   '</div>'
+      +   (since?'<div class="set-prof-sub">'+esc(since)+'</div>':'')
+      + '</div>'
+      + '<button class="acct-btn" onclick="signOut()">Sign out</button>';
+  } else {
+    box.innerHTML = '<div class="set-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></div>'
+      + '<div class="set-prof-main"><div class="set-prof-name">Welcome</div>'
+      +   '<div class="set-prof-sub">Sign in to sync your lists across devices.</div></div>'
+      + '<button class="set-prof-signin" onclick="signInGoogle()">Sign in</button>';
+  }
+}
+
+// Default Recommendation Mode (persisted) — Smart Mix (hybrid) / Surprise Me (random).
+function setDefaultMode(m){
+  if(m!=='hybrid' && m!=='random') return;
+  try{ localStorage.setItem('cinelog_default_mode', m); }catch(e){}
+  if(typeof setMode==='function') setMode(m);   // also syncs the homepage mode cards + go button
+  syncDefModeSeg();
+}
+function syncDefModeSeg(){
+  let d='hybrid'; try{ d=localStorage.getItem('cinelog_default_mode')||'hybrid'; }catch(e){}
+  if(d!=='random') d='hybrid';
+  ['hybrid','random'].forEach(k=>{ const b=document.getElementById('defmode-'+k); if(b) b.classList.toggle('on', k===d); });
+}
+
+// Language preference (persisted) — English Only ('en') / Subtitles OK ('all').
+function setLangPref(v){
+  if(v!=='en' && v!=='all') return;
+  try{ localStorage.setItem('cinelog_lang', v); }catch(e){}
+  if(typeof setLangFilter==='function') setLangFilter(v);
+  syncLangSeg();
+}
+function syncLangSeg(){
+  let v='all'; try{ v=localStorage.getItem('cinelog_lang')||(typeof langFilter!=='undefined'?langFilter:'all'); }catch(e){}
+  if(v!=='en') v='all';
+  const en=document.getElementById('lang-en'), all=document.getElementById('lang-all');
+  if(en) en.classList.toggle('on', v==='en');
+  if(all) all.classList.toggle('on', v!=='en');
+}
+
+// About stats — movie count + last DB update + build (last-update fetched once, cached).
+function updateAboutStats(){
+  const c=document.getElementById('set-about-count');
+  if(c) c.textContent = (typeof totalFilms!=='undefined' && totalFilms!=null) ? totalFilms.toLocaleString() : (sbKey?'…':'—');
+  const b=document.getElementById('set-about-build'); if(b) b.textContent=APP_BUILD;
+  const u=document.getElementById('set-about-updated'); if(!u) return;
+  if(_lastDbUpdate){ try{ u.textContent=new Date(_lastDbUpdate).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }catch(e){} return; }
+  if(!sbKey) return;
+  fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=streaming_updated_at&order=streaming_updated_at.desc.nullslast&limit=1',{headers:sbHeaders()})
+    .then(r=>r.ok?r.json():null)
+    .then(j=>{ if(j&&j[0]&&j[0].streaming_updated_at){ _lastDbUpdate=j[0].streaming_updated_at; const el=document.getElementById('set-about-updated'); if(el) el.textContent=new Date(_lastDbUpdate).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); } })
+    .catch(()=>{});
+}
+
+// About info modal (What's New / Privacy / Terms / Rate / Feedback / Support).
+const INFO_CONTENT={
+  whatsnew:{title:"What's New",html:
+    '<p><b>Clickable ratings &amp; streaming.</b> Tap any IMDb, Rotten Tomatoes or Metacritic badge to open that film’s page, and tap a streaming service to jump straight to it.</p>'
+    +'<p><b>Fresher picks.</b> Recommendations now rotate more, so you see new films each visit — and fast-rising recent releases get their due.</p>'
+    +'<p><b>Redesigned Settings.</b> Your streaming services, language, default mode and discovery level now live here as permanent preferences.</p>'},
+  privacy:{title:'Privacy',html:
+    '<p>CINELOG stores only what you choose to save — your Seen, Liked, Watchlist and Hidden films — tied to your Google sign-in, so your lists follow you across devices.</p>'
+    +'<p>We don’t sell or share your data and we don’t track you across other sites. Your preferences stay on your device and in your private account.</p>'},
+  terms:{title:'Terms',html:
+    '<p>CINELOG is a personal movie-recommendation app provided as-is for your own use. Film data and artwork come from TMDB and OMDb and remain the property of their owners.</p>'
+    +'<p>Be excellent to each other, and enjoy the movies.</p>'},
+  rate:{title:'Enjoying CINELOG?',html:
+    '<p>CINELOG is a free web app — there’s no App Store page to rate just yet. The best way to support it is to share it with a friend who loves movies.</p>'
+    +'<p>Thanks for watching with us.</p>'},
+  feedback:{title:'Send Feedback',html:
+    '<p>Found a bug or have an idea? We’d love to hear it.</p><p><a href="mailto:edcardot@gmail.com?subject=CINELOG%20Feedback">edcardot@gmail.com</a></p>'},
+  support:{title:'Contact Support',html:
+    '<p>Need help with your account or lists? Reach out and we’ll get back to you.</p><p><a href="mailto:edcardot@gmail.com?subject=CINELOG%20Support">edcardot@gmail.com</a></p>'}
+};
+function openInfo(key){
+  const c=INFO_CONTENT[key]; if(!c) return;
+  const ov=document.getElementById('info-ov'); if(!ov) return;
+  const t=document.getElementById('info-title'); if(t) t.textContent=c.title;
+  const bd=document.getElementById('info-body'); if(bd) bd.innerHTML=c.html;
+  ov.classList.add('open');
+}
+function closeInfo(){ const ov=document.getElementById('info-ov'); if(ov) ov.classList.remove('open'); }
+
+// Apply persisted preferences on load (default mode + language).
+(function(){
+  try{
+    var dm=localStorage.getItem('cinelog_default_mode');
+    if((dm==='hybrid'||dm==='random') && typeof setMode==='function') setMode(dm);
+    var lg=localStorage.getItem('cinelog_lang');
+    if((lg==='en'||lg==='all') && typeof setLangFilter==='function') setLangFilter(lg);
+  }catch(e){}
+})();
 // Open a single list as a detail screen inside the overlay.
 function openList(which){
   const menu=document.getElementById('set-menu'), lists=document.getElementById('set-lists'),
@@ -3346,26 +3634,11 @@ function backToMenu(){
   const ov=document.getElementById('set-overlay'); if(ov) ov.scrollTop=0;
   refreshSettings();
 }
-function toggleDbDetail(){
-  const d=document.getElementById('set-db-detail'), ch=document.getElementById('set-db-chev');
-  if(!d) return;
-  if(d.hasAttribute('hidden')){
-    d.innerHTML='<div class="sd-pad"><b>'+(sbKey?'Connected':'Not connected')+'</b><br>'
-      +'Catalog: '+(totalFilms!=null?totalFilms+' films':'—')+'<br>'
-      +'Project: fmhmvvsbxofoqriekfyj · AWS us-east-1<br>'
-      +'Backend: Supabase (Postgres + PostgREST)</div>';
-    d.removeAttribute('hidden'); if(ch) ch.textContent='⌄';
-  } else { d.setAttribute('hidden',''); if(ch) ch.textContent='›'; }
-}
-function clearCache(){
-  if(!confirm('Clear local cache? This only resets the recently-shown rotation so films can resurface. Your Seen and Hidden lists live in Supabase and are NOT affected.')) return;
-  try{ Object.keys(localStorage).filter(k=>k.indexOf('cinelog_')===0).forEach(k=>localStorage.removeItem(k)); }catch(e){}
-  refreshSettings();
-  toast('Local cache cleared.');
-}
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
-  // Close in z-order (highest first): subscriptions > advanced > picker sheet > settings.
+  // Close in z-order (highest first): info modal > subscriptions > advanced > picker sheet > settings.
+  var info=document.getElementById('info-ov');
+  if(info && info.classList.contains('open')){ closeInfo(); return; }
   var subs=document.getElementById('subs-sheet-host');
   if(subs && subs.classList.contains('open')){ closeSubscriptions(); return; }
   var adv=document.getElementById('adv-modal');
@@ -3391,9 +3664,9 @@ function renderCard(m, i, streamingActive){
   const subs=badges.filter(a=>a.free), paid=badges.filter(a=>!a.free).slice(0,2);
   badges=subs.concat(paid);
   const availHtml=badges.length
-    ? '<div class="avail">'+badges.map(a=>'<span class="av" style="--svc:'+a.svc.color+'"><span class="dot"></span>'+a.svc.label+'<span class="tier '+(a.free?'free':'paid')+'">'+(a.free?'Free':(a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'$'))+'</span></span>').join('')+'</div>'
+    ? '<div class="avail">'+badges.map(a=>availBadgeHtml(a, m, false)).join('')+'</div>'
     : '';
-  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(m._imdb!=null?'<span class="rating-badge rb-imdb">IMDb '+m.imdb_rating+'</span>':'')+(m._rt!=null?'<span class="rating-badge rb-rt">RT '+m.rotten_tomatoes_score+'%</span>':'')+(m._meta!=null?'<span class="rating-badge rb-meta">Meta '+m.metascore+'</span>':'')+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-acts">'+'<button class="card-act act-seen'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button>'+'<button class="card-act act-fav'+(isFavorite(m)?' marked':'')+'" onclick="onFavClick(this,\''+m.imdb_id+'\')">'+(isFavorite(m)?'♥ Liked':'♡ Like')+'</button>'+'<button class="card-act act-watch'+(isWatchlisted(m)?' marked':'')+'" onclick="onWatchClick(this,\''+m.imdb_id+'\')">'+(isWatchlisted(m)?'✓ Watchlist':'+ Watchlist')+'</button>'+'<button class="card-act act-hide'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
+  return '<div class="card"><div class="rank">'+(i!=null?'#'+(i+1):'')+'</div>'+poster+'<div class="body"><div class="title-row"><span class="title">'+m.title+'</span></div><div class="meta">'+m.year+(m.director?' · '+m.director:'')+(m.runtime_minutes?' · '+m.runtime_minutes+' min':'')+(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated'?' · <span class="mpaa-badge">'+m.mpaa_rating+'</span>':'')+'</div><div class="rpills">'+(function(rl){return (rl.imdb?'<a class="rating-badge rb-imdb rb-link" href="'+escAttr(rl.imdb)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on IMDb" onclick="event.stopPropagation()">IMDb '+m.imdb_rating+'</a>':'')+(rl.rt?'<a class="rating-badge rb-rt rb-link" href="'+escAttr(rl.rt)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Rotten Tomatoes" onclick="event.stopPropagation()">RT '+m.rotten_tomatoes_score+'%</a>':'')+(rl.meta?'<a class="rating-badge rb-meta rb-link" href="'+escAttr(rl.meta)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Metacritic" onclick="event.stopPropagation()">Meta '+m.metascore+'</a>':'')})(ratingLinks(m))+'</div>'+availHtml+'<div class="why">'+(m.why||'')+'</div><div class="tags">'+(genres.length?genres.map(g=>'<span class="tag tgenre">'+(g==='Sport'?'Sports':g)+'</span>').join(''):'<span class="tag tnone">no genre</span>')+'</div><div class="card-acts">'+'<button class="card-act act-seen'+(isSeen(m)?' marked':'')+'" onclick="onSeenClick(this,\''+m.imdb_id+'\')">'+(isSeen(m)?'✓ Seen':'+ Seen')+'</button>'+'<button class="card-act act-fav'+(isFavorite(m)?' marked':'')+'" onclick="onFavClick(this,\''+m.imdb_id+'\')">'+(isFavorite(m)?'♥ Liked':'♡ Like')+'</button>'+'<button class="card-act act-watch'+(isWatchlisted(m)?' marked':'')+'" onclick="onWatchClick(this,\''+m.imdb_id+'\')">'+(isWatchlisted(m)?'✓ Watchlist':'+ Watchlist')+'</button>'+'<button class="card-act act-hide'+(isNotInterested(m)?' marked':'')+'" onclick="onNiClick(this,\''+m.imdb_id+'\')">'+(isNotInterested(m)?'✓ Hidden':'- Hide')+'</button></div></div></div>';
 }
 
 // ======================================================================
@@ -3474,12 +3747,28 @@ let mdCurrent=null;   // currently-shown movie object
 
 function openMovieDetailById(id){ const m=galleryFilms[id]; if(m) openMovieDetail(m); }
 
+// External info links for a film's rating badges, derived entirely from existing fields —
+// no stored URLs. IMDb is an exact deep-link (we have imdb_id); RT/Metacritic use each
+// site's search endpoint (robust: never 404s, no fragile per-title slugs to maintain).
+// Returns null for any link whose underlying rating is absent (so we only linkify shown badges).
+function ratingLinks(m){
+  const has = v => v!=null && v!=='' && v!=='N/A';
+  const q   = encodeURIComponent(m.title||'');
+  return {
+    imdb: (has(m.imdb_rating) && m.imdb_id) ? 'https://www.imdb.com/title/'+encodeURIComponent(m.imdb_id)+'/' : null,
+    rt:   has(m.rotten_tomatoes_score) ? 'https://www.rottentomatoes.com/search?search='+q : null,
+    meta: has(m.metascore) ? 'https://www.metacritic.com/search/'+q+'/' : null,
+  };
+}
+
 function openMovieDetail(m){
   mdCurrent=m;
   const sheet=document.getElementById('md-sheet');
-  const imdb = (m._imdb!=null ? m._imdb : m.imdb_rating);
-  const rt   = (m._rt!=null   ? m._rt   : m.rotten_tomatoes_score);
-  const meta = (m._meta!=null ? m._meta : m.metascore);
+  // Display the RAW rating values. (The engine sets m._imdb = imdb_rating*10 internally as a
+  // pill-presence signal, so reading _imdb here would render "IMDb 74" instead of "7.4".)
+  const imdb = m.imdb_rating;
+  const rt   = m.rotten_tomatoes_score;
+  const meta = m.metascore;
 
   // hero artwork + floating poster
   const hero = m.poster_url
@@ -3510,11 +3799,12 @@ function openMovieDetail(m){
   if(genres.length>2) genreParts.push('<span class="md-more">+'+(genres.length-2)+'</span>');
   let genreLine=genreParts.join(' <span class="md-dot">•</span> ');
 
-  // rating badges (only present ones)
+  // rating badges (only present ones) — each links out to that site for THIS film (new tab).
+  const rl = ratingLinks(m);
   let ratings='';
-  if(imdb!=null && imdb!=='' && imdb!=='N/A') ratings+='<span class="rating-badge rb-imdb">IMDb '+esc(''+imdb)+'</span>';
-  if(rt!=null && rt!=='' && rt!=='N/A')       ratings+='<span class="rating-badge rb-rt">RT '+esc(''+rt)+'%</span>';
-  if(meta!=null && meta!=='' && meta!=='N/A') ratings+='<span class="rating-badge rb-meta">Meta '+esc(''+meta)+'</span>';
+  if(rl.imdb) ratings+='<a class="rating-badge rb-imdb rb-link" href="'+escAttr(rl.imdb)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on IMDb">IMDb '+esc(''+imdb)+'</a>';
+  if(rl.rt)   ratings+='<a class="rating-badge rb-rt rb-link" href="'+escAttr(rl.rt)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Rotten Tomatoes">RT '+esc(''+rt)+'%</a>';
+  if(rl.meta) ratings+='<a class="rating-badge rb-meta rb-link" href="'+escAttr(rl.meta)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Metacritic">Meta '+esc(''+meta)+'</a>';
 
   // streaming availability
   let avail=movieAvailability(m);
@@ -3522,7 +3812,7 @@ function openMovieDetail(m){
   let badges=Object.values(seenSvc).sort((a,b)=>(a.free===b.free)?0:(a.free?-1:1));
   const availHtml = badges.length
     ? '<div class="md-section-lbl">Where to watch</div><div class="md-avail">'
-      + badges.map(a=>'<span class="av" style="--svc:'+a.svc.color+'"><span class="dot"></span>'+esc(a.svc.label)+'<span class="tier '+(a.free?'free':'paid')+'">'+(a.free?'Free':(a.tier==='rent'?'Rent':a.tier==='buy'?'Buy':'$'))+'</span></span>').join('')
+      + badges.map(a=>availBadgeHtml(a, m, true)).join('')
       + '</div>'
     : '';
 
@@ -4019,11 +4309,25 @@ async function getRecs(){
     }
 
     // Adventurousness nudge: now driven by REAL popularity (vote_count), not rating.
-    // ---- Popularity: log-scale IMDb vote count to a 0-100 fame score ----
+    // ---- Age-adjusted vote count (recency bias) ----
+    // A recent film accumulating votes FAST is as "popular" as an older film with far more
+    // lifetime votes (50k votes in months ≈ 500k over decades). Multiply votes by a recency
+    // factor — ~10× for a brand-new release, decaying toward ~1× for the back catalog — so the
+    // popularity signal recognises fast-rising new films without disturbing old classics (already
+    // at the fame ceiling). Uses only vote_count + year; no new data. Feeds fame, the adventurous
+    // slider, and the confidence floor — NOT the franchise-blockbuster suppression check.
+    const NOW_YEAR = new Date().getFullYear();
+    function adjVotes(m){
+      const v = m.vote_count||0; if(v<=0) return v;
+      const age = Math.max(0, NOW_YEAR - (m.year||NOW_YEAR));
+      return v * (1 + 9/(1 + age/1.5));   // age0 →10×, age3 →4×, age7.5 →2.5×, old →~1×
+    }
+    // ---- Popularity: log-scale the (age-adjusted) IMDb vote count to a 0-100 fame score ----
     // 1k votes → 0, 1M votes → 100 (interpolated linearly on log10 between).
     function popularityScore(m){
-      if(m.vote_count==null||m.vote_count<=0) return 50;  // unknown → neutral
-      const lv=Math.log10(m.vote_count);
+      const v = adjVotes(m);
+      if(v<=0) return 50;  // unknown → neutral
+      const lv=Math.log10(v);
       return Math.max(0,Math.min(100,((lv-3)/3)*100));
     }
 
@@ -4045,7 +4349,7 @@ async function getRecs(){
       const cand=[];  // candidate templates that match this film
       // Each candidate is [shape-key, sentence]. Shape-key groups similar structures
       // so the tracker can demote any shape used recently.
-      if(quality>=85 && validDir) cand.push(['dir-praise', `${dir} at his sharpest.`]);
+      if(quality>=85 && validDir) cand.push(['dir-praise', `${dir} at their sharpest.`]);
       if(quality>=82 && validDir)  cand.push(['dir-name',   `Directed by ${dir}.`]);
       if(quality>=85)              cand.push(['quality-lead', `Critically loved. ${G} done right.`]);
       if(quality>=80)              cand.push(['quality-mid',  `One of the best ${g}s of its kind.`]);
@@ -4240,7 +4544,7 @@ async function getRecs(){
     // Protection now extends through 25k (the sweet-spot floor), so RT/Meta-only films below
     // the credible-discovery range can't rank high on a single source.
     const confidencePenalty = (m) => {
-      const v = m.vote_count||0;
+      const v = adjVotes(m);                  // age-adjusted: a fast-rising new film isn't "obscure"
       if(v >= 25000) return 0;                // 25k+ is credible enough; no confidence penalty
       const strong = [
         m.imdb_rating!=null && m.imdb_rating>=7.5,
@@ -4300,8 +4604,8 @@ async function getRecs(){
       const base = qS*ratingsWeight*qualityFactor + fit*(1-ratingsWeight);
 
       // Popularity modifier (vote-count driven), scaled by the slider weights.
-      const leftMod  = lerpAnchors(m.vote_count, LEFT_ANCHORS)  * blockbusterWeight;
-      const rightMod = lerpAnchors(m.vote_count, RIGHT_ANCHORS) * crowdWeight;
+      const leftMod  = lerpAnchors(adjVotes(m), LEFT_ANCHORS)  * blockbusterWeight;
+      const rightMod = lerpAnchors(adjVotes(m), RIGHT_ANCHORS) * crowdWeight;
       const popMod = leftMod + rightMod;
 
       const genreBonus = genreScore(m);
@@ -4309,7 +4613,7 @@ async function getRecs(){
       const fPen       = franchisePenaltyFull(m) * blockbusterWeight;   // left-of-center only
       const confPen    = confidencePenalty(m);
       const expCount   = exposure[m.imdb_id]||0;
-      const expPen     = -Math.min(8, expCount*1.5);                    // gentle rotation demotion
+      const expPen     = -Math.min(14, expCount*3);                    // rotation demotion (recency-decayed; see bump)
       const favBon     = favoriteBonus(m);                             // additive nudge, 0 when no favorites
       const recBon     = recencyBonus(m);                              // gentle recency tiebreaker [0,4]
 
@@ -4450,6 +4754,13 @@ async function getRecs(){
     try{
       const surfaced = viewMode==='rewatches' ? []
                      :                          allUnseen.slice(0,10);   // hybrid (default)
+      // Recency decay: every search, fade ALL exposure counts so films a user hasn't seen in a
+      // while recover and become eligible again — this prevents permanent burial and stops the
+      // penalty from saturating (without decay, counts only grow and everything piles at the cap,
+      // so rotation dies). Decay also bounds the count: an always-shown film converges to
+      // ~1/(1-EXP_DECAY) ≈ 6.7, keeping expPen meaningful instead of pinned at the cap.
+      const EXP_DECAY = 0.85;
+      for(const k in exposure){ const v = exposure[k]*EXP_DECAY; if(v < 0.15) delete exposure[k]; else exposure[k] = v; }
       surfaced.forEach(m => { exposure[m.imdb_id] = (exposure[m.imdb_id]||0)+1; });
       localStorage.setItem('cinelog_exposure', JSON.stringify(exposure));
     }catch(e){}

@@ -181,12 +181,19 @@ Returns `Math.max(0, score)`. A film failing both length and era can reach 0.
 ## 5. `popularityScore(m)` — log-scale fame (≈ lines 3679–3683)
 
 ```
-if (vote_count == null || vote_count <= 0) return 50;     // unknown → neutral
-lv = log10(vote_count);
+v  = adjVotes(m);                                         // age-adjusted vote count
+if (v <= 0) return 50;                                     // unknown → neutral
+lv = log10(v);
 return clamp01_100( ((lv - 3) / 3) * 100 );
 ```
 Maps **1,000 votes → 0**, **1,000,000 votes → 100**, linear on log10 between, clamped to [0,100].
 Stored as `m._fame` / `m._surprise`. This is "fame," not quality.
+
+**Recency bias — `adjVotes(m)` (added 2026-06-21):** `vote_count * (1 + 9/(1 + age/1.5))`
+(`age = NOW_YEAR - year`) — ~10× for a brand-new release, decaying to ~1× for the back catalog, so
+a fast-rising new film reads as popular while old classics (already at the ceiling) don't move.
+Feeds fame, the adventurous slider (`lerpAnchors`), and the 25k confidence floor; **not** the
+franchise `popular≥300k` suppression check. Uses only `vote_count` + `year`. See **SCORING.md §5a**.
 
 ---
 
@@ -280,7 +287,7 @@ _gSecondary/_gPurity/_gMulti/_gTotal` are populated for the genre console.table.
 | **Genre-impact repel** | ≈ 3837–3877 | Replaces the old flat Animation/Documentary penalties. A *defining* genre the user didn't select repels (position-scaled); *connective* genres never do. Asymmetric — pick Drama and a "Comedy, Drama" film is repelled; pick Comedy and "Comedy, Drama" is fine. Animation & Documentary repel even with no genre selected (opt-in formats); everything else only once a genre is chosen. Capped at −30. Not slider-scaled. Stored as `m._repelPen`. See **SCORING.md §14**. |
 | **Franchise** | ≈ 3848–3857 | `franchiseCounts` tallies pool members per franchise. `big = count >= 3`; `popular = vote_count >= 300000`. `big && popular` → `-25` (e.g. LOTR); `big` → `-20`; else `-15`. **Then scaled by `blockbusterWeight`** (≈ 3930), so it only bites left-of-center and fades to 0 at center/right. |
 | **Confidence** | ≈ 3862–3877 | Keeps ultra-obscure single-source critic-darlings from dominating. `v = vote_count\|\|0`; `strong` = how many of {IMDb≥7.5, RT≥80, Meta≥75} hold. `v>=25000` → `0`. `10000<=v<25000` → `strong>=2 ? 0 : -8`. `v<10000` → base `(v<5000? -25 : -15)`, softened `+20` if `strong>=3`, else `+12` if `strong>=2`; a lone strong source stays hard-hit. |
-| **Exposure** | ≈ 3907–3933 | `exposure` read from `localStorage['cinelog_exposure']` (no-op if unavailable). `expPen = -min(8, expCount * 1.5)` — a gentle demotion (cap −8) for films shown often, so the list rotates. |
+| **Exposure** | ≈ 3907–3933 | `exposure` read from `localStorage['cinelog_exposure']` (no-op if unavailable). `expPen = -min(14, expCount * 3)` — demotion (cap −14) for recently-shown films. **Recency-decaying** (updated 2026-06-21): at the bump step each search every count is faded `*= 0.85` (prune `< 0.15`) before surfaced films get `+1`, so demoted films recover and counts can't saturate. Roughly doubled per-search turnover in before/after testing; bounded so it never lifts a worse film over a better one. See SCORING.md §8. |
 
 ---
 
