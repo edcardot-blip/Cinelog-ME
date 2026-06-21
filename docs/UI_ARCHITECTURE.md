@@ -137,8 +137,8 @@ streaming → why → library actions**, with generous section spacing.
   in-memory set synchronously before its network await), then **again after the await** to reconcile
   a rolled-back/failed save — so toggling on/off feels instant instead of waiting on the round-trip.
   The toggled pill plays a `pillpulse` bump.
-- Selected pills show a **subtle glow/outline** (Seen = teal, Like = gold glow, Watchlist = gold
-  outline, Hide = muted), never a filled block. The `.act-*:hover` / `.act-*.marked` colour rules
+- Selected pills all show the **same subtle gold glow** (border + text `--accent`/`--accent2` + soft
+  glow) — consistent and on-brand, never a filled block. The `.act-*:hover` / `.act-*.marked` rules
   are scoped to `.card-act` (and hovers wrapped in `@media (hover:hover)`) so they don't leak into
   `.md-pill` — an earlier unscoped `:hover` was sticking on touch after a tap, leaving an un-selected
   pill still coloured.
