@@ -306,15 +306,23 @@ Settings "Lists" shortcuts. Hidden is reached via More → Lists. Close resets n
 **Container:** `#trend-overlay` (z `1200`). `openTrendingPage()` (~line 4345) / `closeTrendingPage()`.
 
 **Purpose.** A read-only discovery surface (separate from the recommendation engine, per the
-constitution) showing what's trending and what's newer.
+constitution). Revamped 2026-06-21: genuinely surfaces *current* films, not just all-time classics.
+
+**Scoring (separate from `getRecs`).** `trendingScore = trendAdjPopularity·0.45 + trendQuality·0.35
++ trendRecency·0.20`. `trendAdjVotes` mirrors the engine's `adjVotes` (a film gaining votes fast
+reads as popular), so recent/buzzy titles lead. The candidate pool (`loadTrendPool`) is **two merged
+fetches**: top ~250 by rating **plus** the ~180 most-voted films from the last 5 years — so recent
+titles actually qualify (the old single rating-sorted pool excluded them). No free-streaming gate.
 
 **Layout.**
 - `.cg-head` (reuses collection header styling): `.rg-back`, `.cg-title` "Trending", `#trend-count`.
-- `#trend-tabs` (`role="tablist"`): `.trend-tab.on` "Trending" (`data-tab="trending"`) and
-  `.trend-tab` "Newer" (`data-tab="newer"`), each `onclick="setTrendingTab(...)"`. Active tab gets
-  the gold `.on` treatment.
-- `#trend-page-body`: a `.rg-grid` of `.rg-tile`s (`openMovieDetailById(id)` on tap), with a loading
-  spinner during `loadTrendPool()`.
+- `#trend-tabs` (`role="tablist"`): **four** `.trend-tab`s — **Trending** (`trending`, recency-aware
+  buzz), **New Releases** (`new`, last 3 yrs by buzz), **Crowd-Pleasers** (`crowd`, ≥150k votes +
+  strong rating), **Hidden Gems** (`gems`, high rating + <80k votes). `setTrendingTab(tab)` →
+  `trendTabList(tab, pool)`. Active tab gets the gold `.on` treatment.
+- `#trend-page-body`: a `.trend-blurb` (per-tab one-liner) + a `.rg-grid` of `.rg-tile`s. Tiles carry
+  a reused `.rg-rank` `#N` badge (Trending & Crowd-Pleasers only) and a `.rg-imdb` rating chip;
+  `openTrendDetail(id)` on tap. Loading spinner during `loadTrendPool()`.
 
 **Components.** Tabbed header, poster grid, the home trending preview row (`#trend-row` /
 `#trend-scroller`, a 4-poster horizontal scroll with a "See all" → `openTrendingPage()`).

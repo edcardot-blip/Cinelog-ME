@@ -463,14 +463,20 @@ TREND_NOISE     = 6      // ±6 PER-FILM jitter applied in trendRanked → lists
 ### Score components (each 0–100)
 - `trendQuality(m)` = **plain average** of present rating scales (IMDb×10, RT, Metacritic); 0 if none.
 - `trendPopularity(m)` = log-scaled `vote_count`: `(log10(v)-3)/3*100`, clamp [0,100]; 0 if no votes.
+- `trendAdjVotes(m)` / `trendAdjPopularity(m)` = **recency-adjusted** popularity (added 2026-06-21):
+  `vote_count * (1 + 9/(1+age/1.5))` then log-scaled — mirrors the engine's `adjVotes`, so a film
+  gaining votes fast reads as popular and recent titles can actually trend.
 - `trendRecency(m)` = newer scores higher: `(year-(now-30))/30*100`, clamp [0,100]; last ~30 years → 0–100.
 
-### `trendingScore(m)`
+### `trendingScore(m)` (reweighted 2026-06-21)
 ```
-trendingScore = quality*0.55 + popularity*0.30 + recency*0.10
+trendingScore = adjPopularity*0.45 + quality*0.35 + recency*0.20
 ```
-This is "high-quality, broadly appealing films worth watching tonight" — **NOT** live/internet
-trending.
+Now genuinely surfaces *current* films (recent hits / what people are watching) rather than the old
+quality-dominant blend (`quality*0.55 + popularity*0.30 + recency*0.10`) that just showed all-time
+classics. **Pool:** `loadTrendPool` merges top-by-rating **+** most-voted recent (last 5 yr) so
+recent titles qualify. The full page has 4 tabs (`trending` / `new` / `crowd` / `gems`) via
+`trendTabList`.
 
 > **Rotation fix:** the old `sessionBoost` was a single constant added to *every* film, so it
 > could not reorder anything — the full Trending page was byte-identical every load. It's replaced
