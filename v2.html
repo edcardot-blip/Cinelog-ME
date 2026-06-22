@@ -607,6 +607,21 @@
   .hero-new h1 .em{font-style:italic;font-weight:500;color:var(--accent)}
   .hero-new .hero-sub{font-size:clamp(13px,3.4vw,15px);color:var(--text2);max-width:430px;margin:0 auto;line-height:1.5}
 
+  /* --- Movies / TV media toggle: slim segmented control, lives in the hero so it adds no
+         vertical height to the one-screen wizard (replaces the static tagline line). --- */
+  .media-toggle-row{display:flex;justify-content:center;margin:.45rem 0 0}
+  .media-toggle{display:inline-flex;gap:2px;background:var(--bg3);border:1px solid var(--border2);
+    border-radius:var(--rpill);padding:3px}
+  .media-toggle button{appearance:none;border:none;background:none;cursor:pointer;font-family:var(--sans);
+    font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--text3);padding:5px 15px;
+    border-radius:var(--rpill);display:inline-flex;align-items:center;gap:6px;line-height:1;
+    transition:color .15s,background .15s,box-shadow .15s}
+  .media-toggle button svg{width:15px;height:15px;display:block}
+  .media-toggle button.on{color:var(--accent2);background:color-mix(in srgb,var(--accent) 16%,var(--bg2));
+    box-shadow:0 0 0 1px rgba(232,176,75,.32)}
+  @supports not (background:color-mix(in srgb,red,blue)){.media-toggle button.on{background:var(--accent-dim)}}
+  .media-toggle button:active{transform:scale(.97)}
+
   /* --- Primary filter card group --- */
   .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem 1.45rem;margin-bottom:1rem}
   .pcard .field:last-child{margin-bottom:0}
@@ -1160,6 +1175,25 @@
     border:1px solid var(--border2);border-radius:14px;padding:.9rem 1.05rem;margin:0 0 1.5rem}
   .md-why .md-section-lbl{color:var(--accent2);margin-bottom:.45rem}
   .md-why p{font-size:13.5px;color:#d4d3cf;line-height:1.6;margin:0}
+  /* --- TV: season selector + SeriesGraph-style per-episode rating grid (detail modal) --- */
+  .md-seasons{margin:0 0 1.5rem}
+  .md-season-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:.5rem 0 .75rem}
+  .md-season-chip{padding:6px 12px;border-radius:var(--rpill);font-size:12px;font-weight:600;
+    font-family:var(--sans);color:var(--text2);background:var(--bg3);border:1px solid var(--border2);
+    cursor:pointer;white-space:nowrap;transition:border-color .15s,background .15s,color .15s}
+  .md-season-chip:active{transform:scale(.97)}
+  .md-season-chip.on{color:var(--accent2);border-color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 13%,var(--bg2));box-shadow:0 0 0 1px rgba(232,176,75,.3)}
+  @supports not (background:color-mix(in srgb,red,blue)){.md-season-chip.on{background:var(--accent-dim)}}
+  .md-epgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+  .md-ep{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    aspect-ratio:1;border-radius:9px;border:1px solid var(--border2);cursor:default;
+    background:color-mix(in srgb,var(--accent) calc(var(--v,0)*82%),var(--bg3))}
+  @supports not (background:color-mix(in srgb,red,blue)){.md-ep{background:var(--bg3)}}
+  .md-ep .md-ep-n{font-size:9px;font-weight:600;color:var(--text3);line-height:1}
+  .md-ep .md-ep-r{font-size:12px;font-weight:700;color:var(--text);line-height:1}
+  .md-ep.unrated{background:var(--bg3);opacity:.45}
+  .md-ep-load{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:12.5px;padding:.35rem 0}
   /* compact library action cards */
   .md-acts{display:flex;gap:8px}
   .md-pill{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
@@ -1491,7 +1525,20 @@
     <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span></button>
     <div class="hero-new">
       <h1>What Should I <span class="em">Watch?</span></h1>
-      <p class="hero-sub">The perfect movie in seconds.</p>
+      <!-- Movies / TV toggle replaces the old static tagline line — keeps the one-screen wizard
+           height unchanged. setMediaType() scopes every recommendation query by `type`. -->
+      <div class="media-toggle-row">
+        <div class="media-toggle" role="tablist" aria-label="Choose movies or TV">
+          <button type="button" id="mt-movie" class="on" role="tab" aria-selected="true" onclick="setMediaType('movie')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>
+            Movies
+          </button>
+          <button type="button" id="mt-tv" role="tab" aria-selected="false" onclick="setMediaType('tv')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 21h8M9 3l3 3 3-3"/></svg>
+            TV
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2476,6 +2523,10 @@ const GROUPS={
 };
 let sbKey='',totalFilms=null;
 let selGroups=Object.fromEntries(Object.keys(GROUPS).map(k=>[k,new Set()]));
+// Media type for the recommendation flow: 'movie' (default) or 'tv'. The Movies/TV toggle flips
+// this; buildQuery() scopes every candidate query by it, so getRecs reuses the SAME engine — the
+// only difference is the candidate pool. Discovery surfaces (Trending/search) stay movies-only.
+let mediaType='movie';
 Object.entries(GROUPS).forEach(([group,{items,cls}])=>{
   // Display label may differ from the data value (e.g. show "Sports" but match "Sport" in DB)
   // "Sport"->"Sports"; strip the trailing " min" from Length options (the header says "in minutes").
@@ -3020,7 +3071,7 @@ async function showWatchlist(){
 async function fetchMoviesByIds(ids, full){
   if(!ids || !ids.length) return [];
   const cols = full
-    ? 'imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise,streaming'
+    ? 'imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise,streaming,type,tmdb_id'
     : 'imdb_id,title,year,director,runtime_minutes';
   const out=[];
   for(let i=0;i<ids.length;i+=100){
@@ -3320,7 +3371,25 @@ function togglePill(btn,group,item,cls){
 }
 function clearGroup(group){const cls=GROUPS[group].cls;selGroups[group].clear();document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>b.classList.remove(cls));if(group==='genre')kidOnly=false;if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
 function selectAllGroup(group){const cls=GROUPS[group].cls;GROUPS[group].items.forEach(item=>{if(group==='genre'&&item==='Kid-Friendly')return;selGroups[group].add(item);});document.querySelectorAll('#'+group+'-pills .pill').forEach(b=>{if(group==='genre'&&b.textContent==='Kid-Friendly')return;b.classList.add(cls);});if(['genre','length','era'].includes(group))updatePoolCount();if(window.updateQuickFilterLabels)window.updateQuickFilterLabels();}
-function buildQuery(selectCols,limit){const params=['select='+encodeURIComponent(selectCols)];const genres=[...selGroups.genre];if(genres.length){params.push('or='+encodeURIComponent('('+genres.map(g=>'genre.ilike.*'+g+'*').join(',')+')'));}const eras=[...selGroups.era];if(eras.length){const ranges={'Pre-1960':[0,1959],'1960s':[1960,1969],'1970s':[1970,1979],'1980s':[1980,1989],'1990s':[1990,1999],'2000s':[2000,2009],'2010s':[2010,2019],'2020s':[2020,2100]};params.push('or='+encodeURIComponent('('+eras.map(e=>{const[a,b]=ranges[e];return 'and(year.gte.'+a+',year.lte.'+b+')';}).join(',')+')'));}const lengths=[...selGroups.length];if(lengths.length){const lenRanges={'Under 90 min':[0,89],'90\u2013120 min':[90,120],'120\u2013150 min':[121,150],'Over 150 min':[151,999]};params.push('or='+encodeURIComponent('('+lengths.map(l=>{const[a,b]=lenRanges[l];return 'and(runtime_minutes.gte.'+a+',runtime_minutes.lte.'+b+')';}).join(',')+')'));}if(limit)params.push('limit='+limit);return params.join('&');}
+function buildQuery(selectCols,limit){const params=['select='+encodeURIComponent(selectCols)];
+  // Media-type scope. TV mode: only type='tv'. Movie mode: films INCLUDING legacy rows whose `type`
+  // is null (so this is safe to deploy before migration 004 backfills type='movie'). Two top-level
+  // `or=`/eq params are AND-combined by PostgREST, so this composes with the genre/era/length filters.
+  params.push(mediaType==='tv' ? 'type=eq.tv' : 'or='+encodeURIComponent('(type.is.null,type.eq.movie)'));
+  const genres=[...selGroups.genre];if(genres.length){params.push('or='+encodeURIComponent('('+genres.map(g=>'genre.ilike.*'+g+'*').join(',')+')'));}const eras=[...selGroups.era];if(eras.length){const ranges={'Pre-1960':[0,1959],'1960s':[1960,1969],'1970s':[1970,1979],'1980s':[1980,1989],'1990s':[1990,1999],'2000s':[2000,2009],'2010s':[2010,2019],'2020s':[2020,2100]};params.push('or='+encodeURIComponent('('+eras.map(e=>{const[a,b]=ranges[e];return 'and(year.gte.'+a+',year.lte.'+b+')';}).join(',')+')'));}const lengths=[...selGroups.length];if(lengths.length){const lenRanges={'Under 90 min':[0,89],'90\u2013120 min':[90,120],'120\u2013150 min':[121,150],'Over 150 min':[151,999]};params.push('or='+encodeURIComponent('('+lengths.map(l=>{const[a,b]=lenRanges[l];return 'and(runtime_minutes.gte.'+a+',runtime_minutes.lte.'+b+')';}).join(',')+')'));}if(limit)params.push('limit='+limit);return params.join('&');}
+
+// Movies/TV toggle. Flips the candidate scope; the next "Find" runs the SAME engine on the new
+// pool. Repaints the segmented control, the go-button label, and the live Match count.
+function setMediaType(t){
+  t=(t==='tv')?'tv':'movie';
+  if(mediaType===t) return;
+  mediaType=t;
+  const mv=document.getElementById('mt-movie'), tv=document.getElementById('mt-tv');
+  if(mv){ mv.classList.toggle('on',t==='movie'); mv.setAttribute('aria-selected',t==='movie'); }
+  if(tv){ tv.classList.toggle('on',t==='tv'); tv.setAttribute('aria-selected',t==='tv'); }
+  const go=document.getElementById('go-btn'); if(go) go.textContent=(t==='tv'?'✦ Find My Show':'✦ Find My Movie');
+  if(typeof updatePoolCount==='function') updatePoolCount();
+}
 // Streaming availability as an ELIGIBILITY filter (server-side): an `&or=(...)` param matching films
 // that list ANY selected service (any tier — passesStreaming() does the precise free-tier check
 // client-side). Returns '' when no service is selected. Key-existence (streaming->>alias) avoids
@@ -3810,6 +3879,7 @@ function closeResultsGallery(){
 
 // ---- Detail modal (reusable) ----
 let mdCurrent=null;   // currently-shown movie object
+let mdSeasons=null;   // seasons array of the currently-shown TV title (for the episode-grid selector)
 
 function openMovieDetailById(id){ const m=galleryFilms[id]; if(m) openMovieDetail(m); }
 
@@ -3846,7 +3916,7 @@ function openMovieDetail(m){
   // ---- Metadata: Year • Runtime • Rating — single line ----
   const metaBits=[];
   if(m.year) metaBits.push(esc(''+m.year));
-  if(m.runtime_minutes) metaBits.push(m.runtime_minutes+' min');
+  if(m.runtime_minutes) metaBits.push(m.runtime_minutes+(m.type==='tv'?' min/ep':' min'));
   let metaLine = metaBits.join(' <span class="md-dot">•</span> ');
   if(m.mpaa_rating && m.mpaa_rating!=='N/A' && m.mpaa_rating!=='Not Rated' && m.mpaa_rating!=='Unrated')
     metaLine += (metaLine?' <span class="md-dot">•</span> ':'') + '<span class="mpaa-badge">'+esc(m.mpaa_rating)+'</span>';
@@ -3879,9 +3949,21 @@ function openMovieDetail(m){
   // rating badges (only present ones) — each links out to that site for THIS film (new tab).
   const rl = ratingLinks(m);
   let ratings='';
-  if(rl.imdb) ratings+='<a class="rating-badge rb-imdb rb-link" href="'+escAttr(rl.imdb)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on IMDb">IMDb '+esc(''+imdb)+'</a>';
-  if(rl.rt)   ratings+='<a class="rating-badge rb-rt rb-link" href="'+escAttr(rl.rt)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Rotten Tomatoes">RT '+esc(''+rt)+'%</a>';
-  if(rl.meta) ratings+='<a class="rating-badge rb-meta rb-link" href="'+escAttr(rl.meta)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Metacritic">Meta '+esc(''+meta)+'</a>';
+  if(m.type==='tv'){
+    // TV (v1) carries a TMDB audience score in imdb_rating — label it honestly as TMDB and link to
+    // the show's TMDB page (falling back to IMDb). RT/Meta are not populated for TV in v1.
+    if(imdb!=null && imdb!==''){
+      const tvHref = m.tmdb_id ? 'https://www.themoviedb.org/tv/'+encodeURIComponent(m.tmdb_id)
+                   : (m.imdb_id ? 'https://www.imdb.com/title/'+encodeURIComponent(m.imdb_id)+'/' : null);
+      ratings += tvHref
+        ? '<a class="rating-badge rb-imdb rb-link" href="'+escAttr(tvHref)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on TMDB">TMDB '+esc(''+imdb)+'</a>'
+        : '<span class="rating-badge rb-imdb">TMDB '+esc(''+imdb)+'</span>';
+    }
+  } else {
+    if(rl.imdb) ratings+='<a class="rating-badge rb-imdb rb-link" href="'+escAttr(rl.imdb)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on IMDb">IMDb '+esc(''+imdb)+'</a>';
+    if(rl.rt)   ratings+='<a class="rating-badge rb-rt rb-link" href="'+escAttr(rl.rt)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Rotten Tomatoes">RT '+esc(''+rt)+'%</a>';
+    if(rl.meta) ratings+='<a class="rating-badge rb-meta rb-link" href="'+escAttr(rl.meta)+'" target="_blank" rel="noopener noreferrer" aria-label="View '+escAttr(m.title)+' on Metacritic">Meta '+esc(''+meta)+'</a>';
+  }
 
   // streaming availability — 2-col provider grid (odd count → last card spans both columns)
   let avail=movieAvailability(m);
@@ -3926,10 +4008,13 @@ function openMovieDetail(m){
     +   (directorLine?'<div class="md-credit md-director one-line">'+directorLine+'</div>':'')
     +   genresHtml
     +   (ratings?'<div class="md-ratings">'+ratings+'</div>':'')
+    +   (m.type==='tv'?'<div class="md-seasons" id="md-seasons"></div>':'')
     +   availHtml
     +   whyHtml
     +   '<div class="md-acts" id="md-acts">'+mdActionPills(m)+'</div>'
     + '</div>';
+
+  if(m.type==='tv') mdRenderSeasons(m);   // lazy-loads the per-season episode-rating grid
 
   const ov=document.getElementById('md-overlay');
   const wasOpen=ov.classList.contains('open');
@@ -3982,6 +4067,48 @@ function mdShowAllGenres(){
   const line=document.getElementById('md-genres-line'), chips=document.getElementById('md-genre-chips');
   if(line) line.hidden=true;
   if(chips) chips.hidden=false;
+}
+
+// ---- TV: per-season episode-rating grid (SeriesGraph-style) in the detail modal ----
+const MD_GRID_ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>';
+// Map an episode rating (~5.0–9.5) to a 0..1 gold intensity for the heat cell.
+function mdEpHeat(r){ return r==null?0:Math.max(0,Math.min(1,(r-5)/4.5)); }
+function mdEpGridHtml(s){
+  return (s.episodes||[]).map(e=>{
+    const r=(e.r!=null && e.r!=='')?+e.r:null;
+    const lbl='E'+e.e+(e.t?' · '+e.t:'')+(r!=null?' — '+r:' — not rated');
+    return '<div class="md-ep'+(r==null?' unrated':'')+'" style="--v:'+mdEpHeat(r).toFixed(3)+'" title="'+escAttr(lbl)+'" aria-label="'+escAttr(lbl)+'">'
+      +'<span class="md-ep-n">'+e.e+'</span><span class="md-ep-r">'+(r!=null?r:'–')+'</span></div>';
+  }).join('');
+}
+function mdSelectSeason(i){
+  if(!mdSeasons||!mdSeasons[i]) return;
+  const host=document.getElementById('md-seasons'); if(!host) return;
+  host.querySelectorAll('.md-season-chip').forEach((b,j)=>{ b.classList.toggle('on',j===i); b.setAttribute('aria-selected',j===i); });
+  const g=document.getElementById('md-epgrid'); if(g) g.innerHTML=mdEpGridHtml(mdSeasons[i]);
+}
+// Lazy-load the `seasons` JSONB (kept OUT of the rec pool for payload size) the first time a TV
+// title's detail opens, then render the season selector + the selected season's episode grid.
+async function mdRenderSeasons(m){
+  const host=document.getElementById('md-seasons'); if(!host) return;
+  if(m.seasons===undefined){
+    host.innerHTML='<div class="md-section-lbl">'+MD_GRID_ICO+'Episode ratings</div><div class="md-ep-load"><span class="spin"></span>Loading seasons…</div>';
+    try{
+      const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?select=seasons,total_seasons&imdb_id=eq.'+encodeURIComponent(m.imdb_id),{headers:sbHeaders()});
+      if(r.ok){ const rows=await r.json(); if(rows[0]){ m.seasons=rows[0].seasons||[]; m.total_seasons=rows[0].total_seasons; } }
+    }catch(e){ /* best-effort; fall through to empty */ }
+    if(m.seasons===undefined) m.seasons=[];
+  }
+  // Bail if the user navigated to a different title while we were loading.
+  if(!(mdCurrent && mdCurrent.imdb_id===m.imdb_id)) return;
+  const seasons=(m.seasons||[]).filter(s=>s && Array.isArray(s.episodes) && s.episodes.length);
+  if(!seasons.length){ host.innerHTML=''; return; }
+  mdSeasons=seasons;
+  host.innerHTML='<div class="md-section-lbl">'+MD_GRID_ICO+'Episode ratings</div>'
+    + '<div class="md-season-tabs" role="tablist">'
+    +   seasons.map((s,i)=>'<button type="button" class="md-season-chip'+(i===0?' on':'')+'" role="tab" aria-selected="'+(i===0)+'" onclick="mdSelectSeason('+i+')">Season '+s.n+(s.score!=null?' · '+s.score:'')+'</button>').join('')
+    + '</div>'
+    + '<div id="md-epgrid" class="md-epgrid">'+mdEpGridHtml(seasons[0])+'</div>';
 }
 // "Why we picked this": an interesting, varied one-liner derived from the film's own attributes.
 // Collects every angle that fits the film, then picks one by a stable hash of the id — so the
@@ -4292,7 +4419,7 @@ async function getRandom(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='';  /* projector loader presents the loading state below the button */
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise,type,tmdb_id';
     const streamingActive = freeOnly && selServices.size>0;
     // Fetch a generous matching pool — large enough that low-rated indies can also be drawn.
     // When a service is selected it acts as an ELIGIBILITY filter (server-side), not a rating cap.
@@ -4341,7 +4468,7 @@ async function getRecs(){
   document.getElementById('go-btn').disabled=true;
   try{
     out.innerHTML='';  /* projector loader presents the loading state below the button */
-    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise';
+    const baseCols='imdb_id,title,year,runtime_minutes,genre,director,actors,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,original_language,mpaa_rating,franchise,type,tmdb_id';
     // Streaming filter is "active" only when the user picked Free to me AND chose at least one service.
     const streamingActive=freeOnly && selServices.size>0;
 
@@ -5089,15 +5216,18 @@ async function loadTrendPool(){
   // films (last ~5 yrs). Without (2), recency-aware Trending/New had no recent films to surface —
   // the rating sort excludes them before scoring. Together they cover classics AND current titles.
   const enc=encodeURIComponent;
-  const qQuality='?select='+enc(cols)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
-  const qRecent ='?select='+enc(cols)+'&year=gte.'+(TREND_NOW-5)+'&vote_count=not.is.null&order=vote_count.desc.nullslast&limit=180';
+  // Trending is movies-only (v1): exclude TV rows, keep legacy null-type films. (TV discovery is
+  // a future enhancement; the Movies/TV toggle governs the rec flow, not Trending.)
+  const MOVIE_ONLY='&or='+enc('(type.is.null,type.eq.movie)');
+  const qQuality='?select='+enc(cols)+'&imdb_rating=not.is.null'+MOVIE_ONLY+'&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE;
+  const qRecent ='?select='+enc(cols)+'&year=gte.'+(TREND_NOW-5)+'&vote_count=not.is.null'+MOVIE_ONLY+'&order=vote_count.desc.nullslast&limit=180';
   const getJSON=async (q)=>{ try{ const r=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+q,{headers:sbHeaders()}); return r.ok?await r.json():null; }catch(e){ return null; } };
   try{
     let [a,b]=await Promise.all([getJSON(qQuality), getJSON(qRecent)]);
     if(!a){
       // streaming column may not exist — retry the quality pool without it.
       const cols2=cols.replace(',streaming','');
-      a=await getJSON('?select='+enc(cols2)+'&imdb_rating=not.is.null&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE);
+      a=await getJSON('?select='+enc(cols2)+'&imdb_rating=not.is.null'+MOVIE_ONLY+'&order=imdb_rating.desc.nullslast&limit='+TREND_POOL_SIZE);
     }
     if(!a && !b) throw new Error('trend pool fetch failed');
     const seen={}, merged=[];
@@ -5266,7 +5396,7 @@ async function runTrendSearch(q){
   // ilike pattern across the WHOLE catalog: words joined by * → fuzzy substring match, popular first.
   const pattern='*'+q.split(/\s+/).filter(Boolean).map(w=>encodeURIComponent(w)).join('*')+'*';
   const cols='imdb_id,title,year,runtime_minutes,genre,director,imdb_rating,rotten_tomatoes_score,metascore,poster_url,vote_count,mpaa_rating,streaming';
-  const url=SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+encodeURIComponent(cols)+'&title=ilike.'+pattern+'&order=vote_count.desc.nullslast&limit=60';
+  const url=SUPABASE_URL+'/rest/v1/'+TABLE+'?select='+encodeURIComponent(cols)+'&title=ilike.'+pattern+'&or='+encodeURIComponent('(type.is.null,type.eq.movie)')+'&order=vote_count.desc.nullslast&limit=60';
   try{
     const r=await fetch(url,{headers:sbHeaders()});
     if(trendSearchQuery!==q) return;                 // a newer query superseded this one

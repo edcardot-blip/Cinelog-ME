@@ -1,0 +1,35 @@
+name: TV maintenance
+
+# Refreshes streaming availability + the per-season episode-rating grid for existing TV rows
+# (TMDB-only), stalest `episodes_updated_at` first, so nightly runs rotate the whole TV catalog.
+# Manual dispatch defaults to dry-run; the scheduled run writes. See pipeline/GATE-TV.md.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no writes)"
+        type: boolean
+        default: true
+      tv_batch:
+        description: "Shows to refresh this run"
+        type: string
+        default: "200"
+  schedule:
+    - cron: "0 12 * * *"   # daily 12:00 UTC
+
+jobs:
+  maintain-tv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run TV refresh
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run == true) && '1' || '0' }}
+          TV_BATCH: ${{ github.event_name == 'workflow_dispatch' && inputs.tv_batch || '500' }}
+        run: node pipeline/refresh-tv.mjs
