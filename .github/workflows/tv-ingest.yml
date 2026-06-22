@@ -1,0 +1,43 @@
+name: TV ingest
+
+# Adds new TV series to the catalog (TMDB-only). Discovery is streaming + acclaim gated, so every
+# candidate is on a subscription service and above the quality bar. Manual dispatch defaults to a
+# DRY RUN (prints the would-add list, writes nothing); the scheduled run writes.
+#
+# NOTE: apply pipeline/migrations/004_tv_support.sql in Supabase BEFORE the first live run, and
+# dry-run manually a few times to sanity-check the gate before trusting the schedule.
+# TMDB-only — needs no OMDB_API_KEY. See pipeline/GATE-TV.md.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (no writes)"
+        type: boolean
+        default: true
+      max_additions:
+        description: "Max shows to add this run"
+        type: string
+        default: "10"
+      discover_pages:
+        description: "TMDB discover pages to scan (~20 shows/page)"
+        type: string
+        default: "3"
+  schedule:
+    - cron: "0 11 * * *"   # daily 11:00 UTC (after the film jobs at 09:00/10:00; no OMDb conflict)
+
+jobs:
+  ingest-tv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run TV ingestion
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run == true) && '1' || '0' }}
+          MAX_ADDITIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_additions || '10' }}
+          DISCOVER_PAGES: ${{ github.event_name == 'workflow_dispatch' && inputs.discover_pages || '3' }}
+        run: node pipeline/ingest-tv.mjs
