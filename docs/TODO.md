@@ -2,7 +2,8 @@
 
 > Prioritized, actionable checklist. Companion to **[ROADMAP.md](./ROADMAP.md)** (higher-level
 > status). Vision and rules live in **[../CLAUDE.md](../CLAUDE.md)**. All work happens in
-> `v2.html` unless stated otherwise.
+> `index.html` (the live app) unless stated otherwise. (`v2.html` is a byte-identical alias;
+> `v1.html` is the archived classic — don't edit those.)
 
 Last updated: 2026-06-18.
 
@@ -10,7 +11,8 @@ Last updated: 2026-06-18.
 
 ## 🔥 Critical
 
-- [ ] Swap `v2.html` → `index.html` once the redesign is approved (promote v2 to the live app).
+- [x] Swap `v2.html` → `index.html` (redesign promoted to the live root app; classic archived as
+      `v1.html`; `v2.html` kept as an alias). Done 2026-06-22 (PR #26).
 - [ ] Verify Supabase Auth redirect URLs include the GitHub Pages URL
       (`https://edcardot-blip.github.io/Cinelog-ME/`) and the post-swap URL so Google OAuth
       completes on both Safari and the installed PWA.

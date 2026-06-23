@@ -3,8 +3,8 @@
 > Paste into a fresh Claude Code session, then add your specific request at the bottom.
 
 ## Context
-CINELOG is a single-file, vanilla HTML/CSS/JS app (no framework, no build) — a large `v2.html`
-with two inline `<script>` blocks. All current work happens in **`v2.html`**. Read **`CLAUDE.md`**
+CINELOG is a single-file, vanilla HTML/CSS/JS app (no framework, no build) — a large `index.html`
+with two inline `<script>` blocks. All current work happens in **`index.html`** (the live app; `v2.html`/`v1.html` are an alias/archive — do not edit them). Read **`CLAUDE.md`**
 first. The engine in `getRecs()` is PROTECTED — optimize *around* it, don't change its math.
 **Mobile (iPhone Safari + installed PWA) is the primary target.**
 

@@ -26,13 +26,15 @@ quality-gated curated catalog, and a poster-first premium mobile UI. Recommendat
 
 - **Single-file, vanilla HTML/CSS/JS. No framework. No build step.** Each app is one `.html` file
   (one `<style>`, the markup, two inline `<script>` blocks).
-- **`v2.html`** — the **active premium redesign and current app.** When the user says "the app,"
-  they mean this. **All current work happens here.**
-- **`index.html`** — the **classic** live app. Will eventually be replaced by `v2.html`.
-- Both share the same Supabase backend, so data is identical between them.
+- **`index.html`** — the **live app** (the premium redesign, promoted to root). When the user says
+  "the app," they mean this. **All current work happens here.**
+- **`v2.html`** — a **byte-identical alias** of `index.html`, kept only for old `/v2.html`
+  bookmarks/PWAs. Don't edit it. **`v1.html`** — the **archived classic** app (reference only).
+- All share the same Supabase backend, so data is identical between them.
+- **Scope:** movies-only for now (TV shipped but parked); the app stays free / non-commercial.
 - **Live URLs (GitHub Pages):** app `https://edcardot-blip.github.io/Cinelog-ME/`,
-  redesign preview `…/v2.html`. Repo: `edcardot-blip/Cinelog-ME` (public — free Pages requires it).
-- **Deploy:** edit `v2.html` → push to `main` → Pages rebuilds (~1–2 min) → test on a real iPhone.
+  archived classic `…/v1.html`. Repo: `edcardot-blip/Cinelog-ME` (public — free Pages requires it).
+- **Deploy:** edit `index.html` → push to `main` → Pages rebuilds (~1–2 min) → test on a real iPhone.
 
 **Backend — Supabase** (`https://fmhmvvsbxofoqriekfyj.supabase.co`):
 - `movies` — the catalog. Public read via the baked **anon key** (safe to expose; RLS is on).
@@ -129,12 +131,12 @@ varied, human-curated, never repetitive.**
 
 ---
 
-## 🛠 Currently being redesigned (the v2 work)
+## 🛠 The redesign (now the live app)
 
-The whole `v2.html` redesign: one-screen wizard, full-screen results gallery, movie detail modal,
-poster-grid collections (Watchlist/Likes/Seen/Hidden), the cinematic projector loading, the
-Trending refactor, the Advanced Filters "Refine Results" redesign, and the gold icon system. Most
-of this has shipped; **final mobile polish is in progress.** See **[ROADMAP.md](./ROADMAP.md)**.
+The redesign is **shipped and live** as `index.html`: one-screen wizard, full-screen results
+gallery, movie detail modal, poster-grid collections (Watchlist/Likes/Seen/Hidden), the cinematic
+projector loading, the Trending refactor, the Advanced Filters "Refine Results" redesign, and the
+gold icon system. **Final mobile polish is the remaining ongoing work.** See **[ROADMAP.md](./ROADMAP.md)**.
 
 ---
 
@@ -162,9 +164,10 @@ of this has shipped; **final mobile polish is in progress.** See **[ROADMAP.md](
 ## Current priorities
 
 Mobile polish · recommendation experience · movie detail overlay · results poster grid · loading
-animations · Watchlist/Likes redesign · Trending improvements · auth polish. The near-term big move
-is the **`v2.html` → `index.html` swap** (after approval) plus confirming the Supabase Auth
-redirect URLs. See **[TODO.md](./TODO.md)** for the actionable list.
+animations · Watchlist/Likes redesign · Trending improvements · auth polish. The **`v2.html` →
+`index.html` swap is done** (the redesign is now the live app; classic archived at `v1.html`).
+Remaining: confirm the Supabase Auth redirect URLs and eventually sunset the `v2.html` alias.
+See **[TODO.md](./TODO.md)** for the actionable list.
 
 ---
 

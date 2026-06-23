@@ -4,7 +4,8 @@
 
 ## Context
 CINELOG is a single-file, vanilla HTML/CSS/JS app (no framework, no build). All current work
-happens in **`v2.html`**. Read **`CLAUDE.md`** (the constitution) and **`SCORING.md`** before
+happens in **`index.html`** (the live app; `v2.html`/`v1.html` are an alias/archive — do not edit
+them). Read **`CLAUDE.md`** (the constitution) and **`SCORING.md`** before
 touching anything. Backend is Supabase; the recommendation engine in `getRecs()` is PROTECTED.
 
 ## Goal

@@ -228,8 +228,9 @@ Project: `https://fmhmvvsbxofoqriekfyj.supabase.co`. Two tables:
 
 ```
 Cinelog ME/
-├── v2.html                    # ACTIVE premium redesign (current app — all work here)
-├── index.html                 # Older "classic" live app
+├── index.html                 # THE LIVE APP (promoted premium redesign — all work here)
+├── v2.html                    # Byte-identical alias of index.html (old /v2.html links; don't edit)
+├── v1.html                    # Archived "classic" app (reference only)
 ├── CLAUDE.md                  # Project constitution (read first)
 ├── SCORING.md                 # PROTECTED recommendation-engine reference
 ├── README.md                  # Public-facing project README
@@ -271,14 +272,15 @@ Keeps the catalog fresh automatically; **never runs in the browser**, never edit
 
 ## 18. Current Implementation Status
 
-- **`v2.html`** (premium redesign) is **largely complete and live** as the preview at
-  `/v2.html`. It is the active surface for all current work.
-- **Pending:** the **v2 → index swap** — `v2.html` will eventually replace `index.html` as the
-  primary app.
+- **`index.html`** (premium redesign) is **the live app** — promoted to the root URL. It is the
+  surface for all current work. `v2.html` is a byte-identical alias; `v1.html` is the archived classic.
+- **Scope:** movies-only for now (TV shipped but parked); the app stays free / non-commercial.
+- The **v2 → index swap is done** (PR #26). Remaining: confirm Supabase Auth redirect URLs and
+  eventually sunset the `v2.html` alias.
 - The **catalog pipeline is live** on GitHub Actions (both crons wired with secrets).
 - **Engine is stable and PROTECTED** (`getRecs`, documented in SCORING.md).
 
-**Deploy loop:** edit `v2.html` → syntax-check both inline scripts → confirm engine math
+**Deploy loop:** edit `index.html` → syntax-check both inline scripts → confirm engine math
 intact → push to repo `main` → Pages rebuilds (~1–2 min) → **test on a real iPhone** (Safari +
 installed PWA). Desktop browsers don't reproduce iOS safe-area / toolbar / touch behavior.
 

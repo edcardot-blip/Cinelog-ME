@@ -4,7 +4,7 @@
 > This is the one task where changing scoring math is *allowed* — but only with discipline.
 
 ## Context
-CINELOG is a single-file, vanilla HTML/CSS/JS app. All current work happens in **`v2.html`**.
+CINELOG is a single-file, vanilla HTML/CSS/JS app. All current work happens in **`index.html`** (the live app; `v2.html`/`v1.html` are an alias/archive — do not edit them).
 The recommendation engine is the **heart of the app** and is **PROTECTED**. It lives in
 **`getRecs()`** and is fully documented in **`SCORING.md`**. **Read `SCORING.md` and `CLAUDE.md`
 in full before changing a single number.**

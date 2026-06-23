@@ -6,13 +6,15 @@
 > **[AI_CONTEXT.md](./AI_CONTEXT.md)**.
 
 CINELOG is **vanilla HTML/CSS/JS in a single file, no framework, no build step.** All active work
-is in `v2.html`. Keep it that way — do not add a bundler, npm dependencies, or extra files.
+is in `index.html` (the live app). Keep it that way — do not add a bundler, npm dependencies, or
+extra files.
 
 ---
 
 ## File & architecture model
 
-- **One file per app:** `v2.html` (active redesign) and `index.html` (classic). Each is fully
+- **One file per app:** `index.html` (the live app — the promoted redesign; edit this one),
+  `v2.html` (byte-identical alias, don't edit), and `v1.html` (archived classic). Each is fully
   self-contained: one `<style>` block, the markup, and inline `<script>` blocks (there are two
   inline scripts — both must parse cleanly).
 - No external JS frameworks. The only network dependency is Supabase (fetch against the REST API
