@@ -1,8 +1,8 @@
 # Cinelog TV Ingestion — Spec & Gate
 
 Owner: a `tv-ingestion` agent. Runs as a GitHub Actions cron (Node script) writing to Supabase,
-exactly like the film pipeline. **Never runs in the browser; never edits index.html. All app work
-happens in `v2.html`.** API keys live as GitHub repo secrets, never committed.
+exactly like the film pipeline. **Never runs in the browser; never edits the app HTML. All app/UI
+work happens in `index.html`** (the live app). API keys live as GitHub repo secrets, never committed.
 
 This is the TV counterpart to **`GATE.md`** (films). TV series live in the **same `movies` table**,
 distinguished by `type='tv'`, tagged `source='ingest-tv'`. Migration **`migrations/004_tv_support.sql`**
@@ -120,7 +120,7 @@ so films keep working unchanged.
 
 - **One reusable engine.** TV rows carry engine-compatible rating columns, so `getRecs` scores them
   unchanged. The **Movies/TV toggle** simply adds a `type=eq.movie` / `type=eq.tv` filter to the
-  candidate query (`buildQuery` in v2.html). **Do not change the scoring math** (engine is protected
+  candidate query (`buildQuery` in index.html). **Do not change the scoring math** (engine is protected
   per CLAUDE.md / SCORING.md); movies and TV are ranked in **separate** pools, never interleaved, so
   their rating scales never need to match.
 - **No added page height.** The toggle must reuse existing real estate (fold into an existing
@@ -128,7 +128,7 @@ so films keep working unchanged.
   wizard (Title → Quick Filters → Recommendation Mode → Find My Movie) must still fit **without
   scrolling** on iPhone. No new row.
 - **Episode grid = a dropdown on the TV card / detail modal**, not a new screen. Built from
-  `seasons[].episodes[].imdb` (SeriesGraph-style: seasons as columns/rows, color-graded by rating).
+  `seasons[].episodes[].r` (SeriesGraph-style: seasons as columns/rows, color-graded by rating).
   Collapsed by default; reuses the existing modal, gold/dark theme, and CSS variables. A season
   selector switches which season's grid + score is shown.
 - Reuse the existing poster grid (`.rg-grid`/`.rg-tile`), the streaming filter (TV `streaming` JSONB
@@ -144,6 +144,6 @@ so films keep working unchanged.
 - [ ] `pipeline/refresh-tv.mjs` — TMDB streaming sweep + episode-grid refresh for TV rows
       (stalest `episodes_updated_at` first)
 - [ ] GitHub Actions workflow + reuse existing secrets (`TMDB_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
-- [ ] v2.html: Movies/TV toggle (zero added height) + `getRecs` candidate `type` filter
-- [ ] v2.html: season selector + SeriesGraph-style episode-rating dropdown in `openMovieDetail`
+- [ ] index.html: Movies/TV toggle (zero added height) + `getRecs` candidate `type` filter
+- [ ] index.html: season selector + SeriesGraph-style episode-rating dropdown in `openMovieDetail`
 - [ ] **Deferred:** OMDb swap for real IMDb episode + overall ratings (flip `rating_src='imdb'`)

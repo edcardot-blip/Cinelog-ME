@@ -25,7 +25,7 @@ fast AI-session brief, **[AI_CONTEXT.md](./AI_CONTEXT.md)** is the single most u
 ## Engine & data
 - **[RECOMMENDATION_ENGINE.md](./RECOMMENDATION_ENGINE.md)** — comprehensive engine reference:
   candidate pool, filters, scoring math, the adventurous slider, penalties, modes, randomness, and
-  Trending. A rebuild-from doc derived from `SCORING.md` and `v2.html`.
+  Trending. A rebuild-from doc derived from `SCORING.md` and `index.html` (the live app).
 - **[DATABASE.md](./DATABASE.md)** — the Supabase database: every `movies`/`user_movies` column,
   auth/RLS, the streaming JSONB shape, indexes, the catalog inclusion bar, and known limitations.
 - **[../SCORING.md](../SCORING.md)** — the authoritative protected-logic scoring reference. Keep
@@ -50,7 +50,8 @@ Ready-to-paste, project-tailored instructions for common tasks:
 [performance](./PROMPTS/performance.md) · [mobile-ui](./PROMPTS/mobile-ui.md)
 
 ## Where things live
-- `v2.html` — the active premium redesign (current app). `index.html` — the classic live app.
+- `index.html` — the live app (the promoted redesign; all work here). `v2.html` — byte-identical
+  alias (old links). `v1.html` — archived classic app.
 - `pipeline/` — `ingest.mjs` (additions), `refresh.mjs` (streaming + ratings + posters), migrations.
 - `.github/workflows/` — `catalog-refresh.yml`, `catalog-maintenance.yml` (the crons).
 

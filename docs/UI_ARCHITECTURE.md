@@ -1,6 +1,6 @@
 # CINELOG — UI Architecture
 
-A screen-by-screen map of CINELOG's interface as built in **`v2.html`** (the active app). For each
+A screen-by-screen map of CINELOG's interface as built in **`index.html`** (the active app). For each
 screen: **Purpose · Layout · Components · Interactions · Navigation · Animations**. Element ids,
 class names, and function names are quoted verbatim from the source so future sessions can find and
 extend them safely.

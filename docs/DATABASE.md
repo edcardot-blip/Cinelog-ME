@@ -6,7 +6,7 @@
 >
 > Sources: the live database (queried via the public anon key), `pipeline/GATE.md` (the frozen
 > column contract + inclusion gate), `pipeline/migrations/*.sql`, `pipeline/ingest.mjs`,
-> `pipeline/refresh.mjs`, and the data layer in `v2.html`.
+> `pipeline/refresh.mjs`, and the data layer in `index.html` (the live app).
 
 **Project:** `https://fmhmvvsbxofoqriekfyj.supabase.co` · ref `fmhmvvsbxofoqriekfyj`
 **REST base:** `https://fmhmvvsbxofoqriekfyj.supabase.co/rest/v1/` (PostgREST)
@@ -22,14 +22,15 @@ CINELOG has **two tables**:
 | **`movies`** | **4,734** | Public read (anon key) | The curated film catalog — metadata, ratings, streaming. |
 | **`user_movies`** | per-user | RLS to `auth.uid()` | Per-user lists: Seen, Like (favorite), Watchlist, Hidden (not_interested). |
 
-The catalog is shared and identical across both front-ends (`index.html` and `v2.html`). Only the
+The catalog is shared and identical across the live app (`index.html`) and its alias (`v2.html`)
+and the archived classic (`v1.html`). Only the
 personal lists are user-scoped.
 
 ---
 
 ## 2. Supabase setup & access
 
-- **Anon (public) key** is baked into the app (`BAKED_SB_KEY` in `v2.html`). It is **safe to
+- **Anon (public) key** is baked into the app (`BAKED_SB_KEY` in `index.html`). It is **safe to
   expose** because Row Level Security is enabled — the catalog is public-read and personal data is
   RLS-gated. Two ways the app talks to Supabase:
   - **Raw PostgREST `fetch`** with `apikey` + `Authorization: Bearer <anon>` headers
@@ -162,7 +163,7 @@ A flat object mapping a **lowercased provider name** → its **best (free-est) t
 
 - **Tier values** come from TMDB, written by `refresh.mjs` in `TIER_ORDER = buy, rent, ads, free,
   flatrate` (processed cheapest-last, so each provider ends tagged with its **best** tier).
-- **"Free to me" tiers** (`FREE_TIERS` in `v2.html`): `flatrate, free, sub, ads, subscription`.
+- **"Free to me" tiers** (`FREE_TIERS` in `index.html`): `flatrate, free, sub, ads, subscription`.
   `rent` / `buy` are **not** free.
 - `movieAvailability(m)` parses this (accepting a JSON string too) and keeps only providers the app
   recognizes via `SVC_BY_ALIAS`. Aliases are deliberately precise to avoid traps —

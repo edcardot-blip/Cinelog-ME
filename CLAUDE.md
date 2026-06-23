@@ -10,15 +10,26 @@ and how the codebase actually works. When in doubt, follow this file.
 
 CINELOG is a **single-file web app** — vanilla HTML/CSS/JS, no framework, no build step.
 
-- **`index.html`** — the current live "classic" app.
-- **`v2.html`** — the **active premium redesign**. *All current work happens here.* It is
-  deployed alongside `index.html` and will eventually replace it. When the user says "the app,"
-  they almost always mean `v2.html`.
-- Both files share the same Supabase backend, so data is identical between them.
+- **`index.html`** — the **live app** (the premium redesign, promoted to root). *All current work
+  happens here.* When the user says "the app," they mean `index.html`.
+- **`v2.html`** — a **byte-identical alias** of `index.html`, kept only so PWAs/bookmarks on the
+  old `/v2.html` URL keep working. Do NOT edit it directly; if you change `index.html` and need the
+  alias in sync, copy `index.html` → `v2.html` (or just delete `v2.html` once the PWA is re-added
+  from root). It is NOT a separate version.
+- **`v1.html`** — the **archived classic app** (the pre-redesign version), preserved for reference
+  only. Frozen; do not build on it.
+- All share the same Supabase backend, so data is identical between them.
+
+**Scope & direction (as of 2026-06-22):** CINELOG stays **free / non-commercial** (a personal hobby
+app — see the footer disclaimer; this also satisfies TMDB attribution). The app is **movies-only for
+now**: TV support shipped (Movies/TV toggle, TMDB TV pipeline, per-season episode grid) but is
+**parked** — the toggle (`#media-toggle-row`) is `hidden` and the tagline (`#hero-sub`) is shown.
+Re-enable TV by swapping those two `hidden` attributes. Keep the TV code/schema/pipeline intact.
 
 **Live URLs (GitHub Pages):**
-- App: `https://edcardot-blip.github.io/Cinelog-ME/`
-- Redesign preview: `https://edcardot-blip.github.io/Cinelog-ME/v2.html`
+- App (redesign): `https://edcardot-blip.github.io/Cinelog-ME/`
+- Archived classic: `https://edcardot-blip.github.io/Cinelog-ME/v1.html`
+- Legacy alias (= the app): `https://edcardot-blip.github.io/Cinelog-ME/v2.html`
 - Repo: `edcardot-blip/Cinelog-ME` (public; free-plan Pages requires public).
 
 **Backend — Supabase** (`https://fmhmvvsbxofoqriekfyj.supabase.co`):
@@ -36,7 +47,7 @@ CINELOG is a **single-file web app** — vanilla HTML/CSS/JS, no framework, no b
   (`TMDB_API_KEY`, `OMDB_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) — never commit them.
 - Full spec: **`pipeline/GATE.md`**.
 
-**Deploy:** edit `v2.html` → push to repo `main` → Pages rebuilds (~1–2 min). Test on a real iPhone.
+**Deploy:** edit `index.html` → push to repo `main` (squash PR) → Pages rebuilds (~1–2 min). Test on a real iPhone.
 
 ---
 

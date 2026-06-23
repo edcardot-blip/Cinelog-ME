@@ -6,8 +6,8 @@ CINELOG pairs a real, tuned recommendation engine with a curated, quality-gated 
 poster-first, mobile-first interface (black + gold, Fraunces + Inter). Recommendations are
 *generated for you*, not just listed — the opposite of an endless "trending" scroll.
 
-**Live:** https://edcardot-blip.github.io/Cinelog-ME/
-· **Redesign preview:** https://edcardot-blip.github.io/Cinelog-ME/v2.html
+**Live:** https://edcardot-blip.github.io/Cinelog-ME/  (the redesign, now the main app)
+· **Archived classic:** https://edcardot-blip.github.io/Cinelog-ME/v1.html
 
 > New here? Read **[CLAUDE.md](CLAUDE.md)** (the project constitution) and
 > **[docs/PROJECT.md](docs/PROJECT.md)** (the 10-minute overview) first.
@@ -68,8 +68,8 @@ You **must serve over HTTP** — do not open the file with `file://`.
 # from the repo root
 python3 -m http.server 8000
 # then open:
-#   http://localhost:8000/v2.html   (active redesign — current app)
-#   http://localhost:8000/index.html (classic app)
+#   http://localhost:8000/            (the app — index.html, the redesign)
+#   http://localhost:8000/v1.html     (archived classic, reference only)
 ```
 
 **Why `file://` fails:** Supabase's `fetch` calls and Google OAuth both require a real HTTP
@@ -93,9 +93,9 @@ The app talks to a Supabase project with two tables and Google auth:
    reads/writes their own rows.
 3. **Google auth** — enable the Google provider, then add every served origin to
    **Auth → URL Configuration → Redirect URLs**, e.g.:
-   - `https://edcardot-blip.github.io/Cinelog-ME/`
-   - `https://edcardot-blip.github.io/Cinelog-ME/v2.html`
-   - `http://localhost:8000/v2.html` (for local development)
+   - `https://edcardot-blip.github.io/Cinelog-ME/` (the app)
+   - `https://edcardot-blip.github.io/Cinelog-ME/v2.html` (kept alias)
+   - `http://localhost:8000/` (for local development)
 
    Sign-in redirects to `window.location.origin + window.location.pathname`, so each path you
    serve from needs to be allow-listed.
@@ -108,11 +108,11 @@ The app talks to a Supabase project with two tables and Google auth:
 Hosted on **GitHub Pages** from the `main` branch of `edcardot-blip/Cinelog-ME` (the repo is
 public because free-plan Pages requires it).
 
-- **Preview convention:** `v2.html` is deployed *alongside* `index.html` so the premium redesign
-  can be previewed live at `/v2.html` before it replaces the classic app. All current work
-  happens in `v2.html`.
-- **Deploy loop:** edit `v2.html` → syntax-check both inline scripts → push to `main` → Pages
-  rebuilds (~1–2 min) → **test on a real iPhone** (Safari and the installed PWA). Desktop
+- **File layout:** `index.html` is the live app (the promoted redesign) and where all work happens.
+  `v2.html` is a byte-identical alias kept for old `/v2.html` bookmarks/PWAs (don't edit it).
+  `v1.html` is the archived classic app (reference only).
+- **Deploy loop:** edit `index.html` → syntax-check both inline scripts → push to `main` (squash PR)
+  → Pages rebuilds (~1–2 min) → **test on a real iPhone** (Safari and the installed PWA). Desktop
   browsers don't reproduce iOS safe-area / toolbar / touch behavior.
 
 The catalog pipeline runs automatically via two GitHub Actions crons (manual dispatch defaults
@@ -126,8 +126,9 @@ to dry-run):
 
 ```
 Cinelog ME/
-├── v2.html                 # Active premium redesign (current app)
-├── index.html              # Classic live app
+├── index.html              # The live app (promoted premium redesign) — all work here
+├── v2.html                 # Byte-identical alias of index.html (kept for old /v2.html links)
+├── v1.html                 # Archived classic app (reference only)
 ├── CLAUDE.md               # Project constitution (read first)
 ├── SCORING.md              # Protected recommendation-engine reference
 ├── README.md               # This file

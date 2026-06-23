@@ -3,7 +3,7 @@
 > Paste into a fresh Claude Code session, then add your specific request at the bottom.
 
 ## Context
-CINELOG is a single-file, vanilla HTML/CSS/JS app. All current work happens in **`v2.html`**.
+CINELOG is a single-file, vanilla HTML/CSS/JS app. All current work happens in **`index.html`** (the live app; `v2.html`/`v1.html` are an alias/archive — do not edit them).
 Read **`CLAUDE.md`** first. The engine in `getRecs()` is PROTECTED — this task is presentation
 only and must not touch scoring.
 

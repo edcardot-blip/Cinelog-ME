@@ -3,14 +3,14 @@
 > **Comprehensive engine reference.** This document explains *exactly* how CINELOG turns a
 > user's filters into a ranked list of movies, detailed enough to rebuild the engine from
 > scratch. It is derived from the authoritative scoring reference (**[../SCORING.md](../SCORING.md)**)
-> and the live implementation in **`v2.html`** (`getRecs()`, `getRandom()`, the adventurous-slider
+> and the live implementation in **`index.html`** (`getRecs()`, `getRandom()`, the adventurous-slider
 > handler, `setRatingMode`, `setMode`, and the Trending block).
 >
 > **The scoring math is PROTECTED logic.** This doc *describes* it; it is not permission to
 > change it. If a number must move, move **one** lever, capture before/after, get owner sign-off,
 > and update `SCORING.md`. See `CLAUDE.md` → "Recommendation Philosophy."
 
-All line numbers below refer to `v2.html` and are approximate (the file grows). The engine is
+All line numbers below refer to `index.html` and are approximate (the file grows). The engine is
 self-contained inside `getRecs()` (≈ lines 3569–4142); `getRandom()` (≈ 3524–3567) is the
 Surprise-Me path; Trending (≈ 4143–4377) is a **separate, read-only** discovery feature that
 never touches the engine.

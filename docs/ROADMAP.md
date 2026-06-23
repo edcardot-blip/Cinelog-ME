@@ -6,8 +6,11 @@
 > **[AI_CONTEXT.md](./AI_CONTEXT.md)**.
 
 CINELOG is a single-file, vanilla HTML/CSS/JS movie-recommendation app (premium black + gold,
-poster-first, mobile-first). `v2.html` is the **active premium redesign** where all current work
-happens; `index.html` is the **classic** live app. Both share the same Supabase backend.
+poster-first, mobile-first). `index.html` is the **live app** (the premium redesign, promoted to
+root) where all current work happens; `v1.html` is the **archived classic** app (reference only);
+`v2.html` is a byte-identical alias kept for old `/v2.html` bookmarks/PWAs. All share the same
+Supabase backend. The app is **movies-only for now** (TV shipped but parked) and stays
+**free / non-commercial**.
 
 Last updated: 2026-06-17.
 
@@ -15,7 +18,15 @@ Last updated: 2026-06-17.
 
 ## ✅ Completed (shipped in the v2 redesign)
 
-These pieces are built and live in `v2.html`:
+These pieces are built and live in `index.html` (the live app):
+
+- **Promoted to the live app** — the redesign is now `index.html` (the bare Pages URL). The classic
+  app is archived at `v1.html`; `v2.html` is kept as a byte-identical alias.
+- **TV support (parked)** — Movies/TV toggle, TMDB TV pipeline (`pipeline/ingest-tv.mjs` /
+  `refresh-tv.mjs`, `GATE-TV.md`, migration 004), and a per-season episode-rating grid all shipped,
+  but the app is **movies-only for now**: the toggle is hidden (`#media-toggle-row`), the tagline
+  (`#hero-sub`) shown. Re-enable by swapping those `hidden` attributes.
+- **Non-commercial footer disclaimer** — free/hobby-use notice that also satisfies TMDB attribution.
 
 - **One-screen homepage wizard** — the full flow (Title → Quick Filters → Recommendation Mode →
   Find My Movie) fits on a single screen; no scrolling to get to a pick.
@@ -55,10 +66,10 @@ These pieces are built and live in `v2.html`:
 
 ## 🔼 High Priority
 
-- **v2.html → index.html swap** — once the redesign is approved, promote `v2.html` to become the
-  live app (replacing the classic `index.html`). This makes the redesign the default experience.
-- **Auth-redirect config** — confirm Supabase → Auth redirect URLs include the GitHub Pages URL(s)
-  (and the post-swap URL) so Google OAuth completes cleanly on the live app and the PWA.
+- **Auth-redirect config** — confirm Supabase → Auth redirect URLs include the GitHub Pages root URL
+  so Google OAuth completes cleanly on the live app and the installed PWA.
+- **Sunset `v2.html`** — once the PWA is re-added from the root URL, delete `v2.html` (or make it a
+  redirect) so there's a single canonical file.
 
 ---
 

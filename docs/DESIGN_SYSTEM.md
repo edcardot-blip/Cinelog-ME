@@ -1,7 +1,7 @@
 # CINELOG — Design System
 
 The complete design language for CINELOG, the premium black + gold, poster-first, mobile-first
-movie-recommendation app. Every value below is extracted verbatim from **`v2.html`** (the active
+movie-recommendation app. Every value below is extracted verbatim from **`index.html`** (the active
 app) — real hex codes, font names, pixel values, and class names. Use this document so future
 changes always match the existing aesthetic.
 
@@ -17,7 +17,7 @@ fast. Posters do the visual work; text is minimal. Elegant over flashy.
 
 ## 1. Color
 
-All colors are CSS custom properties defined on `:root` (line 14 of `v2.html`):
+All colors are CSS custom properties defined on `:root` (line 14 of `index.html`):
 
 ```css
 :root{
