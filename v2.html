@@ -422,6 +422,8 @@
   .set-foot2 .sf-brand{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:.2em;color:var(--text2)}
   .set-foot2 .sf-ver{font-size:11.5px;color:var(--text3);margin-top:5px;letter-spacing:.02em}
   .set-foot2 .sf-tag{font-size:11.5px;color:var(--text3);margin-top:7px;font-style:italic;opacity:.85}
+  .set-foot2 .sf-legal{font-size:10.5px;line-height:1.55;color:var(--text3);opacity:.7;
+    max-width:340px;margin:14px auto 0;text-align:center;letter-spacing:.01em}
   /* About info modal */
   .info-ov{position:fixed;inset:0;z-index:1400;background:rgba(6,6,8,.8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1.25rem}
   .info-ov.open{display:flex}
@@ -610,6 +612,9 @@
   /* --- Movies / TV media toggle: slim segmented control, lives in the hero so it adds no
          vertical height to the one-screen wizard (replaces the static tagline line). --- */
   .media-toggle-row{display:flex;justify-content:center;margin:.45rem 0 0}
+  /* movies-only for now: a `display` rule overrides UA [hidden], so hide it explicitly. To
+     re-enable TV later: remove `hidden` from #media-toggle-row and add it to #hero-sub. */
+  .media-toggle-row[hidden]{display:none}
   .media-toggle{display:inline-flex;gap:2px;background:var(--bg3);border:1px solid var(--border2);
     border-radius:var(--rpill);padding:3px}
   .media-toggle button{appearance:none;border:none;background:none;cursor:pointer;font-family:var(--sans);
@@ -1525,9 +1530,11 @@
     <button class="auth-pill" id="auth-pill" onclick="onAuthPill()" aria-label="Sign in with Google"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span></button>
     <div class="hero-new">
       <h1>What Should I <span class="em">Watch?</span></h1>
-      <!-- Movies / TV toggle replaces the old static tagline line — keeps the one-screen wizard
-           height unchanged. setMediaType() scopes every recommendation query by `type`. -->
-      <div class="media-toggle-row">
+      <!-- Movies-only for now. The tagline is shown; the Movies/TV toggle is hidden but fully
+           intact. To re-enable TV: add `hidden` to #hero-sub and remove `hidden` from
+           #media-toggle-row. setMediaType() scopes every recommendation query by `type`. -->
+      <p class="hero-sub" id="hero-sub">The perfect movie in seconds.</p>
+      <div class="media-toggle-row" id="media-toggle-row" hidden>
         <div class="media-toggle" role="tablist" aria-label="Choose movies or TV">
           <button type="button" id="mt-movie" class="on" role="tab" aria-selected="true" onclick="setMediaType('movie')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg>
@@ -1824,9 +1831,6 @@
         </div>
         <div class="set-list" style="margin-top:.6rem">
           <button class="set-row tappable" onclick="openInfo('whatsnew')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg></span><span class="set-label">What's New</span><span class="set-chev">›</span></button>
-          <button class="set-row tappable" onclick="openInfo('feedback')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/></svg></span><span class="set-label">Send Feedback</span><span class="set-chev">›</span></button>
-          <button class="set-row tappable" onclick="openInfo('support')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4.5 4.5M14.5 14.5L19 19M19 5l-4.5 4.5M9.5 14.5L5 19"/></svg></span><span class="set-label">Contact Support</span><span class="set-chev">›</span></button>
-          <button class="set-row tappable" onclick="openInfo('rate')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8-4.3-4.1 5.9-.9z"/></svg></span><span class="set-label">Rate the App</span><span class="set-chev">›</span></button>
           <button class="set-row tappable" onclick="openInfo('privacy')"><span class="set-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg></span><span class="set-label">Privacy Policy</span><span class="set-chev">›</span></button>
         </div>
       </div>
@@ -1835,6 +1839,7 @@
         <div class="sf-brand">CINELOG</div>
         <div class="sf-ver">Version 1.0</div>
         <div class="sf-tag">Built for people who love movies.</div>
+        <p class="sf-legal">CINELOG is a free, non-commercial hobby project made for personal use. It is not affiliated with, endorsed by, or sponsored by any studio, streaming service, or ratings provider. Film data and posters are provided by The Movie Database (TMDB) and other sources and remain the property of their respective owners — this product uses the TMDB API but is not endorsed or certified by TMDB. Provided as-is, with no warranty.</p>
       </div>
       </div><!-- /#set-menu -->
 
